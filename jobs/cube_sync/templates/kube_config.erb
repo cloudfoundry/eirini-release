@@ -1,2 +1,17 @@
-jadhfsd
-
+---
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /var/vcap/jobs/cube_sync/config/ca.pem
+    server: <%= p("cube_sync.cluster.server") %>
+  name: <%= p("cube_sync.cluster.name") %>
+contexts:
+- context:
+    cluster: <%= p("cube_sync.context.cluster") %>
+    namespace: default
+    user: <%= p("cube_sync.context.user") %>
+  name: <%= p("cube_sync.context.name") %>
+current-context: <%= p("cube_sync.context.name") %>
+kind: Config
+preferences: {}
+users: <%= p("cube_sync.users") %>

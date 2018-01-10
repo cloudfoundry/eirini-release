@@ -5,6 +5,7 @@ templates:
   sync_ctl.erb: bin/sync_ctl
   sync_as_vcap.erb: bin/sync_as_vcap
   kube_config.erb: config/kube.yml
+  kube_ca_pem.erb: config/ca.pem
 
 packages:
   - pid_utils
@@ -22,9 +23,26 @@ properties:
   cube_sync.backend:
     default: k8s
     description: The backend to use
-
-  cube_sync.kube_api:
+  cube_sync.cluster.server:
     default:
-    description: The k8s endpoint
+    description: The k8s server name
+  cube_sync.cluster.ca_pem:
+    default:
+    description: The k8s server CA cert PEM value
+  cube_sync.cluster.name:
+    default:
+    description: The k8s cluster name
+  cube_sync.context.cluster:
+    default:
+    description: The cluster name for the context
+  cube_sync.context.user:
+    default:
+    description: The context user name
+  cube_sync.context.name:
+    default:
+    description: The name of the context
+  cube_sync.users:
+    default:
+    description: The array of user information
 
 
