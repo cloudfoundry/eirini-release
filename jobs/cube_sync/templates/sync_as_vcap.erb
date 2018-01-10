@@ -13,5 +13,5 @@ exec /var/vcap/packages/cube/bin/cube sync \
   --ccPass <%= p('cube_sync.ccPassword') %> \
   --kubeconfig=$conf_dir/kube.yml \
   --backend <%= p('cube_sync.backend') %> \
-  2> >(tee -a $log_dir/sync.stderr.log | logger -p user.error -t vcap.sync) \
-  1> >(tee -a $log_dir/sync.stdout.log | logger -t vcap.sync)
+  2> >(tee -a $log_dir/cube_sync.stderr.log | logger -p user.error -t vcap.sync) \
+  1> >(tee -a $log_dir/cube_sync.stdout.log | logger -t vcap.sync)
