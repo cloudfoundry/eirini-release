@@ -8,6 +8,7 @@ Checkout the source and run the following:
 
 ```
 bosh sync-blobs
+git submodule update --init --recursive
 bosh create-release
 bosh upload-release
 bosh -d cube deploy
