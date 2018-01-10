@@ -1,0 +1,22 @@
+#!/bin/bash -e
+
+run_dir=/var/vcap/sys/run/sync
+log_dir=/var/vcap/sys/log/sync
+conf_dir=/var/vcap/jobs/sync/config
+pidfile=$run_dir/sync.pid
+
+echo $$ > $pidfile
+
+ccAPI=<%= p('cube.ccAPI') %>
+ccUser=<%= p('cube.ccUser') %>
+ccPassword=<%= p('cube.ccPassword') %>
+backend=<%= p('cube.backend') %>
+
+exec /var/vcap/packages/sync/bin/cube sync \
+  --ccApi <%= p('cube.ccAPI') %> \
+  --ccUser <%= p('cube.ccUser') %> \
+  --ccPass <%= p('cube.ccPassword') %> \
+  --kubeconfig=$conf_dir/kube.yml \
+  --backend <%= p('cube.backend') %> \
+  2> >(tee -a $log_dir/sync.stderr.log | logger -p user.error -t vcap.sync) \
+  1> >(tee -a $log_dir/sync.stdout.log | logger -t vcap.sync)

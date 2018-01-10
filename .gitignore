@@ -1,0 +1,25 @@
+.DS_Store
+.blobs/
+blobs/
+.dev_builds/
+dev_releases/
+config/dev.yml
+config/private.yml
+/*.yml
+.final_builds/jobs/**/*.tgz
+.final_builds/packages/**/*.tgz
+releases/*.tgz
+releases/**/*.tgz
+dev_releases
+.blobs
+blobs
+.dev_builds
+/bin/
+/pkg/
+
+# gosub and friends
+src/github.com/vito/gosub
+src/github.com/codegangsta/cli
+
+tags
+.tags

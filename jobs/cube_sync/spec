@@ -1,0 +1,30 @@
+---
+name: cube_sync
+
+templates:
+  sync_ctl.erb: bin/sync_ctl
+  sync_as_vcap.erb: bin/sync_as_vcap
+  kube_config.erb: config/kube.yml
+
+packages:
+  - pid_utils
+  - cube
+
+properties:
+  cube_sync.ccAPI:
+    description: The API endpoint of the Cloud Controller
+  cube_sync.ccUser:
+    default: internal_user
+    description: The internal username for the Cloud Controller
+  cube_sync.ccPassword:
+    default: password
+    description: The internal password for the Cloud Controller
+  cube_sync.backend:
+    default: k8s
+    description: The backend to use
+
+  cube_sync.kube_api:
+    default:
+    description: The k8s endpoint
+
+

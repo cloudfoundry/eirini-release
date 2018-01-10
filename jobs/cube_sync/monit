@@ -1,0 +1,5 @@
+check process cube_sync
+  with pidfile /var/vcap/sys/run/cube_sync/pid
+  start program "/var/vcap/jobs/cube_sync/bin/sync_ctl start"
+  stop program "/var/vcap/jobs/cube_sync/bin/sync_ctl stop"
+  group vcap

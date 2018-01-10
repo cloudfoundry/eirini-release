@@ -1,0 +1,8 @@
+---
+name: cube
+
+dependencies:
+  - golang
+
+files:
+  - github.com/julz/cube/**/*

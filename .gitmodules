@@ -1,0 +1,3 @@
+[submodule "src/github.com/julz/cube"]
+	path = src/github.com/julz/cube
+	url = http://github.com/julz/cube
