@@ -22,7 +22,7 @@ case $1 in
     # Allowed number of open file descriptors
     ulimit -n 100000
 
-    exec chpst -u vcap:vcap /var/vcap/jobs/sync/bin/sync_as_vcap
+    exec chpst -u vcap:vcap /var/vcap/jobs/cube_sync/bin/sync_as_vcap
 
     ;;
 
