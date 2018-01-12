@@ -15,14 +15,14 @@ packages:
 
 properties:
   cube_sync.ccAPI:
-    description: The API endpoint of the Cloud Controller
+    description: "The API endpoint of the Cloud Controller"
   cube_sync.ccUser:
     default: internal_user
-    description: The internal username for the Cloud Controller
+    description: "The internal username for the Cloud Controller"
   cube_sync.ccPassword:
-    description: The internal password for the Cloud Controller
+    description: "The internal password for the Cloud Controller"
   cube_sync.backend:
     default: k8s
-    description: The backend to use
+    description: "The backend to use"
   cube_sync.config:
-    description: The full Kubernetes configuration file content. Note: Avoid using certificates file references, instead you should use the file content.
+    description: "The full Kubernetes configuration file content. Note: Avoid using certificates file references, instead you should use the file content."
