@@ -25,18 +25,18 @@ bosh -e <your-env-alias> upload-release
 ```
 
 ## Deploying
-1. Target your API and push an [app](https://github.com/cloudfoundry/cf-acceptance-tests/tree/master/assets/dora).
-```
-cf login -a https://api.bosh-lite.com \
-    -u "admin" \
-    -p "$(bosh2 int <path-to-cf-deployment>/deployment-vars.yml --path /cf_admin_password)" \
-    --skip-ssl-validation
-if ! cf org test-org > /dev/null 2>&1; then cf create-org test-org; fi
-if ! cf space test-space > /dev/null 2>&1; then cf create-space test-space -o test-org; fi
-cf target -o test-org -s test-space
-cf push test-app-name
-```
-1. Use `kubectl config view` to get your Minikube configuration. You have to manually read the content of referenced files in there to place the content into the YAML configuration rather than reference it by the path, for example:
+- Target your API and push an [app](https://github.com/cloudfoundry/cf-acceptance-tests/tree/master/assets/dora).
+  ```
+   cf login -a https://api.bosh-lite.com \
+       -u "admin" \
+       -p "$(bosh2 int <path-to-cf-deployment>/deployment-vars.yml --path /cf_admin_password)" \
+       --skip-ssl-validation
+  if ! cf org test-org > /dev/null 2>&1; then cf create-org test-org; fi
+  if ! cf space test-space > /dev/null 2>&1; then cf create-space test-space -o test-org; fi
+  cf target -o test-org -s test-space
+  cf push test-app-name
+  ```
+- Use `kubectl config view` to get your Minikube configuration. You have to manually read the content of referenced files in there to place the content into the YAML configuration rather than reference it by the path, for example:
  ```yaml
  [...]
  users:
@@ -58,8 +58,8 @@ cf push test-app-name
      ASDFATTFASDFASDFASDFSADFASDFGTT
      [...]
  ```
-There could be a script to do this in the future.
-1. Copy your Minikube configuration file and paste the whole YAML structure into provided [BOSH operations file](operations/cube-operations.yml) inside `properties.cube_sync.config`:
+ There could be a script to do this in the future.
+- Copy your Minikube configuration file and paste the whole YAML structure into provided [BOSH operations file](operations/cube-operations.yml) inside `properties.cube_sync.config`:
 
  ```yaml
  - type: replace
@@ -74,7 +74,7 @@ There could be a script to do this in the future.
              config:
                your Kubernetes configuration must be placed here (watch for the correct indentation)
  ```
-1. Modify and deploy your `cf-deployment` using the provided [BOSH operations file](operations/cube-operations.yml):
+- Modify and deploy your `cf-deployment` using the provided [BOSH operations file](operations/cube-operations.yml):
 ```
 bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
     -o <path-to-cf-deployment>/operations/bosh-lite.yml \
