@@ -31,10 +31,7 @@
             apiVersion: v1
             clusters:
             - cluster:
-                certificate-authority: |
-                  -----BEGIN CERTIFICATE-----
-                  ...
-                  -----END CERTIFICATE-----
+                certificate-authority: ((k8s_cluster_certificate_authority))
                 server: https://192.168.99.100:8443
               name: minikube
             contexts:
@@ -49,11 +46,5 @@
             - name: minikube
               user:
                 as-user-extra: {}
-                client-certificate: |
-                  -----BEGIN CERTIFICATE-----
-                  ...
-                  -----END CERTIFICATE-----
-                client-key: |
-                  -----BEGIN RSA PRIVATE KEY-----
-                  ...
-                  -----END RSA PRIVATE KEY-----
+                client-certificate: ((k8s_client_certificate))
+                client-key: ((k8s_client_key))

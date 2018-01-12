@@ -79,6 +79,9 @@ bosh -e <your-env-alias> upload-release
         -o <path-to-cf-deployment>/operations/bosh-lite.yml \
         -o operations/cube-bosh-operations.yml \
         --vars-store <path-to-cf-deployment>/deployment-vars.yml \
+        --var-file=k8s_cluster_certificate_authority=$(kubectl config view -o json | jq -r '.clusters[] | select(.name=="'minikube'") | .cluster."certificate-authority"') \
+        --var-file=k8s_client_certificate=$(kubectl config view -o json | jq -r '.users[] | select(.name=="'minikube'") | .user."client-certificate"') \
+        --var-file=k8s_client_key=$(kubectl config view -o json | jq -r '.users[] | select(.name=="'minikube'") | .user."client-key"') \
         -v system_domain=bosh-lite.com
     ```
     The above modification, will add a new VM(`cube`) to the deployment, and will use some existing keys to populate the new `instance_group` properties.
