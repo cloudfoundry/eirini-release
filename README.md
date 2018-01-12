@@ -59,7 +59,7 @@ bosh -e <your-env-alias> upload-release
        [...]
     ```
     There could be a script to do this in the future.
-1. Copy your Minikube configuration file and paste the whole YAML structure into provided [BOSH operations file](blob/master/operations/cube-bosh-operations.yml) inside `properties.cube_sync.config`:
+1. Copy your Minikube configuration file and paste the whole YAML structure into provided [BOSH operations file](./operations/cube-bosh-operations.yml) inside `properties.cube_sync.config`:
     ```yaml
     - type: replace
        path: /instance_groups?/-
@@ -73,7 +73,7 @@ bosh -e <your-env-alias> upload-release
                config:
                  your Kubernetes configuration must be placed here (watch for the correct indentation)
     ```
-1. Modify and deploy your `cf-deployment` using the provided [BOSH operations file](blob/master/operations/cube-bosh-operations.yml):
+1. Modify and deploy your `cf-deployment` using the provided [BOSH operations file](./operations/cube-bosh-operations.yml):
     ```
     bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
         -o <path-to-cf-deployment>/operations/bosh-lite.yml \
