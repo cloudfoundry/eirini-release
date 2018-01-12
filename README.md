@@ -77,7 +77,7 @@ bosh -e <your-env-alias> upload-release
     ```
     bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
         -o <path-to-cf-deployment>/operations/bosh-lite.yml \
-        -o operations/cube-operations.yml \
+        -o operations/cube-bosh-operations.yml \
         --vars-store <path-to-cf-deployment>/deployment-vars.yml \
         -v system_domain=bosh-lite.com
     ```
