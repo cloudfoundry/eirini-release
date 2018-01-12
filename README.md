@@ -8,10 +8,10 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 ## Prereq
 1. Install **Minikube** on your system. Follow the [instructions](https://github.com/kubernetes/minikube#installation) to get required tools.
 1. Start your **Minikube**
-```
-minikube start
-```
-It might take some time until you see `Kubectl is now configured to use the cluster`, which indicates we are ready to continue.
+    ```sh
+    minikube start
+    ```
+    It might take some time until you see `Kubectl is now configured to use the cluster`, which indicates we are ready to continue.
 1. Deploy and run a BOSH director. For example, refer to [Stark and Wayne's tutorial](http://www.starkandwayne.com/blog/bosh-lite-on-virtualbox-with-bosh2/) on how set-up such a BOSH Lite v2 environment.
 1. Run Cloud Foundry on your BOSH Lite environment using the [cf-deployment](https://github.com/cloudfoundry/cf-deployment). Again, you can refer to another [Stark and Wayne's tutorial](https://www.starkandwayne.com/blog/running-cloud-foundry-locally-on-bosh-lite-with-bosh2/).
 
