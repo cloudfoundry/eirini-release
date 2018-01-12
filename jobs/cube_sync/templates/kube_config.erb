@@ -1,27 +1,8 @@
----
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority: /var/vcap/jobs/cube_sync/config/ca.pem
-    server: <%= p("cube_sync.cluster.server") %>
-  name: <%= p("cube_sync.cluster.name") %>
-contexts:
-- context:
-    cluster: <%= p("cube_sync.context.cluster") %>
-    namespace: default
-    user: <%= p("cube_sync.context.user") %>
-  name: <%= p("cube_sync.context.name") %>
-current-context: <%= p("cube_sync.context.name") %>
-kind: Config
-preferences: {}
-users:
-- name: <%= p("cube_sync.users.name") %>
-  user:
-    auth-provider:
-      config:
-        client-id: <%= p("cube_sync.users.auth.client-id") %>
-        client-secret: <%= p("cube_sync.users.auth.client-secret") %>
-        id-token: <%= p("cube_sync.users.auth.id-token") %>
-        idp-issuer-url: <%= p("cube_sync.users.auth.idp-issuer-url") %>
-        refresh-token: <%= p("cube_sync.users.auth.refresh-token") %>
-      name: <%= p("cube_sync.users.auth.name") %>
+<%
+  config = p("cube_sync.config")
+
+  config['clusters'][0]['cluster']['certificate-authority'] = "/var/vcap/jobs/cube_sync/config/ca.pem"
+  config['users'][0]['user']['client-certificate'] = "/var/vcap/jobs/cube_sync/config/kube_client_certificate.crt"
+  config['users'][0]['user']['client-key'] = "/var/vcap/jobs/cube_sync/config/kube_client_key.key"
+%>
+<%= config.to_yaml %>
