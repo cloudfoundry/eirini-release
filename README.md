@@ -40,7 +40,8 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
            --vars-store <path-to-cf-deployment>/deployment-vars.yml \
            --var=k8s_flatten_cluster_config="$(kubectl config view --flatten=true)" \
            -v system_domain=bosh-lite.com \
-           -v cc_api=https://api.bosh-lite.com
+           -v cc_api=https://api.bosh-lite.com \
+           -o <path-to-cf-deployment>/operations/experimental/enable-bpm.yml
       ```
 
     - Or **Build and deploy** with one command as a dev release
@@ -53,7 +54,8 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
            -v system_domain=bosh-lite.com \
            -v cc_api=https://api.bosh-lite.com \
            -o <path-to-cube-release>/operations/dev-version.yml \
-           -v cube_local_path=<path-to-cube-release>
+           -v cube_local_path=<path-to-cube-release> \
+           -o <path-to-cf-deployment>/operations/experimental/enable-bpm.yml
       ```
     The above modification, will add a new VM(`cube`) to the deployment, and will use your current **Minikube** config file to populate the `properties.cube_sync.config` of your manifest.
 

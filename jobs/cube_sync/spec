@@ -2,12 +2,10 @@
 name: cube_sync
 
 templates:
-  sync_ctl.erb: bin/sync_ctl
-  sync_as_vcap.erb: bin/sync_as_vcap
+  bmp.yml.erb: config/bpm.yml
   kube_config.erb: config/kube.yml
 
 packages:
-  - pid_utils
   - cube
 
 properties:

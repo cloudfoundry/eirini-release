@@ -1,0 +1,22 @@
+---
+processes:
+  - name: cube_sync # same as BOSH-job name means `-p <process>` is not needed
+    executable: /var/vcap/packages/cube/bin/cube
+    args:
+    - sync
+    - --ccApi
+    - <%= p('cube_sync.ccAPI') %>
+    - --ccUser
+    - <%= p('cube_sync.ccUser') %>
+    - --ccPass
+    - <%= p('cube_sync.ccPassword') %>
+    - --kubeconfig
+    - /var/vcap/jobs/cube_sync/config/kube.yml
+    - --backend
+    - <%= p('cube_sync.backend') %>
+    limits:
+      memory: 3G
+      processes: 10
+      open_files: 100000
+    ephemeral_disk: true # mount /var/vcap/data/the_job ; default `false`
+                         # NOTE: /var/vcap/data/the_job/tmp is always mounted `rw`
