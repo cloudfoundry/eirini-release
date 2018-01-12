@@ -25,64 +25,63 @@ bosh -e <your-env-alias> upload-release
 ```
 
 ## Deploying
-- Target your API and push an [app](https://github.com/cloudfoundry/cf-acceptance-tests/tree/master/assets/dora).
-  ```
-   cf login -a https://api.bosh-lite.com \
-       -u "admin" \
-       -p "$(bosh2 int <path-to-cf-deployment>/deployment-vars.yml --path /cf_admin_password)" \
-       --skip-ssl-validation
-  if ! cf org test-org > /dev/null 2>&1; then cf create-org test-org; fi
-  if ! cf space test-space > /dev/null 2>&1; then cf create-space test-space -o test-org; fi
-  cf target -o test-org -s test-space
-  cf push test-app-name
-  ```
-- Use `kubectl config view` to get your Minikube configuration. You have to manually read the content of referenced files in there to place the content into the YAML configuration rather than reference it by the path, for example:
- ```yaml
- [...]
- users:
- - name: minikube
-   user:
-     as-user-extra: {}
-     client-certificate: /Users/user/.minikube/client.crt  <- file reference to be replaced by plain value
-     client-key: /Users/user/.minikube/client.key  <- file reference to be replaced by plain value
- ```
- After replacing the content, it should look like this:
- ```yaml
- [...]
- users:
- - name: minikube
-   user:
-     as-user-extra: {}
-     client-certificate: |
-     -----BEGIN CERTIFICATE-----
-     ASDFATTFASDFASDFASDFSADFASDFGTT
-     [...]
- ```
- There could be a script to do this in the future.
-- Copy your Minikube configuration file and paste the whole YAML structure into provided [BOSH operations file](operations/cube-operations.yml) inside `properties.cube_sync.config`:
-
- ```yaml
- - type: replace
-     path: /instance_groups?/-
-     value:
-       name: cube
-       [..]
-       jobs:
-       - name: cube_sync
-         properties:
-           cube_sync:
-             config:
-               your Kubernetes configuration must be placed here (watch for the correct indentation)
- ```
-- Modify and deploy your `cf-deployment` using the provided [BOSH operations file](operations/cube-operations.yml):
-```
-bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
-    -o <path-to-cf-deployment>/operations/bosh-lite.yml \
-    -o operations/cube-operations.yml \
-    --vars-store <path-to-cf-deployment>/deployment-vars.yml \
-    -v system_domain=bosh-lite.com
-```
-The above modification, will add a new VM(`cube`) to the deployment, and will use some existing keys to populate the new `instance_group` properties.
+1. Target your API and push an [app](https://github.com/cloudfoundry/cf-acceptance-tests/tree/master/assets/dora).
+    ```
+     cf login -a https://api.bosh-lite.com \
+         -u "admin" \
+         -p "$(bosh2 int <path-to-cf-deployment>/deployment-vars.yml --path /cf_admin_password)" \
+         --skip-ssl-validation
+    if ! cf org test-org > /dev/null 2>&1; then cf create-org test-org; fi
+    if ! cf space test-space > /dev/null 2>&1; then cf create-space test-space -o test-org; fi
+    cf target -o test-org -s test-space
+    cf push test-app-name
+    ```
+1. Use `kubectl config view` to get your Minikube configuration. You have to manually read the content of referenced files in there to place the content into the YAML configuration rather than reference it by the path, for example:
+    ```yaml
+    [...]
+    users:
+    - name: minikube
+     user:
+       as-user-extra: {}
+       client-certificate: /Users/user/.minikube/client.crt  <- file reference to be replaced by plain value
+       client-key: /Users/user/.minikube/client.key  <- file reference to be replaced by plain value
+    ```
+    After replacing the content, it should look like this:
+    ```yaml
+    [...]
+    users:
+    - name: minikube
+     user:
+       as-user-extra: {}
+       client-certificate: |
+       -----BEGIN CERTIFICATE-----
+       ASDFATTFASDFASDFASDFSADFASDFGTT
+       [...]
+    ```
+    There could be a script to do this in the future.
+1. Copy your Minikube configuration file and paste the whole YAML structure into provided [BOSH operations file](blob/master/operations/cube-bosh-operations.yml) inside `properties.cube_sync.config`:
+    ```yaml
+    - type: replace
+       path: /instance_groups?/-
+       value:
+         name: cube
+         [..]
+         jobs:
+         - name: cube_sync
+           properties:
+             cube_sync:
+               config:
+                 your Kubernetes configuration must be placed here (watch for the correct indentation)
+    ```
+1. Modify and deploy your `cf-deployment` using the provided [BOSH operations file](blob/master/operations/cube-bosh-operations.yml):
+    ```
+    bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
+        -o <path-to-cf-deployment>/operations/bosh-lite.yml \
+        -o operations/cube-operations.yml \
+        --vars-store <path-to-cf-deployment>/deployment-vars.yml \
+        -v system_domain=bosh-lite.com
+    ```
+    The above modification, will add a new VM(`cube`) to the deployment, and will use some existing keys to populate the new `instance_group` properties.
 
 ## Properties
 | Path | Description |
