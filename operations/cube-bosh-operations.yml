@@ -27,24 +27,4 @@
           ccUser: "internal_user"
           ccPassword: "((cc_internal_api_password))"
           backend: k8s
-          config:
-            apiVersion: v1
-            clusters:
-            - cluster:
-                certificate-authority: ((k8s_cluster_certificate_authority))
-                server: https://192.168.99.100:8443
-              name: minikube
-            contexts:
-            - context:
-                cluster: minikube
-                user: minikube
-              name: minikube
-            current-context: minikube
-            kind: Config
-            preferences: {}
-            users:
-            - name: minikube
-              user:
-                as-user-extra: {}
-                client-certificate: ((k8s_client_certificate))
-                client-key: ((k8s_client_key))
+          config: ((k8s_flatten_cluster_config))

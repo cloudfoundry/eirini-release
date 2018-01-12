@@ -1,8 +1,1 @@
-<%
-  config = p("cube_sync.config")
-
-  config['clusters'][0]['cluster']['certificate-authority'] = "/var/vcap/jobs/cube_sync/config/ca.pem"
-  config['users'][0]['user']['client-certificate'] = "/var/vcap/jobs/cube_sync/config/kube_client_certificate.crt"
-  config['users'][0]['user']['client-key'] = "/var/vcap/jobs/cube_sync/config/kube_client_key.key"
-%>
-<%= config.to_yaml %>
+<%= p("cube_sync.config").to_yaml %>

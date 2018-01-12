@@ -36,55 +36,18 @@ bosh -e <your-env-alias> upload-release
     cf target -o test-org -s test-space
     cf push test-app-name
     ```
-1. Use `kubectl config view` to get your Minikube configuration. You have to manually read the content of referenced files in there to place the content into the YAML configuration rather than reference it by the path, for example:
-    ```yaml
-    [...]
-    users:
-    - name: minikube
-     user:
-       as-user-extra: {}
-       client-certificate: /Users/user/.minikube/client.crt  <- file reference to be replaced by plain value
-       client-key: /Users/user/.minikube/client.key  <- file reference to be replaced by plain value
-    ```
-    After replacing the content, it should look like this:
-    ```yaml
-    [...]
-    users:
-    - name: minikube
-     user:
-       as-user-extra: {}
-       client-certificate: |
-       -----BEGIN CERTIFICATE-----
-       ASDFATTFASDFASDFASDFSADFASDFGTT
-       [...]
-    ```
-    There could be a script to do this in the future.
-1. Copy your Minikube configuration file and paste the whole YAML structure into provided [BOSH operations file](./operations/cube-bosh-operations.yml) inside `properties.cube_sync.config`:
-    ```yaml
-    - type: replace
-       path: /instance_groups?/-
-       value:
-         name: cube
-         [..]
-         jobs:
-         - name: cube_sync
-           properties:
-             cube_sync:
-               config:
-                 your Kubernetes configuration must be placed here (watch for the correct indentation)
-    ```
 1. Modify and deploy your `cf-deployment` using the provided [BOSH operations file](./operations/cube-bosh-operations.yml):
     ```
     bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
         -o <path-to-cf-deployment>/operations/bosh-lite.yml \
         -o operations/cube-bosh-operations.yml \
         --vars-store <path-to-cf-deployment>/deployment-vars.yml \
-        --var-file=k8s_cluster_certificate_authority=$(kubectl config view -o json | jq -r '.clusters[] | select(.name=="'minikube'") | .cluster."certificate-authority"') \
-        --var-file=k8s_client_certificate=$(kubectl config view -o json | jq -r '.users[] | select(.name=="'minikube'") | .user."client-certificate"') \
-        --var-file=k8s_client_key=$(kubectl config view -o json | jq -r '.users[] | select(.name=="'minikube'") | .user."client-key"') \
+        --var=k8s_flatten_cluster_config="$(kubectl config view --flatten=true)" \
         -v system_domain=bosh-lite.com
     ```
     The above modification, will add a new VM(`cube`) to the deployment, and will use some existing keys to populate the new `instance_group` properties.
+
+1. In order to see if a droplet migration to the cluster was successful, you can run  `kubectl get pods` to double check.
 
 ## Properties
 | Path | Description |
@@ -93,11 +56,11 @@ bosh -e <your-env-alias> upload-release
 | `cube_sync.ccUser` | The internal username for the Cloud Controller (default: `internal_user` |
 | `cube_sync.ccPassword` | The internal password for the Cloud Controller |
 | `cube_sync.backend` | The backend to use (default: `k8s`) |
-| `cube_sync.config` | The full Kubernetes configuration file content.<br />_Note_: Avoid using certificates file references, instead you should use the file content. |
+| `cube_sync.config` | The full Kubernetes configuration file content. <br /> _Note_: Avoid using certificates file references, instead you should use the file content by using the `flatten` option to retrieve your configuration YAML. |
 
 
 ## TODO
-- [ ] Create a script to get a Kubernetes configuration file with certificates and keys replaced by the values from the files that are referenced in there.
+- [ ] Add a new release job, for the OPI registry.
 
 
 ## Contributing
