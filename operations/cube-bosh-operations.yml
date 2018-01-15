@@ -23,7 +23,7 @@
       release: cube
       properties:
         cube_sync:
-          ccAPI: "https://api.bosh-lite.com"
+          ccAPI: "((cc_api))"
           ccUser: "internal_user"
           ccPassword: "((cc_internal_api_password))"
           backend: k8s
