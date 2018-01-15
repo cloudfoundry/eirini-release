@@ -1,0 +1,8 @@
+---
+- type: replace
+  path: /releases/name=cube/version
+  value: create
+
+- type: replace
+  path: /releases/name=cube/url?
+  value: file://((cube_local_path))
