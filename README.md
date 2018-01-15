@@ -15,15 +15,6 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 1. Deploy and run a BOSH director. For example, refer to [Stark and Wayne's tutorial](http://www.starkandwayne.com/blog/bosh-lite-on-virtualbox-with-bosh2/) on how set-up such a BOSH Lite v2 environment.
 1. Run Cloud Foundry on your BOSH Lite environment using the [cf-deployment](https://github.com/cloudfoundry/cf-deployment). Again, you can refer to another [Stark and Wayne's tutorial](https://www.starkandwayne.com/blog/running-cloud-foundry-locally-on-bosh-lite-with-bosh2/).
 
-## Build
-Create the `cube` release from source and upload it to BOSH director.
-```sh
-bosh sync-blobs
-git submodule update --init --recursive
-bosh create-release
-bosh -e <your-env-alias> upload-release
-```
-
 ## Deploying
 1. Target your API and push an [app](https://github.com/cloudfoundry/cf-acceptance-tests/tree/master/assets/dora).
     ```
@@ -47,6 +38,8 @@ bosh -e <your-env-alias> upload-release
          -o operations/cube-bosh-operations.yml \
          --vars-store <path-to-cf-deployment>/deployment-vars.yml \
          --var=k8s_flatten_cluster_config="$(kubectl config view --flatten=true)" \
+         -o operations/dev-version.yml \
+         -v cube_local_path=<path-to-cube-release> \
          -v system_domain=bosh-lite.com
     ```
     The above modification, will add a new VM(`cube`) to the deployment, and will use your current **Minikube** config file to populate the `properties.cube_sync.config` of your manifest.
