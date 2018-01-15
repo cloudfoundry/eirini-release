@@ -1,0 +1,5 @@
+check process cube_registry
+  with pidfile /var/vcap/sys/run/cube_registry/cube_registry.pid
+  start program "/var/vcap/jobs/cube_registry/bin/registry_ctl start"
+  stop program "/var/vcap/jobs/cube_registry/bin/registry_ctl stop"
+  group vcap

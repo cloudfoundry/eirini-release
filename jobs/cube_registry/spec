@@ -1,0 +1,10 @@
+---
+name: cube_registry
+
+templates:
+  registry_ctl.erb: bin/registry_ctl
+  registry_as_vcap.erb: bin/registry_as_vcap
+
+packages:
+  - pid_utils
+  - cube

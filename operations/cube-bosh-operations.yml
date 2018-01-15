@@ -19,6 +19,10 @@
     networks:
     - name: default
     jobs:
+    - name: cflinuxfs2-rootfs-setup
+      release: cflinuxfs2
+    - name: cube_registry
+      release: cube
     - name: cube_sync
       release: cube
       properties:
