@@ -52,7 +52,7 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
            --var=k8s_flatten_cluster_config="$(kubectl config view --flatten=true)" \
            -v system_domain=bosh-lite.com \
            -v cc_api=https://api.bosh-lite.com \
-           -o <path-to-cube-release>/operations/dev-versions.yml \
+           -o <path-to-cube-release>/operations/dev-version.yml \
            -v cube_local_path=<path-to-cube-release>
       ```
     The above modification, will add a new VM(`cube`) to the deployment, and will use your current **Minikube** config file to populate the `properties.cube_sync.config` of your manifest.
