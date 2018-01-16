@@ -1,0 +1,13 @@
+---
+processes:
+  - name: cube_registry # same as BOSH-job name means `-p <process>` is not needed
+    executable: /var/vcap/packages/cube/bin/cube
+    args:
+    - registry
+    - --rootfs
+    - /var/vcap/packages/cflinuxfs2/rootfs.tar
+    limits:
+      memory: 3G
+      processes: 10
+    ephemeral_disk: true # mount /var/vcap/data/the_job ; default `false`
+                         # NOTE: /var/vcap/data/the_job/tmp is always mounted `rw`
