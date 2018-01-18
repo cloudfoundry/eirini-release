@@ -14,6 +14,12 @@ processes:
     - /var/vcap/jobs/cube_sync/config/kube.yml
     - --backend
     - <%= p('cube_sync.backend') %>
+    - --adminUser
+    - <%= p('cube_sync.adminUser') %>
+    - --adminPassword
+    - <%= p('cube_sync.adminPassword') %>
+    - --skipSslValidation
+    - <%= p('cube_sync.skipSslValidation') %>
     limits:
       memory: 3G
       processes: 10

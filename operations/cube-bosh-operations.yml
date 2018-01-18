@@ -32,3 +32,5 @@
           ccPassword: "((cc_internal_api_password))"
           backend: k8s
           config: ((k8s_flatten_cluster_config))
+          adminPassword: "((cf_admin_password))"
+          skipSslValidation: true
