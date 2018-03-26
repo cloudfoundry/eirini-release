@@ -1,0 +1,33 @@
+---
+name: cube_stager
+
+templates:
+  bmp.yml.erb: config/bpm.yml
+  kube_config.erb: config/kube.yml
+
+packages:
+  - cube
+
+properties:
+  cube_stager.ccAPI:
+    description: "The API endpoint of the Cloud Controller"
+  cube_stager.ccUser:
+    default: internal_user
+    description: "The internal username for the Cloud Controller"
+  cube_stager.ccPassword:
+    description: "The internal password for the Cloud Controller"
+  cube_stager.backend:
+    default: k8s
+    description: "The backend to use"
+  cube_stager.config:
+    description: "The full Kubernetes configuration file content. Note: Avoid using certificates file references, instead you should use the file content by using the `flatten` option to retrieve your configuration YAML."
+  cube_stager.adminUser:
+    default: admin
+    description: "The CF admin user"
+  cube_stager.adminPassword:
+    description: "The CF admin password"
+  cube_stager.skipSslValidation:
+    default: false
+    description: "True to continue with an insecure target"
+  cube_stager.cube_address:
+    description: "Address of cube"

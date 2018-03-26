@@ -23,6 +23,18 @@
       release: cflinuxfs2
     - name: cube_registry
       release: cube
+    - name: cube_stager
+      release: cube
+      properties:
+        cube_stager:
+          ccAPI: "((cc_api))"
+          ccUser: "internal_user"
+          ccPassword: "((cc_internal_api_password))"
+          backend: k8s
+          config: ((k8s_flatten_cluster_config))
+          adminPassword: "((cf_admin_password))"
+          cube_address: "((cube_address))"
+          skipSslValidation: true
     - name: cube_sync
       release: cube
       properties:
@@ -34,3 +46,12 @@
           config: ((k8s_flatten_cluster_config))
           adminPassword: "((cf_admin_password))"
           skipSslValidation: true
+
+- type: replace
+  path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/stager_url?
+  value: http://cube.service.cf.internal:8085
+
+- type: replace
+  path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/temporary_local_staging?
+  value: false
+
