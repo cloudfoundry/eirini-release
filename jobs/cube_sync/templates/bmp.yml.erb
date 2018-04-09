@@ -18,8 +18,7 @@ processes:
     - <%= p('cube_sync.adminUser') %>
     - --adminPass
     - <%= p('cube_sync.adminPassword') %>
-    - --skipSslValidation
-    - <%= p('cube_sync.skipSslValidation') %>
+    <% if p("cube_sync.skipSslValidation") %>- --skipSslValidation<% end %>
     limits:
       memory: 3G
       processes: 10

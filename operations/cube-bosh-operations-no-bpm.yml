@@ -23,13 +23,10 @@
       release: cflinuxfs2
     - name: cube_registry
       release: cube
-      properties:
-        bpm: { enabled: true }
     - name: cube_stager
       release: cube
       properties:
         cube_stager:
-          bpm: { enabled: true }
           ccAPI: "((cc_api))"
           ccUser: "internal_user"
           ccPassword: "((cc_internal_api_password))"
@@ -42,7 +39,6 @@
       release: cube
       properties:
         cube_sync:
-          bpm: { enabled: true }
           ccAPI: "((cc_api))"
           ccUser: "internal_user"
           ccPassword: "((cc_internal_api_password))"

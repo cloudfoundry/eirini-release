@@ -1,5 +1,13 @@
+<% if p("bpm.enabled") %>
 check process cube_sync
   with pidfile /var/vcap/sys/run/bpm/cube_sync/cube_sync.pid
   start program "/var/vcap/jobs/bpm/bin/bpm start cube_sync"
   stop program "/var/vcap/jobs/bpm/bin/bpm stop cube_sync"
   group vcap
+<% else %>
+check process cube_sync
+  with pidfile /var/vcap/sys/run/cube_sync/cube_sync.pid
+  start program "/var/vcap/jobs/cube_sync/bin/sync_ctl start"
+  stop program "/var/vcap/jobs/cube_sync/bin/sync_ctl stop"
+  group vcap
+<% end %>

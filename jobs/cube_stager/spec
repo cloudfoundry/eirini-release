@@ -2,13 +2,20 @@
 name: cube_stager
 
 templates:
+  stager_ctl.erb: bin/stager_ctl
+  stager_as_vcap.erb: bin/stager_as_vcap
   bmp.yml.erb: config/bpm.yml
   kube_config.erb: config/kube.yml
 
 packages:
+  - pid_utils
   - cube
 
 properties:
+  bpm.enabled:
+    description: "Enable Bosh Process Manager"
+    default: false
+
   cube_stager.ccAPI:
     description: "The API endpoint of the Cloud Controller"
   cube_stager.ccUser:
