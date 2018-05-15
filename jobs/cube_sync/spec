@@ -33,6 +33,13 @@ properties:
     description: "The CF admin user"
   cube_sync.adminPassword:
     description: "The CF admin password"
+  cube_sync.externalCubeAddress:
+    description: "external address for cube_registry"
+  cube_sync.kube_namespace:
+    default: "default"
+    description: "Kubernetes namespace where to run deployments and tasks"
+  cube_sync.kube_endpoint:
+    description: "Kubernetes endpoint used when creating an Ingress"
   cube_sync.skipSslValidation:
     default: false
     description: "True to continue with an insecure target"

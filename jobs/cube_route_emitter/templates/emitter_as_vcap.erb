@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+run_dir=/var/vcap/sys/run/cube_route_emitter
+log_dir=/var/vcap/sys/log/cube_route_emitter
+conf_dir=/var/vcap/jobs/cube_route_emitter/config
+pidfile=$run_dir/cube_route_emitter.pid
+
+echo $$ > $pidfile
+
+exec /var/vcap/packages/cube/bin/cube route  \
+  --kubeconfig "$conf_dir/kube.yml" \
+  --natsPass <%= p('cube_route_emitter.nats_password') %> \
+  --natsIP <%= p('cube_route_emitter.nats_ip') %> \
+  --namespace <%= p('cube_route_emitter.kube_namespace') %> \
+  2> >(tee -a $log_dir/cube_route_emitter.stderr.log | logger -p user.error -t vcap.emitter) \
+  1> >(tee -a $log_dir/cube_route_emitter.stdout.log | logger -t vcap.emitter)

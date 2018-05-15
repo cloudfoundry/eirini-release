@@ -1,0 +1,3 @@
+set -e
+
+cp -R cubefs/cubefs.tar ${BOSH_INSTALL_TARGET}

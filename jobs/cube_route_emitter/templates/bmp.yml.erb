@@ -1,0 +1,19 @@
+---
+processes:
+  - name: cube_route_emitter # same as BOSH-job name means `-p <process>` is not needed
+    executable: /var/vcap/packages/cube/bin/cube
+    args:
+    - route
+    - --kube-config
+    - "/var/vcap/jobs/cube_route_emitter/config/kube.yml"
+    - --namespace
+    - <%= p('cube_route_emitter.namespace') %>
+    - --natsPass
+    - <%= p('cube_route_emitter.nats_password') %>
+    - --natsIP
+    - <%= p('cube_route_emitter.nats_ip') %>
+    limits:
+      memory: 3G
+      processes: 10
+      open_files: 100000
+    ephemeral_disk: true

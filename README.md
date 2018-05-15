@@ -7,15 +7,32 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 
 ## Prereq
 1. Install **Minikube** on your system. Follow the [instructions](https://github.com/kubernetes/minikube#installation) to get the required tools.
-1. Start your **Minikube**
+1. Start your **Minikube** in the same network as Bosh-Lite (in future) and add cube-registry as insecure-registry:
     ```sh
-    minikube start
+    minikube start --host-only-cidr 192.168.50.1/24 --insecure-registry="10.244.0.142:8080"
     ```
+
+    *NOTE*: if something changes on your minikube config (eg new IP or cube address changes) you will need to redeploy (delete and recreate) minikube. 
+
     It might take some time until you see `Kubectl is now configured to use the cluster`, which indicates we are ready to continue.
 1. Deploy and run a BOSH director. For example, refer to [Stark and Wayne's tutorial](http://www.starkandwayne.com/blog/bosh-lite-on-virtualbox-with-bosh2/) on how set-up such a BOSH Lite v2 environment.
 1. Run Cloud Foundry on your BOSH Lite environment using the [cf-deployment](https://github.com/cloudfoundry/cf-deployment). Again, you can refer to another [Stark and Wayne's tutorial](https://www.starkandwayne.com/blog/running-cloud-foundry-locally-on-bosh-lite-with-bosh2/).
+1. You will need a running docker on your machine to create the `cubefs`
 
 ## Deploying
+
+1. Create the `cubefs.tar` and add it to `blobs`
+   
+   ```
+   $ git submodule update --init --recursive
+
+   $ scripts/buildfs.sh
+   ```
+
+   The `scripts/buildfs.sh` script will create the `cubefs.tar` and add it to `blobs`. 
+
+   *NOTE*: You may need to go get required packages if you get issues with the `buildfs.sh` script. 
+
 1. Target your API and push an [app](https://github.com/cloudfoundry/cf-acceptance-tests/tree/master/assets/dora).
     ```
     cf login -a https://api.bosh-lite.com \
@@ -36,18 +53,24 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
       ```
       bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
            -o <path-to-cf-deployment>/operations/experimental/enable-bpm.yml \
+	   -o <path-to-cf-deployment>/operations/experimental/use-bosh-dns.yml \
            -o <path-to-cf-deployment>/operations/bosh-lite.yml \
            -o <path-to-cube-release>/operations/cube-bosh-operations.yml \
            --vars-store <path-to-cf-deployment>/deployment-vars.yml \
            --var=k8s_flatten_cluster_config="$(kubectl config view --flatten=true)" \
            -v system_domain=bosh-lite.com \
-           -v cc_api=https://api.bosh-lite.com
+	   -v cube_address="http://10.244.0.142:8085" \
+           -v cc_api=https://api.bosh-lite.com \
+	   -v cube_ip="10.244.0.142"
       ```
+
+      When deploying cube to CF on bosh-lite it should get the IP `10.244.0.142`. If you get another IP you should redeploy with the correct address. I know this is not the optimal solution and will be changed in future to be dynamic. ;) 
 
     - Or **Build and deploy** with one command as a dev release
       ```
       bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
            -o <path-to-cf-deployment>/operations/experimental/enable-bpm.yml \
+	   -o <path-to-cf-deployment>/operations/experimental/use-bosh-dns.yml \
            -o <path-to-cf-deployment>/operations/bosh-lite.yml \
            -o <path-to-cube-release>/operations/cube-bosh-operations.yml \
            --vars-store <path-to-cf-deployment>/deployment-vars.yml \
@@ -55,12 +78,13 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
            -v system_domain=bosh-lite.com \
            -v cc_api=https://api.bosh-lite.com \
            -o <path-to-cube-release>/operations/dev-version.yml \
+	   -v cube_address="http://10.244.0.142:8085" \
+	   -v cube_ip="10.244.0.142" \
            -v cube_local_path=<path-to-cube-release>
       ```
     The above modification, will add a new VM(`cube`) to the deployment, and will use your current **Minikube** config file to populate the `properties.cube_sync.config` of your manifest.
 
 1. In order to see if a droplet migration to the cluster was successful, you can run  `kubectl get pods` to double check.
-
 
 ## Properties
 | Path | Description |

@@ -12,12 +12,18 @@ processes:
     - <%= p('cube_sync.ccPassword') %>
     - --kubeconfig
     - /var/vcap/jobs/cube_sync/config/kube.yml
+    - --externalCubeAddress
+    - "cube.bosh-lite-cube.dynamic-dns.net:8089"
     - --backend
     - <%= p('cube_sync.backend') %>
     - --adminUser
     - <%= p('cube_sync.adminUser') %>
     - --adminPass
     - <%= p('cube_sync.adminPassword') %>
+    - --namespace
+    - <%= p('cube_sync.kube_namespace') %>
+    - --kubeEndpoint
+    - <%= p('cube_sync.kube_endpoint') %>
     <% if p("cube_sync.skipSslValidation") %>- --skipSslValidation<% end %>
     limits:
       memory: 3G

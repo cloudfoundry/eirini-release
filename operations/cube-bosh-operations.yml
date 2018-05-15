@@ -38,6 +38,7 @@
           adminPassword: "((cf_admin_password))"
           cube_address: "((cube_address))"
           skipSslValidation: true
+          kube_namespace: "((kube_namespace))"
     - name: cube_sync
       release: cube
       properties:
@@ -50,6 +51,15 @@
           config: ((k8s_flatten_cluster_config))
           adminPassword: "((cf_admin_password))"
           skipSslValidation: true
+          kube_namespace: "((kube_namespace))"
+    - name: cube_route_emitter
+      release: cube
+      properties:
+        cube_route_emitter:
+          bpm: { enabled: true }
+          ingress_endpoint: "((ingress_endpoint))"
+          kube_namespace: "((kube_namespace))"
+          config: ((k8s_flatten_cluster_config))
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/stager_url?
@@ -58,3 +68,7 @@
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/temporary_local_staging?
   value: false
+
+- type: replace
+  path: /addons/name=bosh-dns/jobs/name=bosh-dns/properties/aliases/cube.service.cf.internal?/-
+  value: "((cube_ip))"

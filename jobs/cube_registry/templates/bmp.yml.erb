@@ -5,7 +5,10 @@ processes:
     args:
     - registry
     - --rootfs
-    - /var/vcap/packages/cflinuxfs2/rootfs.tar
+    - /var/vcap/packages/cubefs/cubefs.tar
+  #  - /var/vcap/packages/cflinuxfs2/rootfs.tar
+  #  - --launcher
+  #  - /var/vcap/packages/launcher/launcher.tar
     limits:
       memory: 3G
       processes: 10

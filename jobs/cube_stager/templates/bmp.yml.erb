@@ -14,6 +14,8 @@ processes:
     - <%= p('cube_stager.adminPassword') %>
     - --cube-address
     - <%= p('cube_stager.cube_address') %>
+    - --namespace
+    - <%= p('cube_stager.kube_namespace') %>
     <% if p("cube_stager.skipSslValidation") %>- --skipSslValidation<% end %>
     limits:
       memory: 3G

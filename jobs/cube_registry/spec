@@ -9,6 +9,7 @@ templates:
 packages:
   - pid_utils
   - cube
+  - cubefs
 
 properties:
   bpm.enabled:

@@ -1,0 +1,23 @@
+---
+name: cube_route_emitter
+
+templates:
+  bmp.yml.erb: config/bpm.yml
+  kube_config.erb: config/kube.yml
+
+packages:
+  - cube
+
+properties:
+  bpm.enabled:
+    description: "Enable Bosh Process Manager"
+    default: false
+
+  cube_route_emitter.config:
+    description: "full kubernetes config"
+
+  cube_route_emitter.nats_password:
+    description: "password for the NATS messaging system"
+
+  cube_route_emitter.nats_ip:
+    description: "ip of the NATS messaging system"

@@ -38,3 +38,7 @@ properties:
     description: "True to continue with an insecure target"
   cube_stager.cube_address:
     description: "Address of cube"
+  cube_stager.kube_namespace:
+    default: "default"
+    description: "Kubernetes namespace where to run staging tasks"
+
