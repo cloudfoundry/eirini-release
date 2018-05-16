@@ -8,6 +8,6 @@ pidfile=$run_dir/cube_registry.pid
 echo $$ > $pidfile
 
 exec /var/vcap/packages/cube/bin/cube registry \
-  --rootfs /var/vcap/jobs/cflinuxfs2-rootfs-setup/packages/cflinuxfs2/rootfs.tar \
+  --rootfs /var/vcap/packages/cubefs/cubefs.tar \
   2> >(tee -a $log_dir/cube_registry.stderr.log | logger -p user.error -t vcap.registry) \
   1> >(tee -a $log_dir/cube_registry.stdout.log | logger -t vcap.registry)

@@ -2,6 +2,8 @@
 name: cube_route_emitter
 
 templates:
+  stager_ctl.erb: bin/emitter_ctl
+  stager_as_vcap.erb: bin/emitter_as_vcap
   bmp.yml.erb: config/bpm.yml
   kube_config.erb: config/kube.yml
 
