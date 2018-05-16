@@ -55,6 +55,8 @@
         cube_route_emitter:
           kube_endpoint: "((kube_endpoint))"
           kube_namespace: "((kube_namespace))"
+          nats_password: "((nats_password))"
+          nats_ip: "((nats_ip))"
           config: ((k8s_flatten_cluster_config))
 
 
