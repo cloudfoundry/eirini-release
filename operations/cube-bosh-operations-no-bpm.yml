@@ -49,6 +49,7 @@
           skipSslValidation: true
           kube_namespace: "((kube_namespace))"
           kube_endpoint: "((kube_endpoint))"
+          registry_address: "((registry_address))"
     - name: cube_route_emitter
       release: cube
       properties:

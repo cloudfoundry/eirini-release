@@ -13,7 +13,7 @@ processes:
     - --kubeconfig
     - /var/vcap/jobs/cube_sync/config/kube.yml
     - --externalCubeAddress
-    - "kube.eirini.dynamic-dns.net:8089"
+    - <%= p('cube_sync.registry_address') %>
     - --backend
     - <%= p('cube_sync.backend') %>
     - --adminUser

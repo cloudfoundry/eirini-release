@@ -17,6 +17,7 @@ exec /var/vcap/packages/cube/bin/cube sync \
   --adminPass <%= p('cube_sync.adminPassword') %> \
   --namespace <%= p('cube_sync.kube_namespace') %> \
   --kubeEndpoint <%= p('cube_sync.kube_endpoint') %> \
+  --externalCubeAddress <%= p('cube_sync.registry_address') %> \
   <% if p("cube_sync.skipSslValidation") %>--skipSslValidation<% end %> \
   2> >(tee -a $log_dir/cube_sync.stderr.log | logger -p user.error -t vcap.sync) \
   1> >(tee -a $log_dir/cube_sync.stdout.log | logger -t vcap.sync)
