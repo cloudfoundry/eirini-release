@@ -7,7 +7,7 @@ processes:
     - --kube-config
     - "/var/vcap/jobs/cube_route_emitter/config/kube.yml"
     - --namespace
-    - <%= p('cube_route_emitter.namespace') %>
+    - <%= p('cube_route_emitter.kube_namespace') %>
     - --natsPass
     - <%= p('cube_route_emitter.nats_password') %>
     - --natsIP

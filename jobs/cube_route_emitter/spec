@@ -21,3 +21,6 @@ properties:
 
   cube_route_emitter.nats_ip:
     description: "ip of the NATS messaging system"
+
+  cube_route_emitter.kube_namespace:
+    description: "namespace where the ingress lives"
