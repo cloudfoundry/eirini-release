@@ -8,7 +8,7 @@ pidfile=$run_dir/cube_route_emitter.pid
 echo $$ > $pidfile
 
 exec /var/vcap/packages/cube/bin/cube route  \
-  --kubeconfig "$conf_dir/kube.yml" \
+  --kube-config "$conf_dir/kube.yml" \
   --natsPass <%= p('cube_route_emitter.nats_password') %> \
   --natsIP <%= p('cube_route_emitter.nats_ip') %> \
   --namespace <%= p('cube_route_emitter.kube_namespace') %> \
