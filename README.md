@@ -49,8 +49,12 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
     cf push test-app-name
     ```
 1. Modify and deploy your `cf-deployment` using the provided [BOSH operations file](./operations/cube-bosh-operations.yml):
-    - **Deploy** with an uploaded release
+    - **Build** your release and **deploy**
       ```
+      bosh sync-blobs
+      bosh create-release
+      bosh -e <your-env-alias> upload-release
+
       bosh -e <your-env-alias> -d cf deploy <path-to-cf-deployment>/cf-deployment.yml \
            -o <path-to-cf-deployment>/operations/experimental/enable-bpm.yml \
 	   -o <path-to-cf-deployment>/operations/experimental/use-bosh-dns.yml \
@@ -102,3 +106,4 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 1. Add and commit the changes (`git commit -am 'Add some amazing new feature'`)
 1. Push to the branch (`git push origin amazing-new-feature`)
 1. Create a PR against this repository
+
