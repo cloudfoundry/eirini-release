@@ -5,18 +5,18 @@ instance_groups:
   - myaz
   instances: 1
   jobs:
-  - name: cube_sync
-    release: cube
+  - name: eirini_sync
+    release: eirini
   stemcell: bosh-bluemix-xen-ubuntu-trusty-go_agent
   update:
     max_in_flight: 1
     serial: true
   vm_type: coreNode
-  name: cube
+  name: eirini
   networks:
   - name: default
   properties:
-    cube_sync:
+    eirini_sync:
       ccAPI: [ fill in cc api endpoint ]
       ccUser: [ fill in cc internal user name ]
       ccPassword: [ fill in cc internal user password ]
@@ -41,9 +41,9 @@ instance_groups:
           idp-issuer-url: [ fill in idp issuer url ]
           refresh-token: [ fill in kube refresh token ]
           name: [ fill in name of the auth ]
-name: test-cube
+name: test-eirini
 releases:
-- name: cube
+- name: eirini
   version: latest
 stemcells:
 - alias: bosh-bluemix-xen-ubuntu-trusty-go_agent

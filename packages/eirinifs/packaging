@@ -1,0 +1,3 @@
+set -e
+
+cp -R eirinifs/eirinifs.tar ${BOSH_INSTALL_TARGET}

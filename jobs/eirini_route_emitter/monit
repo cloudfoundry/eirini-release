@@ -1,0 +1,13 @@
+<% if p("bpm.enabled") %>
+check process eirini_route_emitter
+  with pidfile /var/vcap/sys/run/bpm/eirini_route_emitter/eirini_route_emitter.pid
+  start program "/var/vcap/jobs/bpm/bin/bpm start eirini_route_emitter"
+  stop program "/var/vcap/jobs/bpm/bin/bpm stop eirini_route_emitter"
+  group vcap
+<% else %>
+check process eirini_route_emitter
+  with pidfile /var/vcap/sys/run/eirini_route_emitter/eirini_route_emitter.pid
+  start program "/var/vcap/jobs/eirini_route_emitter/bin/emitter_ctl start"
+  stop program "/var/vcap/jobs/eirini_route_emitter/bin/emitter_ctl stop"
+  group vcap
+<% end %>

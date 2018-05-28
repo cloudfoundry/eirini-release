@@ -1,0 +1,8 @@
+---
+name: eirini
+
+dependencies:
+  - golang
+
+files:
+  - github.com/cloudfoundry-incubator/eirini**/*

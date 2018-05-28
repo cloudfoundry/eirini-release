@@ -1,5 +1,5 @@
-# cube-release
-This is a BOSH release for [cube](https://github.com/julz/cube).
+# eirini-release
+This is a BOSH release for [eirini](https://github.com/cloudfoundry-incubator/eirini).
 
 ## Description
 _Note_: This is an **Experimental** release and is still considered _work in progress_.<br />
@@ -17,11 +17,11 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
     It might take some time until you see `Kubectl is now configured to use the cluster`, which indicates we are ready to continue.
 1. Deploy and run a BOSH director. For example, refer to [Stark and Wayne's tutorial](http://www.starkandwayne.com/blog/bosh-lite-on-virtualbox-with-bosh2/) on how set-up such a BOSH Lite v2 environment.
 1. Run Cloud Foundry on your BOSH Lite environment using the [cf-deployment](https://github.com/cloudfoundry/cf-deployment). Again, you can refer to another [Stark and Wayne's tutorial](https://www.starkandwayne.com/blog/running-cloud-foundry-locally-on-bosh-lite-with-bosh2/).
-1. You will need a running docker on your machine to create the `cubefs`
+1. You will need a running docker on your machine to create the `eirinifs`
 
 ## Deploying
 
-1. Create the `cubefs.tar` and add it to `blobs`
+1. Create the `eirinifs.tar` and add it to `blobs`
    
    ```
    $ git submodule update --init --recursive
@@ -29,7 +29,7 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
    $ scripts/buildfs.sh
    ```
 
-   The `scripts/buildfs.sh` script will create the `cubefs.tar` and add it to `blobs`. 
+   The `scripts/buildfs.sh` script will create the `eirinifs.tar` and add it to `blobs`. 
 
    *NOTE*: You may need to go get required packages if you get issues with the `buildfs.sh` script. 
 
@@ -84,20 +84,20 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
            -o <path-to-cube-release>/operations/dev-version.yml \
 	   -v cube_address="http://10.244.0.142:8085" \
 	   -v cube_ip="10.244.0.142" \
-           -v cube_local_path=<path-to-cube-release>
+           -v cube_local_path=<path-to-eirini-release>
       ```
-    The above modification, will add a new VM(`cube`) to the deployment, and will use your current **Minikube** config file to populate the `properties.cube_sync.config` of your manifest.
+    The above modification, will add a new VM(`eirini`) to the deployment, and will use your current **Minikube** config file to populate the `properties.cube_sync.config` of your manifest.
 
 1. In order to see if a droplet migration to the cluster was successful, you can run  `kubectl get pods` to double check.
 
 ## Properties
 | Path | Description |
 | ------------- | --------------|
-| `cube_sync.ccAPI` | The API endpoint of the Cloud Controller |
-| `cube_sync.ccUser` | The internal username for the Cloud Controller (default: `internal_user`) |
-| `cube_sync.ccPassword` | The internal password for the Cloud Controller |
-| `cube_sync.backend` | The backend to use (default: `k8s`) |
-| `cube_sync.config` | The full Kubernetes configuration file content. <br /> _Note_: Avoid using certificates file references, instead you should use the file content by using the `flatten` option to retrieve your configuration YAML. |
+| `eirini_sync.ccAPI` | The API endpoint of the Cloud Controller |
+| `eirini_sync.ccUser` | The internal username for the Cloud Controller (default: `internal_user`) |
+| `eirini_sync.ccPassword` | The internal password for the Cloud Controller |
+| `eirini_sync.backend` | The backend to use (default: `k8s`) |
+| `eirini_sync.config` | The full Kubernetes configuration file content. <br /> _Note_: Avoid using certificates file references, instead you should use the file content by using the `flatten` option to retrieve your configuration YAML. |
 
 
 ## Contributing

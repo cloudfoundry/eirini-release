@@ -1,5 +1,5 @@
 ---
-final_name: cube
+final_name: eirini
 blobstore:
   provider: s3
   options:
