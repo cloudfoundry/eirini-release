@@ -1,17 +1,17 @@
 #!/bin/bash -e
 
-run_dir=/var/vcap/sys/run/eirini_stager
-log_dir=/var/vcap/sys/log/eirini_stager
-conf_dir=/var/vcap/jobs/eirini_stager/config
+run_dir=/var/vcap/sys/run/registry
+log_dir=/var/vcap/sys/log/registry
+conf_dir=/var/vcap/jobs/registry/config
 
-pidfile=$run_dir/eirini_stager.pid
+pidfile=$run_dir/registry.pid
 
 source /var/vcap/packages/pid_utils/pid_utils.sh
 
 case $1 in
 
   start)
-    pid_guard $pidfile "eirini_stager"
+    pid_guard $pidfile "registry"
 
     mkdir -p $run_dir
     chown -R vcap:vcap $run_dir
@@ -22,7 +22,7 @@ case $1 in
     # Allowed number of open file descriptors
     ulimit -n 100000
 
-    exec chpst -u vcap:vcap /var/vcap/jobs/eirini_stager/bin/stager_as_vcap
+    exec chpst -u vcap:vcap /var/vcap/jobs/registry/bin/registry_as_vcap
 
     ;;
 
@@ -32,7 +32,7 @@ case $1 in
     ;;
 
   *)
-    echo "Usage: stager_ctl {start|stop}"
+    echo "Usage: registry_ctl {start|stop}"
 
     ;;
 

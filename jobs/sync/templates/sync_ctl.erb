@@ -1,17 +1,17 @@
 #!/bin/bash -e
 
-run_dir=/var/vcap/sys/run/eirini_registry
-log_dir=/var/vcap/sys/log/eirini_registry
-conf_dir=/var/vcap/jobs/eirini_registry/config
+run_dir=/var/vcap/sys/run/sync
+log_dir=/var/vcap/sys/log/sync
+conf_dir=/var/vcap/jobs/sync/config
 
-pidfile=$run_dir/eirini_registry.pid
+pidfile=$run_dir/sync.pid
 
 source /var/vcap/packages/pid_utils/pid_utils.sh
 
 case $1 in
 
   start)
-    pid_guard $pidfile "eirini_registry"
+    pid_guard $pidfile "sync"
 
     mkdir -p $run_dir
     chown -R vcap:vcap $run_dir
@@ -22,7 +22,7 @@ case $1 in
     # Allowed number of open file descriptors
     ulimit -n 100000
 
-    exec chpst -u vcap:vcap /var/vcap/jobs/eirini_registry/bin/registry_as_vcap
+    exec chpst -u vcap:vcap /var/vcap/jobs/sync/bin/sync_as_vcap
 
     ;;
 
@@ -32,7 +32,7 @@ case $1 in
     ;;
 
   *)
-    echo "Usage: registry_ctl {start|stop}"
+    echo "Usage: sync_ctl {start|stop}"
 
     ;;
 

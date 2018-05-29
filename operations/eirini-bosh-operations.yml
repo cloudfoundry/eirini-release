@@ -21,11 +21,11 @@
     jobs:
     - name: cflinuxfs2-rootfs-setup
       release: cflinuxfs2
-    - name: eirini_registry
+    - name: registry
       release: eirini
       properties:
         bpm: { enabled: true }
-    - name: eirini_stager
+    - name: stager
       release: eirini
       properties:
         eirini_stager:
@@ -39,7 +39,7 @@
           eirini_address: "((eirini_address))"
           skipSslValidation: true
           kube_namespace: "((kube_namespace))"
-    - name: eirini_sync
+    - name: sync
       release: eirini
       properties:
         eirini_sync:
@@ -54,7 +54,7 @@
           kube_namespace: "((kube_namespace))"
           kube_endpoint: "((kube_endpoint))"
           registry_address: "((registry_address))"
-    - name: eirini_route_emitter
+    - name: route_emitter
       release: eirini
       properties:
         eirini_route_emitter:

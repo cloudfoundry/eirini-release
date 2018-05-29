@@ -1,5 +1,5 @@
 ---
-name: eirini_registry
+name: registry
 
 templates:
   registry_ctl.erb: bin/registry_ctl

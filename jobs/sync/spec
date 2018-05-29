@@ -1,5 +1,5 @@
 ---
-name: eirini_sync
+name: sync
 
 templates:
   sync_ctl.erb: bin/sync_ctl

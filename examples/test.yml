@@ -5,7 +5,7 @@ instance_groups:
   - myaz
   instances: 1
   jobs:
-  - name: eirini_sync
+  - name: sync
     release: eirini
   stemcell: bosh-bluemix-xen-ubuntu-trusty-go_agent
   update:

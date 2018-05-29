@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-run_dir=/var/vcap/sys/run/eirini_sync
-log_dir=/var/vcap/sys/log/eirini_sync
-conf_dir=/var/vcap/jobs/eirini_sync/config
-pidfile=$run_dir/eirini_sync.pid
+run_dir=/var/vcap/sys/run/sync
+log_dir=/var/vcap/sys/log/sync
+conf_dir=/var/vcap/jobs/sync/config
+pidfile=$run_dir/sync.pid
 
 echo $$ > $pidfile
 
@@ -19,5 +19,5 @@ exec /var/vcap/packages/eirini/bin/eirini sync \
   --kubeEndpoint <%= p('eirini_sync.kube_endpoint') %> \
   --externalEiriniAddress <%= p('eirini_sync.registry_address') %> \
   <% if p("eirini_sync.skipSslValidation") %>--skipSslValidation<% end %> \
-  2> >(tee -a $log_dir/eirini_sync.stderr.log | logger -p user.error -t vcap.sync) \
-  1> >(tee -a $log_dir/eirini_sync.stdout.log | logger -t vcap.sync)
+  2> >(tee -a $log_dir/sync.stderr.log | logger -p user.error -t vcap.sync) \
+  1> >(tee -a $log_dir/sync.stdout.log | logger -t vcap.sync)

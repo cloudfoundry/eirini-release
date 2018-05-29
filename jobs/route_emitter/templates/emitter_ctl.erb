@@ -1,17 +1,17 @@
 #!/bin/bash -e
 
-run_dir=/var/vcap/sys/run/eirini_sync
-log_dir=/var/vcap/sys/log/eirini_sync
-conf_dir=/var/vcap/jobs/eirini_sync/config
+run_dir=/var/vcap/sys/run/route_emitter
+log_dir=/var/vcap/sys/log/route_emitter
+conf_dir=/var/vcap/jobs/route_emitter/config
 
-pidfile=$run_dir/eirini_sync.pid
+pidfile=$run_dir/route_emitter.pid
 
 source /var/vcap/packages/pid_utils/pid_utils.sh
 
 case $1 in
 
   start)
-    pid_guard $pidfile "eirini_sync"
+    pid_guard $pidfile "route_emitter"
 
     mkdir -p $run_dir
     chown -R vcap:vcap $run_dir
@@ -22,7 +22,7 @@ case $1 in
     # Allowed number of open file descriptors
     ulimit -n 100000
 
-    exec chpst -u vcap:vcap /var/vcap/jobs/eirini_sync/bin/sync_as_vcap
+    exec chpst -u vcap:vcap /var/vcap/jobs/route_emitter/bin/emitter_as_vcap
 
     ;;
 
@@ -32,7 +32,7 @@ case $1 in
     ;;
 
   *)
-    echo "Usage: sync_ctl {start|stop}"
+    echo "Usage: emitter_ctl {start|stop}"
 
     ;;
 

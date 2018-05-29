@@ -1,5 +1,5 @@
 ---
-name: eirini_route_emitter
+name: route_emitter
 
 templates:
   emitter_ctl.erb: bin/emitter_ctl

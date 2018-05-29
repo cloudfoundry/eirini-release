@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-run_dir=/var/vcap/sys/run/eirini_stager
-log_dir=/var/vcap/sys/log/eirini_stager
-conf_dir=/var/vcap/jobs/eirini_stager/config
-pidfile=$run_dir/eirini_stager.pid
+run_dir=/var/vcap/sys/run/stager
+log_dir=/var/vcap/sys/log/stager
+conf_dir=/var/vcap/jobs/stager/config
+pidfile=$run_dir/stager.pid
 
 echo $$ > $pidfile
 
@@ -15,5 +15,5 @@ exec /var/vcap/packages/eirini/bin/eirini stage  \
   --eirini-address <%= p('eirini_stager.eirini_address') %> \
   --namespace <%= p('eirini_stager.kube_namespace') %> \
   <% if p("eirini_stager.skipSslValidation") %>--skipSslValidation<% end %> \
-  2> >(tee -a $log_dir/eirini_stager.stderr.log | logger -p user.error -t vcap.stager) \
-  1> >(tee -a $log_dir/eirini_stager.stdout.log | logger -t vcap.stager)
+  2> >(tee -a $log_dir/stager.stderr.log | logger -p user.error -t vcap.stager) \
+  1> >(tee -a $log_dir/stager.stdout.log | logger -t vcap.stager)

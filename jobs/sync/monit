@@ -1,0 +1,13 @@
+<% if p("bpm.enabled") %>
+check process sync
+  with pidfile /var/vcap/sys/run/bpm/sync/sync.pid
+  start program "/var/vcap/jobs/bpm/bin/bpm start sync"
+  stop program "/var/vcap/jobs/bpm/bin/bpm stop sync"
+  group vcap
+<% else %>
+check process sync
+  with pidfile /var/vcap/sys/run/sync/sync.pid
+  start program "/var/vcap/jobs/sync/bin/sync_ctl start"
+  stop program "/var/vcap/jobs/sync/bin/sync_ctl stop"
+  group vcap
+<% end %>

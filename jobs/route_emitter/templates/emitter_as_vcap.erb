@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+run_dir=/var/vcap/sys/run/route_emitter
+log_dir=/var/vcap/sys/log/route_emitter
+conf_dir=/var/vcap/jobs/route_emitter/config
+pidfile=$run_dir/route_emitter.pid
+
+echo $$ > $pidfile
+
+exec /var/vcap/packages/eirini/bin/eirini route  \
+  --kube-config "$conf_dir/kube.yml" \
+  --natsPass <%= p('eirini_route_emitter.nats_password') %> \
+  --natsIP <%= p('eirini_route_emitter.nats_ip') %> \
+  --namespace <%= p('eirini_route_emitter.kube_namespace') %> \
+  2> >(tee -a $log_dir/route_emitter.stderr.log | logger -p user.error -t vcap.emitter) \
+  1> >(tee -a $log_dir/route_emitter.stdout.log | logger -t vcap.emitter)
