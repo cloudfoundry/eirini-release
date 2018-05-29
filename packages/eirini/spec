@@ -5,4 +5,4 @@ dependencies:
   - golang
 
 files:
-  - github.com/cloudfoundry-incubator/eirini/**/*
+  - code.cloudfoundry.org/eirini/**/*

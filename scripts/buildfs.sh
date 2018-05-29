@@ -4,8 +4,8 @@ set -euo pipefail
 
 BASEDIR="$(cd $(dirname $0)/.. && pwd)"
 
-echo "package main" > $BASEDIR/src/github.com/cloudfoundry-incubator/eirini/launcher/buildpackapplifecycle/launcher/package.go
+echo "package main" > $BASEDIR/src/code.cloudfoundry.org/eirini/launcher/buildpackapplifecycle/launcher/package.go
 
-$BASEDIR/src/github.com/cloudfoundry-incubator/eirini/launcher/bin/build-cubefs.sh
+$BASEDIR/src/code.cloudfoundry.org/eirini/launcher/bin/build-cubefs.sh
 
-bosh add-blob $BASEDIR/src/github.com/cloudfoundry-incubator/eirini/launcher/image/eirinifs.tar eirinifs/eirinifs.tar
+bosh add-blob $BASEDIR/src/code.cloudfoundry.org/eirini/launcher/image/eirinifs.tar eirinifs/eirinifs.tar

@@ -1,5 +1,5 @@
 # eirini-release
-This is a BOSH release for [eirini](https://github.com/cloudfoundry-incubator/eirini).
+This is a BOSH release for [eirini](https://code.cloudfoundry.org/eirini).
 
 ## Description
 _Note_: This is an **Experimental** release and is still considered _work in progress_.<br />
