@@ -1,0 +1,16 @@
+---
+processes:
+  - name: registry # same as BOSH-job name means `-p <process>` is not needed
+    executable: /var/vcap/packages/eirini/bin/eirini
+    args:
+    - registry
+    - --rootfs
+    - /var/vcap/packages/eirinifs/eirinifs.tar
+  #  - /var/vcap/packages/cflinuxfs2/rootfs.tar
+  #  - --launcher
+  #  - /var/vcap/packages/launcher/launcher.tar
+    limits:
+      memory: 3G
+      processes: 10
+    ephemeral_disk: true # mount /var/vcap/data/the_job ; default `false`
+                         # NOTE: /var/vcap/data/the_job/tmp is always mounted `rw`

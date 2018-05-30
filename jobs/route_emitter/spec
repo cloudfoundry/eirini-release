@@ -1,0 +1,28 @@
+---
+name: route_emitter
+
+templates:
+  emitter_ctl.erb: bin/emitter_ctl
+  emitter_as_vcap.erb: bin/emitter_as_vcap
+  bmp.yml.erb: config/bpm.yml
+  kube_config.erb: config/kube.yml
+
+packages:
+  - eirini
+
+properties:
+  bpm.enabled:
+    description: "Enable Bosh Process Manager"
+    default: false
+
+  eirini_route_emitter.config:
+    description: "full kubernetes config"
+
+  eirini_route_emitter.nats_password:
+    description: "password for the NATS messaging system"
+
+  eirini_route_emitter.nats_ip:
+    description: "ip of the NATS messaging system"
+
+  eirini_route_emitter.kube_namespace:
+    description: "namespace where the ingress lives"

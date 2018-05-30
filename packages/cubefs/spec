@@ -1,5 +1,0 @@
----
-name: cubefs
-
-files:
-  - cubefs/cubefs.tar

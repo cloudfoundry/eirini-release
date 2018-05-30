@@ -1,0 +1,74 @@
+---
+- type: replace
+  path: /releases?/-
+  value:
+    name: eirini
+    version: latest
+
+- type: replace
+  path: /instance_groups?/-
+  value:
+    name: eirini
+    instances: 1
+    stemcell: default
+    update:
+      serial: true
+    vm_type: minimal
+    azs:
+    - z1
+    networks:
+    - name: default
+    jobs:
+    - name: cflinuxfs2-rootfs-setup
+      release: cflinuxfs2
+    - name: registry
+      release: eirini
+    - name: stager
+      release: eirini
+      properties:
+        eirini_stager:
+          ccAPI: "((cc_api))"
+          ccUser: "internal_user"
+          ccPassword: "((cc_internal_api_password))"
+          backend: k8s
+          config: ((k8s_flatten_cluster_config))
+          adminPassword: "((cf_admin_password))"
+          eirini_address: "((eirini_address))"
+          skipSslValidation: true
+          kube_namespace: "((kube_namespace))"
+    - name: sync
+      release: eirini
+      properties:
+        eirini_sync:
+          ccAPI: "((cc_api))"
+          ccUser: "internal_user"
+          ccPassword: "((cc_internal_api_password))"
+          backend: k8s
+          config: ((k8s_flatten_cluster_config))
+          adminPassword: "((cf_admin_password))"
+          skipSslValidation: true
+          kube_namespace: "((kube_namespace))"
+          kube_endpoint: "((kube_endpoint))"
+          registry_address: "((registry_address))"
+    - name: route_emitter
+      release: eirini
+      properties:
+        eirini_route_emitter:
+          kube_endpoint: "((kube_endpoint))"
+          kube_namespace: "((kube_namespace))"
+          nats_password: "((nats_password))"
+          nats_ip: "((nats_ip))"
+          config: ((k8s_flatten_cluster_config))
+
+
+- type: replace
+  path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/stager_url?
+  value: http://eirini.service.cf.internal:8085
+
+- type: replace
+  path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/temporary_local_staging?
+  value: false
+
+- type: replace
+  path: /addons/name=bosh-dns/jobs/name=bosh-dns/properties/aliases/eirini.service.cf.internal?/-
+  value: "((eirini_ip))"

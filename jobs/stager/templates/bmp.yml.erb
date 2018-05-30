@@ -1,0 +1,25 @@
+---
+processes:
+  - name: stager # same as BOSH-job name means `-p <process>` is not needed
+    executable: /var/vcap/packages/eirini/bin/eirini
+    args:
+    - stage
+    - --kubeconfig
+    - "/var/vcap/jobs/eirini_stager/config/kube.yml"
+    - --cf-endpoint
+    - <%= p('eirini_stager.ccAPI') %>
+    - --cf-username
+    - <%= p('eirini_stager.adminUser') %>
+    - --cf-password
+    - <%= p('eirini_stager.adminPassword') %>
+    - --eirini-address
+    - <%= p('eirini_stager.eirini_address') %>
+    - --namespace
+    - <%= p('eirini_stager.kube_namespace') %>
+    <% if p("eirini_stager.skipSslValidation") %>- --skipSslValidation<% end %>
+    limits:
+      memory: 3G
+      processes: 10
+      open_files: 100000
+    ephemeral_disk: true # mount /var/vcap/data/the_job ; default `false`
+                         # NOTE: /var/vcap/data/the_job/tmp is always mounted `rw`
