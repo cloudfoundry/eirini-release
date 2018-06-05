@@ -25,7 +25,7 @@
       release: eirini
       properties:
         bpm: { enabled: true }
-    - name: sync
+    - name: opi
       release: eirini
       properties:
         opi:
