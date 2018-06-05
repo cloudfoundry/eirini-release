@@ -6,8 +6,8 @@ export GOPATH=$BOSH_INSTALL_TARGET
 
 export GOROOT=$(readlink -nf /var/vcap/packages/golang)
 export PATH=$GOROOT/bin:$PATH
-pushd ${BOSH_INSTALL_TARGET}/src/code.cloudfoundry.org/eirini/cmd/eirini
-  go build -o ${BOSH_INSTALL_TARGET}/bin/eirini
+pushd ${BOSH_INSTALL_TARGET}/src/code.cloudfoundry.org/eirini/cmd/opi
+  go build -o ${BOSH_INSTALL_TARGET}/bin/opi
 popd
 
 # clean up source artifacts

@@ -1,11 +1,12 @@
 ---
-name: stager
+name: opi
 
 templates:
-  stager_ctl.erb: bin/stager_ctl
-  stager_as_vcap.erb: bin/stager_as_vcap
+  opi_ctl.erb: bin/opi_ctl
+  opi_as_vcap.erb: bin/opi_as_vcap
   bmp.yml.erb: config/bpm.yml
   kube_config.erb: config/kube.yml
+  opi.yml.erb: config/opi.yml
 
 packages:
   - pid_utils
@@ -15,29 +16,35 @@ properties:
   bpm.enabled:
     description: "Enable Bosh Process Manager"
     default: false
-
-  eirini_stager.ccAPI:
+  opi.ccAPI:
     description: "The API endpoint of the Cloud Controller"
-  eirini_stager.ccUser:
+  opi.ccUser:
     default: internal_user
     description: "The internal username for the Cloud Controller"
-  eirini_stager.ccPassword:
+  opi.ccPassword:
     description: "The internal password for the Cloud Controller"
-  eirini_stager.backend:
-    default: k8s
-    description: "The backend to use"
-  eirini_stager.config:
+  opi.kube_config:
     description: "The full Kubernetes configuration file content. Note: Avoid using certificates file references, instead you should use the file content by using the `flatten` option to retrieve your configuration YAML."
-  eirini_stager.adminUser:
+  opi.adminUser:
     default: admin
     description: "The CF admin user"
-  eirini_stager.adminPassword:
+  opi.adminPassword:
     description: "The CF admin password"
-  eirini_stager.skipSslValidation:
+  opi.externalEiriniAddress:
+    description: "external address for opi registry"
+  opi.kube_namespace:
+    default: "default"
+    description: "Kubernetes namespace where to run deployments and tasks"
+  opi.kube_endpoint:
+    description: "Kubernetes endpoint used when creating an Ingress"
+  opi.skipSslValidation:
     default: false
     description: "True to continue with an insecure target"
-  eirini_stager.eirini_address:
-    description: "Address of eirini"
-  eirini_stager.kube_namespace:
-    default: "default"
-    description: "Kubernetes namespace where to run staging tasks"
+  opi.registry_address:
+    description: "Address of registry"
+  opi.internal_registry_address:
+    default: http://127.0.0.1:8080
+    description: "Internal address of the registry"
+  opi.insecure_skip_verify:
+    default: true
+    description: "http client tls config"

@@ -1,0 +1,13 @@
+opi:
+  kube_config: 
+  kube_namespace: <%= p("opi.kube_namespace") %>
+  kube_endpoint: <%= p("opi.kube_endpoint") %>
+  registry_endpoint: <%= p("opi.internal_registry_address") %>
+  api_endpoint: <%= p("opi.ccAPI") %>
+  cf_username: <%= p("opi.adminUser") %>
+  cf_password: <%= p("opi.adminPassword") %>
+  cc_internal_user: <%= p("opi.ccUser") %>
+  cc_internal_password: <%= p("opi.ccPassword") %>
+  external_eirini_address: <%= p("opi.registry_address") %>
+  skip_ssl_validation: <%= p("opi.skipSslValidation") %>
+  insecure_skip_verify: <%= p("opi.insecure_skip_verify")
