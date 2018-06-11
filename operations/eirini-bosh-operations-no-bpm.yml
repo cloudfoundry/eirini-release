@@ -55,7 +55,7 @@
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/opi/url?
-  value: "http://eirini.service.cf.internal:8090"
+  value: "http://eirini.service.cf.internal:8085"
 
 - type: replace
   path: /instance_groups/name=cc-worker/jobs/name=cloud_controller_worker/properties/cc/opi?/enabled?
@@ -63,7 +63,7 @@
 
 - type: replace
   path: /instance_groups/name=cc-worker/jobs/name=cloud_controller_worker/properties/cc/opi/url?
-  value: "http://eirini.service.cf.internal:8090"
+  value: "http://eirini.service.cf.internal:8085"
 
 - type: replace
   path: /instance_groups/name=scheduler/jobs/name=cloud_controller_clock/properties/cc/opi?/enabled?
@@ -71,4 +71,4 @@
 
 - type: replace
   path: /instance_groups/name=scheduler/jobs/name=cloud_controller_clock/properties/cc/opi/url?
-  value: "http://eirini.service.cf.internal:8090"
+  value: "http://eirini.service.cf.internal:8085"
