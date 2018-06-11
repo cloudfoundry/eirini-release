@@ -58,17 +58,17 @@
   value: "http://eirini.service.cf.internal:8090"
 
 - type: replace
-  path: /instance_groups/name=cc-worker/jobs/name=cloud_controller_ng_worker/properties/cc/opi?/enabled?
+  path: /instance_groups/name=cc-worker/jobs/name=cloud_controller_worker/properties/cc/opi?/enabled?
   value: true
 
 - type: replace
-  path: /instance_groups/name=cc-worker/jobs/name=cloud_controller_ng_worker/properties/cc/opi/url?
+  path: /instance_groups/name=cc-worker/jobs/name=cloud_controller_worker/properties/cc/opi/url?
   value: "http://eirini.service.cf.internal:8090"
 
 - type: replace
-  path: /instance_groups/name=scheduler/jobs/name=cloud_controller_ng_clock/properties/cc/opi?/enabled?
+  path: /instance_groups/name=scheduler/jobs/name=cloud_controller_clock/properties/cc/opi?/enabled?
   value: true
 
 - type: replace
-  path: /instance_groups/name=scheduler/jobs/name=cloud_controller_ng_clock/properties/cc/opi/url?
+  path: /instance_groups/name=scheduler/jobs/name=cloud_controller_clock/properties/cc/opi/url?
   value: "http://eirini.service.cf.internal:8090"
