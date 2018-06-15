@@ -49,6 +49,6 @@ properties:
     default: true
     description: "http client tls config"
   opi.nats_password:
-	  description: "password for nats"
+    description: "password for nats"
   opi.nats_ip:
-	  description: "nats_ip"
+    description: "nats_ip"
