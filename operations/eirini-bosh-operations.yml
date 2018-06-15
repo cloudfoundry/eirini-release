@@ -39,6 +39,8 @@
           kube_namespace: "((kube_namespace))"
           kube_endpoint: "((kube_endpoint))"
           registry_address: "((registry_address))"
+          nats_ip: "((nats_ip))"
+          nats_password: "((nats_password))"
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/stager_url?

@@ -48,3 +48,7 @@ properties:
   opi.insecure_skip_verify:
     default: true
     description: "http client tls config"
+	opi.nats_password:
+	  description: "password for nats"
+	opi.nats_ip:
+	  description: "nats_ip"
