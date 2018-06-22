@@ -23,3 +23,9 @@ src/github.com/codegangsta/cli
 
 tags
 .tags
+
+kube-release/helm/eirini/configs/kube.yaml
+kube-release/helm/eirini/configs/opi.yaml
+kube-release/docker/opi/opi
+kube-release/docker/registry/opi
+kube-release/docker/registry/eirinifs.tar

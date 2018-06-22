@@ -1,0 +1,8 @@
+{{- $fullName := include "eirini-chart.fullname" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: {{ $fullName }}
+data:
+{{ (.Files.Glob "configs/*").AsConfig | indent 2 }}

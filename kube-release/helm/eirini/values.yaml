@@ -1,0 +1,36 @@
+# Default values for eirini-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: eirini/opi
+  tag: latest
+  pullPolicy: Always
+
+service:
+  name: eirini-opi
+  type: ClusterIP
+  opi:
+    port: 8085
+  registry:
+    port: 8080
+
+ingress:
+  enabled: true
+  annotations: {}
+  opi:
+    name: opi
+    host: DEFINE
+    port: 8085
+    path: /
+  registry:
+    host: DEFINE
+    name: registry
+    port: 8080
+    path: /
+
+config:
+  opi_image: eirini/opi
+  registry_image: eirini/registry
