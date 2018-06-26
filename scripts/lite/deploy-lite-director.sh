@@ -115,7 +115,7 @@ deploy_cf_and_eirini() {
      -v eirini_local_path="$EIRINI_RELEASE" \
 		 -v capi_local_path="$CAPI_RELEASE" > "$EIRINI_LITE"/manifest.yml
 
-	STEMCELL_VERSION=$(bosh int manifest/manifest.yml --path /releases/name=capi/stemcell/version)
+	STEMCELL_VERSION=$(bosh int "$EIRINI_LITE"/manifest.yml --path /stemcells/alias=default/version)
 
 	bosh -e "$BOSH_DIRECTOR_ALIAS" upload-stemcell https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent\?v\=$STEMCELL_VERSION
 
