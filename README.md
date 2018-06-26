@@ -1,12 +1,41 @@
 # eirini-release
+
 This is a BOSH release for [eirini](https://code.cloudfoundry.org/eirini).
+
+## CI Pipeline
+
+- [Eirini-CI](https://flintstone.ci.cf-app.com/teams/eirini/pipelines/eirini-ci)
 
 ## Description
 _Note_: This is an **Experimental** release and is still considered _work in progress_.<br />
 _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 
-## Prereq
-1. Install **Minikube** on your system. Follow the [instructions](https://github.com/kubernetes/minikube#installation) to get the required tools.
+
+## Deploy Eirini-Release
+
+### Prereq's
+
+- [Virtual Box](https://www.virtualbox.org/)
+- [Bosh (v2) CLI](https://bosh.io/docs/cli-v2-install/)
+- [CF CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+- [minikube](https://github.com/kubernetes/minikube#installation)
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
+### The easy way: using scripts
+
+Download the `eirini-release` and execute `$eirini-release/scripts/lite/deploy-eirini-lite.sh` script:
+
+```
+$ ~/workspace/eirini-release/scripts/lite/deploy-eirini-lite
+```
+
+This script will create a `eirini-lite` folder in your `home` directory, download all necessary repositories and setup bosh-lite, minikube, plus eirini on your local machine. Moreover it will setup a `eirini` org and `dev` space on CF, such that you are ready to push some `dora` apps right after the script finished its work (which takes a while). 
+
+
+### Do it manually: using no scripts
+
+#### Preparation
+
 1. Start your **Minikube** in the same network as Bosh-Lite (in future) and add cube-registry as insecure-registry:
     ```sh
     minikube start --host-only-cidr 192.168.50.1/24 --insecure-registry="10.244.0.142:8080"
@@ -19,7 +48,7 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 1. Run Cloud Foundry on your BOSH Lite environment using the [cf-deployment](https://github.com/cloudfoundry/cf-deployment). Again, you can refer to another [Stark and Wayne's tutorial](https://www.starkandwayne.com/blog/running-cloud-foundry-locally-on-bosh-lite-with-bosh2/).
 1. You will need a running docker on your machine to create the `eirinifs`
 
-## Deploying
+#### Deploying
 
 1. Create the `eirinifs.tar` and add it to `blobs`
    
@@ -106,4 +135,3 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 1. Add and commit the changes (`git commit -am 'Add some amazing new feature'`)
 1. Push to the branch (`git push origin amazing-new-feature`)
 1. Create a PR against this repository
-
