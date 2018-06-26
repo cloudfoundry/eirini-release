@@ -3,7 +3,7 @@
 readonly BASEDIR="$(cd $(dirname $0)/../.. && pwd)"
 
 main() {
-  export EIRINI_LITE=${EIRINI_LITE:-"$HOME/eirini-lite"}
+  export EIRINI_LITE=${EIRINI_LITE:-"$HOME/workspace/eirini-lite"}
 
   mkdir -p "$EIRINI_LITE"
 	clone_repos
@@ -29,6 +29,5 @@ set_env() {
 	export CAPI_RELEASE=${CAPI_RELEASE:-"$EIRINI_LITE/capi-release"}
 	export BOSH_DIRECTOR_ALIAS=${BOSH_DIRECTOR_ALIAS:-"eirini-lite"}
 }
-
 
 main
