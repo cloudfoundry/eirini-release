@@ -1,14 +1,14 @@
 #!/bin/bash
 
-readonly BASEDIR="$(cd $(dirname $0)/../.. && pwd)"
+export EIRINI_LITE=${EIRINI_LITE:-"$HOME/workspace/eirini-lite"}
+source $EIRINI_LITE/eirini-release/scripts/lite/set-env.sh
 
 main() {
-  export EIRINI_LITE=${EIRINI_LITE:-"$HOME/workspace/eirini-lite"}
 
   mkdir -p "$EIRINI_LITE"
 	clone_repos
 
-	set_env
+	set-env
 
 	$BASEDIR/scripts/lite/deploy-lite-director.sh
 }
@@ -19,14 +19,6 @@ clone_repos() {
 	  git clone https://github.com/cloudfoundry/cf-deployment.git
 		git clone -b develop --single-branch https://github.com/JulzDiverse/capi-release.git
 	popd
-}
-
-set_env() {
-  export BOSH_DEPLOYMENT_DIR=${BOSH_DEPLOYMENT_DIR:-"$EIRINI_LITE/bosh-deployment"}
-	export CF_DEPLOYMENT=${CF_DEPLOYMENT:-"$EIRINI_LITE/cf-deployment"}
-	export EIRINI_RELEASE=${EIRINI_RELEASE:-"$BASEDIR"}
-	export CAPI_RELEASE=${CAPI_RELEASE:-"$EIRINI_LITE/capi-release"}
-	export BOSH_DIRECTOR_ALIAS=${BOSH_DIRECTOR_ALIAS:-"eirini-lite"}
 }
 
 main

@@ -29,7 +29,7 @@ Make sure to have the following tools deployed to your local machine:
 Download the `eirini-release` and execute `$eirini-release/scripts/lite/deploy-eirini-lite.sh` script:
 
 ```
-$ ~/workspace/eirini-release/scripts/lite/come-on-eirini.sh
+$ source ~/workspace/eirini-release/scripts/lite/come-on-eirini.sh
 ```
 
 This script will create a `eirini-lite` folder in your `$HOME/workspace` directory, download all necessary repositories and setup bosh-lite, minikube, plus eirini on your local machine. Moreover it will setup a `eirini` org and `dev` space on CF, such that you are ready to push some `dora` apps right after the script finished its work (which takes a while). 

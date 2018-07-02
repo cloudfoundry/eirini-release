@@ -82,6 +82,7 @@ setup_minikube() {
 prepare_eirini_release() {
 	pushd "$EIRINI_RELEASE"
 	git submodule update --init --recursive
+	export GOPATH="$EIRINI_RELEASE"
   ./scripts/buildfs.sh
 	bosh sync-blobs
 	popd
@@ -127,6 +128,7 @@ deploy_cf_and_eirini() {
 }
 
 enable_cf_api(){
+	echo "Need root password for setting routes:"
   if [ "$(uname)" = "Darwin" ]; then
     sudo route add -net 10.244.0.0/16 192.168.50.6
   elif [ "$(uname)" = "Linux" ]; then
