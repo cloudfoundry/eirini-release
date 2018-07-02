@@ -32,12 +32,13 @@ main() {
 }
 
 check_env() {
-	${BOSH_DEPLOYMENT_DIR?"Environment variable BOSH_DEPLOYMENT_DIR not set"}
-	${CF_DEPLOYMENT?"Environment variable CF_DEPLOYMENT not set"}
-	${EIRINI_RELEASE?"Environment variable EIRINI_RELEASE not set"}
-	${CAPI_RELEASE?"Environment variable CAPI_RELEASE not set"}
-	${BOSH_DIRECTOR_ALIAS?"Environment variable BOSH_DIRECTOR_ALIAS not set"}
-	${EIRINI_LITE?"Environment variable EIRINI_LITE (workspace) is not set"}
+  echo "Using the following environment:"
+	echo "BOSH_DEPLOYMENT: ${BOSH_DEPLOYMENT_DIR?"Environment variable BOSH_DEPLOYMENT_DIR not set"}"
+	echo "CF_DEPLOYMENT: ${CF_DEPLOYMENT?"Environment variable CF_DEPLOYMENT not set"}"
+	echo "EIRINI_RELEASE: ${EIRINI_RELEASE?"Environment variable EIRINI_RELEASE not set"}"
+	echo "CAPI_RELEASE: ${CAPI_RELEASE?"Environment variable CAPI_RELEASE not set"}"
+	echo "BOSH_DIRECTOR_ALIAS: ${BOSH_DIRECTOR_ALIAS?"Environment variable BOSH_DIRECTOR_ALIAS not set"}"
+	echo "EIRINI_LITE: ${EIRINI_LITE?"Environment variable EIRINI_LITE (workspace) is not set"}"
 }
 
 deploy_director() {
@@ -126,7 +127,18 @@ deploy_cf_and_eirini() {
 }
 
 enable_cf_api(){
-  sudo route add -net 10.244.0.0/16 192.168.50.6
+  if [ "$(uname)" = "Darwin" ]; then
+    sudo route add -net 10.244.0.0/16 192.168.50.6
+  elif [ "$(uname)" = "Linux" ]; then
+    if type ip > /dev/null 2>&1; then
+      sudo ip route add 10.244.0.0/16 via 192.168.50.6
+    elif type route > /dev/null 2>&1; then
+      sudo route add -net 10.244.0.0/16 gw  192.168.50.6
+    else
+      echo "ERROR adding route"
+      exit 1
+    fi
+  fi
 }
 
 setup_cf_environment(){
@@ -138,9 +150,16 @@ setup_cf_environment(){
 	verify_exit_code $? "failed to authenticate to CF"
 
   cf create-org eirini
+	verify_exit_code $? "failed to authenticate to CF"
+
 	cf target -o eirini
+	verify_exit_code $? "failed to authenticate to CF"
+
 	cf create-space dev
+	verify_exit_code $? "failed to authenticate to CF"
+
 	cf target -s dev
+	verify_exit_code $? "failed to authenticate to CF"
 }
 
 verify_exit_code() {
