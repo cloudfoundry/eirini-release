@@ -10,7 +10,7 @@ main() {
 
 	set_env
 
-	"$EIRINI_LITE/eirini-release/scripts/lite/setup-eirini-environment.sh
+	"$EIRINI_LITE"/eirini-release/scripts/lite/setup-eirini-environment.sh
 }
 
 clone_repos() {
