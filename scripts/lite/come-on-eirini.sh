@@ -8,9 +8,9 @@ main() {
   mkdir -p "$EIRINI_LITE"
 	clone_repos
 
-	set-env
+	set_env
 
-	$BASEDIR/scripts/lite/deploy-lite-director.sh
+	$BASEDIR/scripts/lite/setup-eirini-environment.sh
 }
 
 clone_repos() {
