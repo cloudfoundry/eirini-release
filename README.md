@@ -5,7 +5,7 @@ This is a BOSH release for [eirini](https://code.cloudfoundry.org/eirini).
 _Note_: This is an **Experimental** release and is still considered _work in progress_.<br />
 _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
 
-## Prereq
+## Prereq for local development / testing
 1. Install **Minikube** on your system. Follow the [instructions](https://github.com/kubernetes/minikube#installation) to get the required tools.
 1. Start your **Minikube** in the same network as Bosh-Lite (in future) and add cube-registry as insecure-registry:
     ```sh
@@ -15,8 +15,8 @@ _Note_: In all examples, we refer to `bosh` as an alias to `bosh2` CLI.<br />
     *NOTE*: if something changes on your minikube config (eg new IP or cube address changes) you will need to redeploy (delete and recreate) minikube. 
 
     It might take some time until you see `Kubectl is now configured to use the cluster`, which indicates we are ready to continue.
-1. Deploy and run a BOSH director. For example, refer to [Stark and Wayne's tutorial](http://www.starkandwayne.com/blog/bosh-lite-on-virtualbox-with-bosh2/) on how set-up such a BOSH Lite v2 environment.
-1. Run Cloud Foundry on your BOSH Lite environment using the [cf-deployment](https://github.com/cloudfoundry/cf-deployment). Again, you can refer to another [Stark and Wayne's tutorial](https://www.starkandwayne.com/blog/running-cloud-foundry-locally-on-bosh-lite-with-bosh2/).
+1. Deploy and run a BOSH director. For example, to install a bosh director (and later Cloud Foundry) locally in a virtualbox VM, use [the Quick Start instructions on BOSH.io](https://bosh.io/docs/quick-start/)
+1. Run Cloud Foundry on your BOSH Lite environment using [cf-deployment](https://github.com/cloudfoundry/cf-deployment).  [Stark and Wayne has an easy tutorial](https://www.starkandwayne.com/blog/running-cloud-foundry-locally-on-bosh-lite-with-bosh2/) or [follow the instructions on the cf-deployment repo](https://github.com/cloudfoundry/cf-deployment/blob/master/deployment-guide.md).
 1. You will need a running docker on your machine to create the `eirinifs`
 
 ## Deploying
