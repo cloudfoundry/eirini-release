@@ -26,16 +26,13 @@ Make sure to have the following tools deployed to your local machine:
 
 ### Deploying
 
-The deploy script will fetch all necessary resources into a folder that is determined by the environment variable `$EIRINI_LITE`. When not set, the default will be `~/workspace/eirini-lite`.
+The deploy script will fetch all necessary resources into the folder you cloned the `eirini-release`. 
 
-1. Get `eirini-release`
-
-	 Clone `eirini-release` to your local machine into `$EIRINI_LITE`.
-	 
+1. Get `eirini-release` by cloning it to your local machine.
 1. Execute the deploy script:
 
    ```
-   $ source $EIRINI_LITE/eirini-release/scripts/lite/come-on-eirini.sh
+   $ source eirini-release/scripts/lite/come-on-eirini.sh
    ```
 
    This script will setup bosh-lite, minikube, plus eirini on your local machine. Moreover it will setup an `eirini` org and `dev` space on CF, such that you are ready to push some apps right after the script finished its work (which takes a while). 
