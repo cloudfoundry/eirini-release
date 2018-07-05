@@ -83,10 +83,12 @@ add_eirini_routes(){
   ssh -o "StrictHostKeyChecking no" jumpbox@192.168.50.6 \
     -i "$BOSH_DEPLOYMENT_DIR"/jumpbox.key \
     'sudo iptables -t nat -I PREROUTING 2 -p tcp --dport 8090 -j DNAT --to 10.244.0.142:8085'
+  verify_exit_code $? "Failed to add route for OPI. If you got 'Too many authentication failures for jumpbox' failure, run '$ ssh-add -D'"
 
   ssh -o "StrictHostKeyChecking no" jumpbox@192.168.50.6 \
     -i "$BOSH_DEPLOYMENT_DIR"/jumpbox.key \
     'sudo iptables -t nat -I PREROUTING 2 -p tcp --dport 8089 -j DNAT --to 10.244.0.142:8080'
+  verify_exit_code $? "Failed to add route for Registry. If you got 'Too many authentication failures for jumpbox' failure, run '$ ssh-add -D'"
 }
 
 # Minikube needs to be started in the same network as bosh-lite, such that it is able to communicate with CF.
@@ -95,6 +97,7 @@ setup_minikube() {
   minikube start \
     --host-only-cidr 192.168.50.1/24 \
     --insecure-registry="10.244.0.142:8080"
+  verify_exit_code $? "Failed to setup minikube"
 }
 
 prepare_eirini_release() {
@@ -102,6 +105,7 @@ prepare_eirini_release() {
     git submodule update --init --recursive
     export GOPATH="$EIRINI_RELEASE"
     ./scripts/buildfs.sh
+    verify_exit_code $? "Failed to build rootfs"
     bosh sync-blobs
   popd
 }
@@ -122,6 +126,7 @@ deploy_cf_and_eirini() {
      --ops-file "$CF_DEPLOYMENT"/operations/experimental/enable-bpm.yml \
      --ops-file "$CF_DEPLOYMENT"/operations/experimental/use-bosh-dns.yml \
      --ops-file "$CF_DEPLOYMENT"/operations/bosh-lite.yml \
+     --ops-file "$CF_DEPLOYMENT"/operations/use-compiled-releases.yml \
      --ops-file "$EIRINI_RELEASE"/operations/eirini-bosh-operations.yml \
      --ops-file "$EIRINI_RELEASE"/operations/dev-version.yml \
      --ops-file "$EIRINI_RELEASE"/operations/capi-dev-version.yml \
