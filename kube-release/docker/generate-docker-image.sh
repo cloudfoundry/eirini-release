@@ -3,6 +3,7 @@
 BASEDIR="$(cd $(dirname $0)/../.. && pwd)"
 EIRINIDIR="$BASEDIR/src/code.cloudfoundry.org/eirini"
 DOCKERDIR="$BASEDIR/kube-release/docker"
+TAG=${1?"latest"}
 
 main(){
 	echo "Creating Eirini docker image..."
@@ -29,14 +30,14 @@ create_eirinifs(){
 create_docker_images() {
   echo "Creating OPI docker image..."
 	pushd $DOCKERDIR/opi
-	docker build . -t eirini/opi
+	docker build . -t "eirini/opi:$TAG"
 	verify_exit_code $? "Failed to create opi docker image"
   popd
   echo "OPI docker image created!"
 
 	echo "Creating Registry docker image..."
   pushd $DOCKERDIR/registry
-  docker build . -t eirini/registry
+  docker build . -t "eirini/registry:$TAG"
 	verify_exit_code $? "Failed to create registry docker image"
   popd
 	echo "Registry docker image created!"
