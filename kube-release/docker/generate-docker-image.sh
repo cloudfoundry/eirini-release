@@ -21,6 +21,7 @@ build_opi(){
 }
 
 create_eirinifs(){
+  echo "package main" > $EIRINIDIR/launcher/buildpackapplifecycle/launcher/package.go
 	$EIRINIDIR/launcher/bin/build-eirinifs.sh && \
 	cp $EIRINIDIR/launcher/image/eirinifs.tar $DOCKERDIR/registry/
 
