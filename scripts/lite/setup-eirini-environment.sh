@@ -1,9 +1,10 @@
 #!/bin/bash
-
-# Each required step is a separate function (they contain the commands that needs to be executed for the particular step) and the `main` tells you the order of the required steps.
-
 # shellcheck disable=SC2164
 
+readonly REGISTRY_PORT=8080
+readonly OPI_PORT=8085
+
+# Each required step is a separate function (they contain the commands that needs to be executed for the particular step) and the `main` tells you the order of the required steps.
 main() {
   echo "::::::: Checking environment"
   check_env
@@ -75,6 +76,7 @@ deploy_director() {
 
 # In order to make Eirini accessible from Kubernetes, we need two iptable rules on the director
 # to redirect traffic to eirini opi (port 8085) and registry (port 8080)
+# shellcheck disable=SC2029
 add_eirini_routes(){
   bosh interpolate "$BOSH_DEPLOYMENT_DIR"/creds.yml \
     --path /jumpbox_ssh/private_key > "$BOSH_DEPLOYMENT_DIR"/jumpbox.key \
@@ -82,12 +84,12 @@ add_eirini_routes(){
 
   ssh -o "StrictHostKeyChecking no" jumpbox@192.168.50.6 \
     -i "$BOSH_DEPLOYMENT_DIR"/jumpbox.key \
-    'sudo iptables -t nat -I PREROUTING 2 -p tcp --dport 8090 -j DNAT --to 10.244.0.142:8085'
+    "sudo iptables -t nat -I PREROUTING 2 -p tcp --dport $OPI_PORT -j DNAT --to 10.244.0.142:$OPI_PORT"
   verify_exit_code $? "Failed to add route for OPI. If you got 'Too many authentication failures for jumpbox' failure, run '$ ssh-add -D'"
 
   ssh -o "StrictHostKeyChecking no" jumpbox@192.168.50.6 \
     -i "$BOSH_DEPLOYMENT_DIR"/jumpbox.key \
-    'sudo iptables -t nat -I PREROUTING 2 -p tcp --dport 8089 -j DNAT --to 10.244.0.142:8080'
+    "sudo iptables -t nat -I PREROUTING 2 -p tcp --dport $REGISTRY_PORT -j DNAT --to 10.244.0.142:$REGISTRY_PORT"
   verify_exit_code $? "Failed to add route for Registry. If you got 'Too many authentication failures for jumpbox' failure, run '$ ssh-add -D'"
 }
 
@@ -96,7 +98,7 @@ add_eirini_routes(){
 setup_minikube() {
   minikube start \
     --host-only-cidr 192.168.50.1/24 \
-    --insecure-registry="10.244.0.142:8080"
+    --insecure-registry="10.244.0.142:$REGISTRY_PORT"
   verify_exit_code $? "Failed to setup minikube"
 }
 
@@ -110,14 +112,12 @@ prepare_eirini_release() {
   popd
 }
 
-
 prepare_capi_release() {
   pushd "$CAPI_RELEASE"
     git submodule update --init --recursive
     bosh sync-blobs
   popd
 }
-
 
 deploy_cf_and_eirini() {
   bosh -e "$BOSH_DIRECTOR_ALIAS"  update-cloud-config -n "$CF_DEPLOYMENT/iaas-support/bosh-lite/cloud-config.yml"
@@ -137,9 +137,8 @@ deploy_cf_and_eirini() {
      --var kube_namespace="default" \
      --var kube_endpoint="no-endpoint" \
      --var nats_ip=10.244.0.129 \
-     --var registry_address="10.244.0.142:8080" \
-     --var eirini_ip=10.244.0.142 \
-     --var eirini_address="http://eirini.bosh-lite.com:8090" \
+     --var opi_cf_url="http://opi.service.cf.internal:$OPI_PORT" \
+     --var registry_address="10.244.0.142:$REGISTRY_PORT" \
      --var eirini_local_path="$EIRINI_RELEASE" \
      --var capi_local_path="$CAPI_RELEASE" > "$EIRINI_LITE"/manifest.yml
 
