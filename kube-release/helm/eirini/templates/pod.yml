@@ -5,6 +5,7 @@ metadata:
   name: {{ $fullName }}
   labels:
     app: {{ template "eirini-chart.name" . }}
+    release: {{ .Release.Name }}
 spec:
   volumes:
     - name: config-volume
