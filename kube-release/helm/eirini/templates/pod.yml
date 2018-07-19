@@ -19,6 +19,7 @@ spec:
   containers:
   - name: opi
     image: {{ .Values.config.opi_image }}
+    imagePullPolicy: Always
     volumeMounts:
     - name: config-volume
       mountPath: /workspace/jobs/opi/config
@@ -26,5 +27,6 @@ spec:
       - containerPort: 8085
   - name: registry
     image: {{ .Values.config.registry_image }}
+    imagePullPolicy: Always
     ports:
       - containerPort: 8080
