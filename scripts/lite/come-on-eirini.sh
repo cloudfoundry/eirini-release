@@ -6,7 +6,6 @@ export EIRINI_LITE=${EIRINI_LITE:-"$BASEDIR"}
 source $EIRINI_LITE/eirini-release/scripts/lite/set-env.sh
 
 main() {
-
   mkdir -p "$EIRINI_LITE"
 	clone_repos
 

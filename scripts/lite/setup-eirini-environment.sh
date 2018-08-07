@@ -50,30 +50,33 @@ check_env() {
 }
 
 deploy_director() {
-  bosh create-env "$BOSH_DEPLOYMENT_DIR"/bosh.yml \
-    --state "$BOSH_DEPLOYMENT_DIR"/state.json \
-    --ops-file "$BOSH_DEPLOYMENT_DIR"/virtualbox/cpi.yml \
-    --ops-file "$BOSH_DEPLOYMENT_DIR"/virtualbox/outbound-network.yml \
-    --ops-file "$BOSH_DEPLOYMENT_DIR"/bosh-lite.yml \
-    --ops-file "$BOSH_DEPLOYMENT_DIR"/bosh-lite-runc.yml \
-    --ops-file "$BOSH_DEPLOYMENT_DIR"/jumpbox-user.yml \
-    --vars-store "$BOSH_DEPLOYMENT_DIR"/creds.yml \
-    --var director_name="Bosh Lite Director" \
-    --var internal_ip=192.168.50.6 \
-    --var internal_gw=192.168.50.1 \
-    --var internal_cidr=192.168.50.0/24 \
-    --var outbound_network_name=NatNetwork
+  bosh \
+    create-env "$BOSH_DEPLOYMENT_DIR"/bosh.yml \
+      --state "$BOSH_DEPLOYMENT_DIR"/state.json \
+      --ops-file "$BOSH_DEPLOYMENT_DIR"/virtualbox/cpi.yml \
+      --ops-file "$BOSH_DEPLOYMENT_DIR"/virtualbox/outbound-network.yml \
+      --ops-file "$BOSH_DEPLOYMENT_DIR"/bosh-lite.yml \
+      --ops-file "$BOSH_DEPLOYMENT_DIR"/bosh-lite-runc.yml \
+      --ops-file "$BOSH_DEPLOYMENT_DIR"/jumpbox-user.yml \
+      --vars-store "$BOSH_DEPLOYMENT_DIR"/creds.yml \
+      --var director_name="Bosh Lite Director" \
+      --var internal_ip=192.168.50.6 \
+      --var internal_gw=192.168.50.1 \
+      --var internal_cidr=192.168.50.0/24 \
+      --var outbound_network_name=NatNetwork
 
-  bosh --environment 192.168.50.6 \
-    --ca-cert <(bosh int "$BOSH_DEPLOYMENT_DIR"/creds.yml \
-    --path /director_ssl/ca) \
+  bosh \
+		  --environment 192.168.50.6 \
+      --ca-cert <(bosh int "$BOSH_DEPLOYMENT_DIR"/creds.yml \
+      --path /director_ssl/ca) \
     alias-env "$BOSH_DIRECTOR_ALIAS"
 
   export BOSH_CLIENT=admin
   bosh_client_secret=$(bosh int "$BOSH_DEPLOYMENT_DIR"/creds.yml --path /admin_password)
   export BOSH_CLIENT_SECRET=$bosh_client_secret
+	export BOSH_ENVIRONMENT="$BOSH_DIRECTOR_ALIAS"
 
-  bosh --environment "$BOSH_DIRECTOR_ALIAS" env
+  bosh env
 }
 
 
@@ -82,6 +85,7 @@ update_runtime_config(){
   bosh --non-interactive update-runtime-config "$BOSH_DEPLOYMENT_DIR/runtime-configs/dns.yml" \
 		--name=dns \
 		--vars-store "$CF_DEPLOYMENT/deployment-vars.yml"
+	verify_exit_code $? "Failed to setup minikube"
 }
 
 # In order to make Eirini accessible from Kubernetes, we need two iptable rules on the director
@@ -130,7 +134,7 @@ prepare_capi_release() {
 }
 
 deploy_cf_and_eirini() {
-  bosh -e "$BOSH_DIRECTOR_ALIAS"  update-cloud-config -n "$CF_DEPLOYMENT/iaas-support/bosh-lite/cloud-config.yml"
+  bosh --non-interactive update-cloud-config "$CF_DEPLOYMENT/iaas-support/bosh-lite/cloud-config.yml"
 
   bosh int "$CF_DEPLOYMENT"/cf-deployment.yml \
      --ops-file "$CF_DEPLOYMENT"/operations/experimental/enable-bpm.yml \
@@ -154,10 +158,10 @@ deploy_cf_and_eirini() {
 
   STEMCELL_VERSION=$(bosh int "$EIRINI_LITE"/manifest.yml --path /stemcells/alias=default/version)
 
-  bosh --environment "$BOSH_DIRECTOR_ALIAS" \
+  bosh \
     upload-stemcell "https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent?v=$STEMCELL_VERSION"
 
-  bosh --environment "$BOSH_DIRECTOR_ALIAS" deploy \
+  bosh deploy \
     --deployment cf \
     --non-interactive \
     "$EIRINI_LITE"/manifest.yml
