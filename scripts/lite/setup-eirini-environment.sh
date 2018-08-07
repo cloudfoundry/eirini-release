@@ -12,6 +12,8 @@ main() {
   echo "::::::: Setting up Bosh-Director"
   deploy_director
 
+  update_runtime_config
+
   echo "::::::: Add Eirini routes to Director VM"
   add_eirini_routes
 
@@ -72,6 +74,14 @@ deploy_director() {
   export BOSH_CLIENT_SECRET=$bosh_client_secret
 
   bosh --environment "$BOSH_DIRECTOR_ALIAS" env
+}
+
+
+update_runtime_config(){
+  echo "::::::: Updating Runtime Config"
+  bosh --non-interactive update-runtime-config "$BOSH_DEPLOYMENT_DIR/runtime-configs/dns.yml" \
+		--name=dns \
+		--vars-store "$CF_DEPLOYMENT/deployment-vars.yml"
 }
 
 # In order to make Eirini accessible from Kubernetes, we need two iptable rules on the director
