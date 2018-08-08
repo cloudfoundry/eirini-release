@@ -39,6 +39,17 @@ The deploy script will fetch all necessary resources into the folder you cloned 
 
    If you want to do things manually or have a running Bosh-Lite and CF, you can take a look at our script `scripts/lite/setup-eirini-environment.sh`. It should explain the steps necessary thoroughly. 
 
+### Run Smoke Tests
+
+1. Clone [CF-Smoke-Tests](https://github.com/cloudfoundry/cf-smoke-tests)
+1. Setup the smoke tests by following the [test-setup](https://github.com/cloudfoundry/cf-smoke-tests#test-setup) provided in the cf-smoke-tests readme.
+1. Navigate to the `smoke-tests` directory and run the smoke tests as follows:
+
+  ```bash
+  $ bin/test -r -skip="/logging/loggregator_test.go" --regexScansFilePath=true
+  ```
+  This will disable the `logging` tests, as `logging` is currently not supported by `eirini`. 
+
 ## Contributing
 
 1. Fork this project into your GitHub organisation or username
