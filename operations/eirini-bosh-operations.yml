@@ -51,7 +51,7 @@
   value: false
 
 - type: replace
-  path: /addons/name=bosh-dns/jobs/name=bosh-dns/properties/aliases/eirini.service.cf.internal?/-
+  path: /addons/name=bosh-dns-aliases/jobs/name=bosh-dns-aliases/properties/aliases/eirini.service.cf.internal?/-
   value: 10.244.0.142
 
 
