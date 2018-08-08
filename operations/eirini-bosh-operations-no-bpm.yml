@@ -49,4 +49,11 @@
 
 - type: replace
   path: /addons/name=bosh-dns-aliases/jobs/name=bosh-dns-aliases/properties/aliases/domain=eirini.service.cf.internal?/-
-  value: 10.244.142
+  value:
+    domain: eirini.service.cf.internal
+    targets:
+    - query: '*'
+      instance_group: eirini
+      deployment: cf
+      network: default
+      domain: bosh
