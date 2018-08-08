@@ -138,7 +138,6 @@ deploy_cf_and_eirini() {
 
   bosh int "$CF_DEPLOYMENT"/cf-deployment.yml \
      --ops-file "$CF_DEPLOYMENT"/operations/experimental/enable-bpm.yml \
-     --ops-file "$CF_DEPLOYMENT"/operations/experimental/use-bosh-dns.yml \
      --ops-file "$CF_DEPLOYMENT"/operations/bosh-lite.yml \
      --ops-file "$CF_DEPLOYMENT"/operations/use-compiled-releases.yml \
      --ops-file "$EIRINI_RELEASE"/operations/eirini-bosh-operations.yml \
