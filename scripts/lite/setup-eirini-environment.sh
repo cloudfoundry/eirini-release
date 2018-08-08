@@ -156,6 +156,7 @@ deploy_cf_and_eirini() {
      --var registry_address="10.244.0.142:$REGISTRY_PORT" \
      --var eirini_local_path="$EIRINI_RELEASE" \
      --var capi_local_path="$CAPI_RELEASE" > "$EIRINI_LITE"/manifest.yml
+  verify_exit_code $? "Failed to create manifest"
 
   STEMCELL_VERSION=$(bosh int "$EIRINI_LITE"/manifest.yml --path /stemcells/alias=default/version)
 
