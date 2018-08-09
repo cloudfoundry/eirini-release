@@ -38,6 +38,16 @@ The deploy script will fetch all necessary resources into the folder you cloned 
    This script will setup bosh-lite, minikube, plus eirini on your local machine. Moreover it will setup an `eirini` org and `dev` space on CF, such that you are ready to push some apps right after the script finished its work (which takes a while). 
 
    If you want to do things manually or have a running Bosh-Lite and CF, you can take a look at our script `scripts/lite/setup-eirini-environment.sh`. It should explain the steps necessary thoroughly. 
+   
+#### Enable logging
+
+To enable logging with `log-cache` you need to deploy oratos on your kubernetes cluster. To do this follow the instructions on the `eirini` branch on [this repo](https://github.com/gdankov/oratos-deployment/tree/eirini). To get the logs of your app use the [log-cache cli](https://github.com/cloudfoundry/log-cache-cli#stand-alone-cli) with the following format
+```bash
+$ log-cache tail <namespace>/<resource-type>/<app_name>
+```
+**__NOTE:__** Eirini currently uses StatefulSets as `<resource-type>` to deploy apps
+
+_Example_: `log-cache tail eirini/statefulset/dora`
 
 ### Run Smoke Tests
 
