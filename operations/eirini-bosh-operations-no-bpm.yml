@@ -48,9 +48,9 @@
   value: false
 
 - type: replace
-  path: /addons/name=bosh-dns-aliases/jobs/name=bosh-dns-aliases/properties/aliases/domain=eirini.service.cf.internal?/-
+  path: /addons/name=bosh-dns-aliases/jobs/name=bosh-dns-aliases/properties/aliases/domain=opi.service.cf.internal?/-
   value:
-    domain: eirini.service.cf.internal
+    domain: opi.service.cf.internal
     targets:
     - query: '*'
       instance_group: eirini
