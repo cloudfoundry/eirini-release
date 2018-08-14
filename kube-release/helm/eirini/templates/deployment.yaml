@@ -1,0 +1,44 @@
+{{- $fullName := include "eirini-chart.fullname" . -}}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app: {{ template "eirini-chart.name" . }}
+    release: {{ .Release.Name }}
+spec:
+
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "eirini-chart.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "eirini-chart.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ $fullName }}
+            items:
+            - key: opi.yaml
+              path: opi.yml
+            - key: kube.yaml
+              path: kube.conf
+      containers:
+      - name: opi
+        image: {{ .Values.config.opi_image }}
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-volume
+          mountPath: /workspace/jobs/opi/config
+        ports:
+          - containerPort: 8085
+      - name: registry
+        image: {{ .Values.config.registry_image }}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
