@@ -9,7 +9,6 @@ templates:
   opi.yml.erb: config/opi.yml
 
 packages:
-  - pid_utils
   - eirini
 
 properties:

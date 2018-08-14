@@ -7,7 +7,6 @@ templates:
   bmp.yml.erb: config/bpm.yml
 
 packages:
-  - pid_utils
   - eirini
   - eirinifs
 
