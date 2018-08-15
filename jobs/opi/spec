@@ -2,6 +2,8 @@
 name: opi
 
 templates:
+  opi_ctl.erb: bin/opi_ctl
+  opi_as_vcap.erb: bin/opi_as_vcap
   bmp.yml.erb: config/bpm.yml
   kube_config.erb: config/kube.yml
   opi.yml.erb: config/opi.yml

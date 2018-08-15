@@ -2,6 +2,8 @@
 name: registry
 
 templates:
+  registry_ctl.erb: bin/registry_ctl
+  registry_as_vcap.erb: bin/registry_as_vcap
   bmp.yml.erb: config/bpm.yml
 
 packages:
