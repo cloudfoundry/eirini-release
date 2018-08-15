@@ -43,11 +43,19 @@ The deploy script will fetch all necessary resources into the folder you cloned 
 
 To enable logging with `log-cache` you need to deploy oratos on your kubernetes cluster. To do this follow the instructions on the `eirini` branch on [this repo](https://github.com/gdankov/oratos-deployment/tree/eirini). To get the logs of your app use the [log-cache cli](https://github.com/cloudfoundry/log-cache-cli#stand-alone-cli) with the following format
 ```bash
-$ log-cache tail <namespace>/<resource-type>/<app_name>
+$ log-cache tail <app_guid>
 ```
-**__NOTE:__** Eirini currently uses StatefulSets as `<resource-type>` to deploy apps
+OR
+```bash
+$ cf tail <app_name>
+```
+You can get the _<app_guid>_ by running `cf app <app_name> --guid`
 
-_Example_: `log-cache tail eirini/statefulset/dora`
+_Example_: 
+``` bash
+$ log-cache tail 05f501f4-569f-429d-a3f5-bedc15b923b5
+$ cf tail dora
+```
 
 ### Run Smoke Tests
 
