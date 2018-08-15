@@ -1,6 +1,13 @@
+<% if p("bpm.enabled") %>
 check process opi
   with pidfile /var/vcap/sys/run/bpm/opi/opi.pid
   start program "/var/vcap/jobs/bpm/bin/bpm start opi"
   stop program "/var/vcap/jobs/bpm/bin/bpm stop opi"
   group vcap
-
+<% else %>
+check process opi
+  with pidfile /var/vcap/sys/run/opi/opi.pid
+  start program "/var/vcap/jobs/opi/bin/opi_ctl start"
+  stop program "/var/vcap/jobs/opi/bin/opi_ctl stop"
+  group vcap
+<% end %>

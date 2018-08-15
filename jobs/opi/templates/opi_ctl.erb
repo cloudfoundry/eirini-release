@@ -1,0 +1,39 @@
+#!/bin/bash -e
+
+run_dir=/var/vcap/sys/run/opi
+log_dir=/var/vcap/sys/log/opi
+conf_dir=/var/vcap/jobs/opi/config
+
+pidfile=$run_dir/opi.pid
+
+source /var/vcap/packages/pid_utils/pid_utils.sh
+
+case $1 in
+
+  start)
+    pid_guard $pidfile "opi"
+
+    mkdir -p $run_dir
+    chown -R vcap:vcap $run_dir
+
+    mkdir -p $log_dir
+    chown -R vcap:vcap $log_dir
+
+    # Allowed number of open file descriptors
+    ulimit -n 100000
+
+    exec chpst -u vcap:vcap /var/vcap/jobs/opi/bin/opi_as_vcap
+
+    ;;
+
+  stop)
+    kill_and_wait $pidfile
+
+    ;;
+
+  *)
+    echo "Usage: opi_ctl {start|stop}"
+
+    ;;
+
+esac

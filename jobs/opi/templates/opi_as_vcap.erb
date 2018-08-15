@@ -1,0 +1,13 @@
+#!/bin/bash -e
+
+run_dir=/var/vcap/sys/run/opi
+log_dir=/var/vcap/sys/log/opi
+conf_dir=/var/vcap/jobs/opi/config
+pidfile=$run_dir/opi.pid
+
+echo $$ > $pidfile
+
+exec /var/vcap/packages/eirini/bin/opi connect \
+  --config="$conf_dir/opi.yml" \
+  2> >(tee -a $log_dir/opi.stderr.log | logger -p user.error -t vcap.opi) \
+  1> >(tee -a $log_dir/opi.stdout.log | logger -t vcap.opi)
