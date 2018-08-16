@@ -26,7 +26,7 @@ Make sure to have the following tools deployed to your local machine:
 
 ### Deploying
 
-The deploy script will fetch all necessary resources into the folder you cloned the `eirini-release`. 
+The deploy script will fetch all necessary resources into the folder you cloned the `eirini-release`.
 
 1. Get `eirini-release` by cloning it to your local machine.
 1. Execute the deploy script:
@@ -35,10 +35,10 @@ The deploy script will fetch all necessary resources into the folder you cloned 
    $ source eirini-release/scripts/lite/come-on-eirini.sh
    ```
 
-   This script will setup bosh-lite, minikube, plus eirini on your local machine. Moreover it will setup an `eirini` org and `dev` space on CF, such that you are ready to push some apps right after the script finished its work (which takes a while). 
+   This script will setup bosh-lite, minikube, plus eirini on your local machine. Moreover it will setup an `eirini` org and `dev` space on CF, such that you are ready to push some apps right after the script finished its work (which takes a while).
 
-   If you want to do things manually or have a running Bosh-Lite and CF, you can take a look at our script `scripts/lite/setup-eirini-environment.sh`. It should explain the steps necessary thoroughly. 
-   
+   If you want to do things manually or have a running Bosh-Lite and CF, you can take a look at our script `scripts/lite/setup-eirini-environment.sh`. It should explain the steps necessary thoroughly.
+
 #### Enable logging
 
 To enable logging with `log-cache` you need to deploy oratos on your kubernetes cluster. To do this follow the instructions on the `eirini` branch on [this repo](https://github.com/gdankov/oratos-deployment/tree/eirini). To get the logs of your app use the [log-cache cli](https://github.com/cloudfoundry/log-cache-cli#stand-alone-cli) with the following format
@@ -66,7 +66,7 @@ $ cf tail dora
   ```bash
   $ bin/test -r -skip="/logging/loggregator_test.go" --regexScansFilePath=true
   ```
-  This will disable the `logging` tests, as `logging` is currently not supported by `eirini`. 
+  This will disable the `logging` tests, as `logging` is currently not supported by `eirini`.
 
 ## Contributing
 
