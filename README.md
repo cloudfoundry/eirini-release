@@ -45,13 +45,15 @@ To enable logging with `log-cache` you need to deploy oratos on your kubernetes 
 ```bash
 $ log-cache tail <app_guid>
 ```
-OR
+You can also use `cf` directly by installing the [log-cache plugin](https://github.com/cloudfoundry/log-cache-cli#installing-plugin) and using
 ```bash
 $ cf tail <app_name>
 ```
 You can get the _<app_guid>_ by running `cf app <app_name> --guid`
 
-_Example_: 
+**Note**: before calling any of `log-cache` or `cf tail` you *must* export the `LOG_CACHE_ADDR` environment variable as specified [here](https://github.com/gdankov/oratos-deployment/tree/eirini#accessing-logs-via-logcache).
+
+_Example calls_:
 ``` bash
 $ log-cache tail 05f501f4-569f-429d-a3f5-bedc15b923b5
 $ cf tail dora
