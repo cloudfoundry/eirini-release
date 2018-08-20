@@ -56,3 +56,6 @@ properties:
     description: "password for nats"
   opi.nats_ip:
     description: "nats_ip"
+  opi.use_ingress:
+    default: true
+    description: "If this is true, Eirini creates an ingress and the Cloud Foundry Router forwards app requests to it. Otherwise, an ingress is not created and the Cloud Foundry Router forwards requests directly to the app service."
