@@ -128,7 +128,7 @@ prepare_eirini_release() {
 
 prepare_capi_release() {
   pushd "$CAPI_RELEASE"
-    git submodule update --init --recursive
+    git submodule update --init --recursive --remote
     bosh sync-blobs
   popd
 }
