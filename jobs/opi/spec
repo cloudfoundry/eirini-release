@@ -42,6 +42,8 @@ properties:
     description: "True to continue with an insecure target"
   opi.registry_address:
     description: "Address of registry"
+  opi.eirini_address:
+    description: "Address of eirini"
   opi.internal_registry_address:
     default: http://127.0.0.1:8080
     description: "Internal address of the registry"

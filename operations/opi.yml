@@ -39,6 +39,7 @@
           kube_namespace: "((kube_namespace))"
           kube_endpoint: "((kube_endpoint))"
           registry_address: "((registry_address))"
+          eirini_address: "((opi_cf_url))"
           nats_ip: "((nats_ip))"
           nats_password: "((nats_password))"
 
