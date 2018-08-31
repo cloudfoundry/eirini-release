@@ -42,7 +42,7 @@ opi:
   api_endpoint: "<cf-api-endpoint>"
   cf_username: "<cf-username>"
   cf_password: "<cf-password>"
-  registry_address: "<eirini-registry-host>:<port>"
+  external_eirini_address: "<eirini-registry-host>:<port>"
   eirini_address: "<eirini-opi-host>:<port>"
   skip_ssl_validation: <true | false>
   insecure_skip_verify: <true | false>
@@ -50,7 +50,7 @@ opi:
 
 - `kube_namespace`: Namespace where CF apps are going to be deployed by OPI
 - `nats_password & nats_ip`: Nats information can be found in [cf-deployment](https://github.com/cloudfoundry/cf-deployment) manifest and `deployment-vars.yml`
-- `registry_address`: Host:Port for Eirini registry, usually on port `8080`
+- `external_eirini_address`: Host:Port for Eirini registry, usually on port `8080`
 - `eirini_address`: Host:Port for Eirini opi, usually on port `8085`
 
 1. Install the chart using the following `helm` command:
