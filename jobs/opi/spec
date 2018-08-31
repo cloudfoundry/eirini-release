@@ -40,7 +40,7 @@ properties:
   opi.skipSslValidation:
     default: false
     description: "True to continue with an insecure target"
-  opi.external_eirini_address:
+  opi.registry_address:
     description: "Address of registry"
   opi.eirini_address:
     description: "Address of eirini"
