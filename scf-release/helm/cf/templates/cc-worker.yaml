@@ -1,0 +1,405 @@
+---
+# The cc-worker instance group contains the following jobs:
+#
+# - global-properties: Dummy BOSH job used to host global parameters that are
+#   required to configure SCF
+#
+# - authorize-internal-ca: Install both internal and UAA CA certificates
+#
+# - cloud_controller_worker: Cloud Controller worker processes background tasks
+#   submitted via the.
+#
+# Also: metron_agent
+
+{{- if gt (int .Values.sizing.cc_worker.count) 65535 }}
+_maxReplicas: {{ fail "cc_worker cannot have more than 65535 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.cc_worker.count) 1) (lt (int .Values.sizing.cc_worker.count) 2)) }}
+_minHAReplicas: {{ fail "cc_worker must have at least 2 instances for HA" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.cc_worker.count) 1 }}
+_minReplicas: {{ fail "cc_worker must have at least 1 instances" }}
+{{- end }}
+
+{{- if .Values.sizing.HA }}
+_moved_sizing_HA: {{ fail "Bad use of moved variable sizing.HA. The new name to use is config.HA" }}
+{{- end }}
+
+{{- if .Values.sizing.cpu }}
+_moved_sizing_cpu_limits: {{ if .Values.sizing.cpu.limits }} {{ fail "Bad use of moved variable sizing.cpu.limits. The new name to use is config.cpu.limits" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.cpu }}
+_moved_sizing_cpu_requests: {{ if .Values.sizing.cpu.requests }} {{ fail "Bad use of moved variable sizing.cpu.requests. The new name to use is config.cpu.requests" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.memory }}
+_moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad use of moved variable sizing.memory.limits. The new name to use is config.memory.limits" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.memory }}
+_moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
+{{- end }}
+
+apiVersion: "apps/v1beta1"
+kind: "StatefulSet"
+metadata:
+  name: "cc-worker"
+  labels:
+    skiff-role-name: "cc-worker"
+spec:
+  podManagementPolicy: "Parallel"
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cc_worker.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.cc_worker.count }} {{- end }}
+  serviceName: "cc-worker-set"
+  template:
+    metadata:
+      name: "cc-worker"
+      labels:
+        skiff-role-name: "cc-worker"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "skiff-role-name"
+                  operator: "In"
+                  values:
+                  - "cc-worker"
+              topologyKey: "beta.kubernetes.io/os"
+            weight: 100
+        {{- if .Values.sizing.cc_worker.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.cc_worker.affinity.nodeAffinity }}
+        {{- end }}
+      containers:
+      - env:
+        - name: "ALLOW_APP_SSH_ACCESS"
+          value: {{if ne (typeOf .Values.env.ALLOW_APP_SSH_ACCESS) "<nil>"}}{{if has (kindOf .Values.env.ALLOW_APP_SSH_ACCESS) (list "map" "slice")}}{{.Values.env.ALLOW_APP_SSH_ACCESS | toJson | quote}}{{else}}{{.Values.env.ALLOW_APP_SSH_ACCESS | quote}}{{end}}{{else}}{{fail "env.ALLOW_APP_SSH_ACCESS has not been set"}}{{end}}
+
+        {{- if not .Values.secrets.BLOBSTORE_PASSWORD }}
+        - name: "BLOBSTORE_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "blobstore-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BLOBSTORE_PASSWORD }}
+        - name: "BLOBSTORE_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "blobstore-password"
+              name: "secrets"
+        {{- end }}
+
+        - name: "CATS_SUITES"
+          value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
+        - name: "CC_DB_CURRENT_KEY_LABEL"
+          value: {{if ne (typeOf .Values.env.CC_DB_CURRENT_KEY_LABEL) "<nil>"}}{{if has (kindOf .Values.env.CC_DB_CURRENT_KEY_LABEL) (list "map" "slice")}}{{.Values.env.CC_DB_CURRENT_KEY_LABEL | toJson | quote}}{{else}}{{.Values.env.CC_DB_CURRENT_KEY_LABEL | quote}}{{end}}{{else}}""{{end}}
+        - name: "CC_DB_ENCRYPTION_KEYS"
+          valueFrom:
+            secretKeyRef:
+              key: "cc-db-encryption-keys"
+              name: "secrets"
+
+        {{- if .Values.secrets.CC_SERVER_CRT }}
+        - name: "CC_SERVER_CRT"
+          valueFrom:
+            secretKeyRef:
+              key: "cc-server-crt"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.CC_SERVER_CRT }}
+        - name: "CC_SERVER_CRT"
+          valueFrom:
+            secretKeyRef:
+              key: "cc-server-crt"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.CC_SERVER_KEY }}
+        - name: "CC_SERVER_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "cc-server-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.CC_SERVER_KEY }}
+        - name: "CC_SERVER_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "cc-server-key"
+              name: "secrets"
+        {{- end }}
+
+        - name: "CDN_URI"
+          value: {{if ne (typeOf .Values.env.CDN_URI) "<nil>"}}{{if has (kindOf .Values.env.CDN_URI) (list "map" "slice")}}{{.Values.env.CDN_URI | toJson | quote}}{{else}}{{.Values.env.CDN_URI | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_ENCRYPTION_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "db-encryption-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        - name: "DEFAULT_APP_DISK_IN_MB"
+          value: {{if ne (typeOf .Values.env.DEFAULT_APP_DISK_IN_MB) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_APP_DISK_IN_MB) (list "map" "slice")}}{{.Values.env.DEFAULT_APP_DISK_IN_MB | toJson | quote}}{{else}}{{.Values.env.DEFAULT_APP_DISK_IN_MB | quote}}{{end}}{{else}}{{fail "env.DEFAULT_APP_DISK_IN_MB has not been set"}}{{end}}
+        - name: "DEFAULT_APP_MEMORY"
+          value: {{if ne (typeOf .Values.env.DEFAULT_APP_MEMORY) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_APP_MEMORY) (list "map" "slice")}}{{.Values.env.DEFAULT_APP_MEMORY | toJson | quote}}{{else}}{{.Values.env.DEFAULT_APP_MEMORY | quote}}{{end}}{{else}}{{fail "env.DEFAULT_APP_MEMORY has not been set"}}{{end}}
+        - name: "DEFAULT_APP_SSH_ACCESS"
+          value: {{if ne (typeOf .Values.env.DEFAULT_APP_SSH_ACCESS) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_APP_SSH_ACCESS) (list "map" "slice")}}{{.Values.env.DEFAULT_APP_SSH_ACCESS | toJson | quote}}{{else}}{{.Values.env.DEFAULT_APP_SSH_ACCESS | quote}}{{end}}{{else}}{{fail "env.DEFAULT_APP_SSH_ACCESS has not been set"}}{{end}}
+        - name: "DEFAULT_STACK"
+          value: {{if ne (typeOf .Values.env.DEFAULT_STACK) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_STACK) (list "map" "slice")}}{{.Values.env.DEFAULT_STACK | toJson | quote}}{{else}}{{.Values.env.DEFAULT_STACK | quote}}{{end}}{{else}}""{{end}}
+        - name: "DISABLE_CUSTOM_BUILDPACKS"
+          value: {{if ne (typeOf .Values.env.DISABLE_CUSTOM_BUILDPACKS) "<nil>"}}{{if has (kindOf .Values.env.DISABLE_CUSTOM_BUILDPACKS) (list "map" "slice")}}{{.Values.env.DISABLE_CUSTOM_BUILDPACKS | toJson | quote}}{{else}}{{.Values.env.DISABLE_CUSTOM_BUILDPACKS | quote}}{{end}}{{else}}{{fail "env.DISABLE_CUSTOM_BUILDPACKS has not been set"}}{{end}}
+        - name: "DOMAIN"
+          value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
+        - name: "GARDEN_ROOTFS_DRIVER"
+          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
+
+        {{- if not .Values.secrets.INTERNAL_API_PASSWORD }}
+        - name: "INTERNAL_API_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-api-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.INTERNAL_API_PASSWORD }}
+        - name: "INTERNAL_API_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-api-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "KUBERNETES_CLUSTER_DOMAIN"
+          value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+        - name: "KUBE_AZ"
+          value: "z1"
+        - name: "LOG_LEVEL"
+          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
+        - name: "MAX_APP_DISK_IN_MB"
+          value: {{if ne (typeOf .Values.env.MAX_APP_DISK_IN_MB) "<nil>"}}{{if has (kindOf .Values.env.MAX_APP_DISK_IN_MB) (list "map" "slice")}}{{.Values.env.MAX_APP_DISK_IN_MB | toJson | quote}}{{else}}{{.Values.env.MAX_APP_DISK_IN_MB | quote}}{{end}}{{else}}{{fail "env.MAX_APP_DISK_IN_MB has not been set"}}{{end}}
+        - name: "MAX_HEALTH_CHECK_TIMEOUT"
+          value: {{if ne (typeOf .Values.env.MAX_HEALTH_CHECK_TIMEOUT) "<nil>"}}{{if has (kindOf .Values.env.MAX_HEALTH_CHECK_TIMEOUT) (list "map" "slice")}}{{.Values.env.MAX_HEALTH_CHECK_TIMEOUT | toJson | quote}}{{else}}{{.Values.env.MAX_HEALTH_CHECK_TIMEOUT | quote}}{{end}}{{else}}{{fail "env.MAX_HEALTH_CHECK_TIMEOUT has not been set"}}{{end}}
+
+        {{- if not .Values.secrets.METRON_CERT }}
+        - name: "METRON_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.METRON_CERT }}
+        - name: "METRON_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.METRON_KEY }}
+        - name: "METRON_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.METRON_KEY }}
+        - name: "METRON_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.MYSQL_CCDB_ROLE_PASSWORD }}
+        - name: "MYSQL_CCDB_ROLE_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-ccdb-role-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_CCDB_ROLE_PASSWORD }}
+        - name: "MYSQL_CCDB_ROLE_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-ccdb-role-password"
+              name: "secrets"
+        {{- end }}
+
+        - name: "SCF_LOG_HOST"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_HOST) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_HOST) (list "map" "slice")}}{{.Values.env.SCF_LOG_HOST | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PORT"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PROTOCOL"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
+        - name: "STAGING_TIMEOUT"
+          value: {{if ne (typeOf .Values.env.STAGING_TIMEOUT) "<nil>"}}{{if has (kindOf .Values.env.STAGING_TIMEOUT) (list "map" "slice")}}{{.Values.env.STAGING_TIMEOUT | toJson | quote}}{{else}}{{.Values.env.STAGING_TIMEOUT | quote}}{{end}}{{else}}{{fail "env.STAGING_TIMEOUT has not been set"}}{{end}}
+
+        {{- if not .Values.secrets.STAGING_UPLOAD_PASSWORD }}
+        - name: "STAGING_UPLOAD_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "staging-upload-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.STAGING_UPLOAD_PASSWORD }}
+        - name: "STAGING_UPLOAD_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "staging-upload-password"
+              name: "secrets"
+        {{- end }}
+
+        - name: "SUSE_STACK"
+          value: "opensuse42"
+        - name: "SUSE_STACK_DESCRIPTION"
+          value: "openSUSE-based filesystem"
+        - name: "UAA_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-ca-cert"
+              name: "secrets"
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
+        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-routing-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
+        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-routing-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-dashboards-client-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-dashboards-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "UAA_HOST"
+          value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
+        - name: "UAA_PORT"
+          value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "USE_DIEGO_PRIVILEGED_CONTAINERS"
+          value: {{if ne (typeOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_DIEGO_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
+        - name: "USE_STAGER_PRIVILEGED_CONTAINERS"
+          value: {{if ne (typeOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_STAGER_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-worker:1f2443aa67b5de145ff06baf6651cc69defdbbe9"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - "/opt/fissile/pre-stop.sh"
+        livenessProbe: ~
+        name: "cc-worker"
+        ports: ~
+        readinessProbe:
+          exec:
+            command:
+            - "/opt/fissile/readiness-probe.sh"
+        resources:
+          requests:
+            {{- if and .Values.config.memory.requests .Values.sizing.cc_worker.memory.request }}
+            memory: "{{ int .Values.sizing.cc_worker.memory.request }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.requests .Values.sizing.cc_worker.cpu.request }}
+            cpu: "{{ int .Values.sizing.cc_worker.cpu.request }}m"
+            {{- end }}
+
+          limits:
+            {{- if and .Values.config.memory.limits .Values.sizing.cc_worker.memory.limit }}
+            memory: "{{ int .Values.sizing.cc_worker.memory.limit }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.limits .Values.sizing.cc_worker.cpu.limit }}
+            cpu: "{{ int .Values.sizing.cc_worker.cpu.limit }}m"
+            {{- end }}
+
+        securityContext:
+          {{- if has "ALL" .Values.sizing.cc_worker.capabilities }}
+          privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.cc_worker.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.cc_worker.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+        volumeMounts: ~
+      dnsPolicy: "ClusterFirst"
+      imagePullSecrets:
+      - name: "registry-credentials"
+      restartPolicy: "Always"
+      terminationGracePeriodSeconds: 600
+      volumes: ~
+  {{- if or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 7)) }}
+  updateStrategy:
+    type: "RollingUpdate"
+  {{- end }}

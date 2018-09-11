@@ -1,0 +1,272 @@
+---
+# The eirini instance group contains the following jobs:
+#
+# - global-properties: Dummy BOSH job used to host global parameters that are
+#   required to configure SCF
+#
+# - authorize-internal-ca: Install both internal and UAA CA certificates
+#
+# - patch-properties: Dummy BOSH job used to host parameters that are used in
+#   SCF patches for upstream bugs
+#
+# Also: opi, cflinuxfs2-rootfs-setup, registry
+
+{{- if gt (int .Values.sizing.eirini.count) 1 }}
+_maxReplicas: {{ fail "eirini cannot have more than 1 instances" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.eirini.count) 1 }}
+_minReplicas: {{ fail "eirini must have at least 1 instances" }}
+{{- end }}
+
+{{- if .Values.sizing.HA }}
+_moved_sizing_HA: {{ fail "Bad use of moved variable sizing.HA. The new name to use is config.HA" }}
+{{- end }}
+
+{{- if .Values.sizing.cpu }}
+_moved_sizing_cpu_limits: {{ if .Values.sizing.cpu.limits }} {{ fail "Bad use of moved variable sizing.cpu.limits. The new name to use is config.cpu.limits" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.cpu }}
+_moved_sizing_cpu_requests: {{ if .Values.sizing.cpu.requests }} {{ fail "Bad use of moved variable sizing.cpu.requests. The new name to use is config.cpu.requests" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.memory }}
+_moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad use of moved variable sizing.memory.limits. The new name to use is config.memory.limits" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.memory }}
+_moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
+{{- end }}
+
+apiVersion: "apps/v1beta1"
+kind: "StatefulSet"
+metadata:
+  name: "eirini"
+  labels:
+    skiff-role-name: "eirini"
+spec:
+  podManagementPolicy: "Parallel"
+  replicas: {{ .Values.sizing.eirini.count }}
+  serviceName: "eirini-set"
+  template:
+    metadata:
+      name: "eirini"
+      labels:
+        skiff-role-name: "eirini"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+    spec:
+      containers:
+      - env:
+        - name: "CATS_SUITES"
+          value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
+        - name: "CLUSTER_ADMIN_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "cluster-admin-password"
+              name: "secrets"
+        - name: "EIRINI_KUBE_CONFIG"
+          value: {{if ne (typeOf .Values.env.EIRINI_KUBE_CONFIG) "<nil>"}}{{if has (kindOf .Values.env.EIRINI_KUBE_CONFIG) (list "map" "slice")}}{{.Values.env.EIRINI_KUBE_CONFIG | toJson | quote}}{{else}}{{.Values.env.EIRINI_KUBE_CONFIG | quote}}{{end}}{{else}}""{{end}}
+        - name: "EIRINI_KUBE_ENDPOINT"
+          value: {{if ne (typeOf .Values.env.EIRINI_KUBE_ENDPOINT) "<nil>"}}{{if has (kindOf .Values.env.EIRINI_KUBE_ENDPOINT) (list "map" "slice")}}{{.Values.env.EIRINI_KUBE_ENDPOINT | toJson | quote}}{{else}}{{.Values.env.EIRINI_KUBE_ENDPOINT | quote}}{{end}}{{else}}""{{end}}
+        - name: "EIRINI_KUBE_NAMESPACE"
+          value: {{if ne (typeOf .Values.env.EIRINI_KUBE_NAMESPACE) "<nil>"}}{{if has (kindOf .Values.env.EIRINI_KUBE_NAMESPACE) (list "map" "slice")}}{{.Values.env.EIRINI_KUBE_NAMESPACE | toJson | quote}}{{else}}{{.Values.env.EIRINI_KUBE_NAMESPACE | quote}}{{end}}{{else}}""{{end}}
+        - name: "EIRINI_REGISTRY_ADDRESS"
+          value: {{if ne (typeOf .Values.env.EIRINI_REGISTRY_ADDRESS) "<nil>"}}{{if has (kindOf .Values.env.EIRINI_REGISTRY_ADDRESS) (list "map" "slice")}}{{.Values.env.EIRINI_REGISTRY_ADDRESS | toJson | quote}}{{else}}{{.Values.env.EIRINI_REGISTRY_ADDRESS | quote}}{{end}}{{else}}""{{end}}
+        - name: "GARDEN_ROOTFS_DRIVER"
+          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
+
+        {{- if not .Values.secrets.INTERNAL_API_PASSWORD }}
+        - name: "INTERNAL_API_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-api-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.INTERNAL_API_PASSWORD }}
+        - name: "INTERNAL_API_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-api-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
+        {{- end }}
+
+        - name: "KUBERNETES_CLUSTER_DOMAIN"
+          value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.NATS_PASSWORD }}
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.NATS_PASSWORD }}
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets"
+        {{- end }}
+
+        - name: "ROOTFS_TRUSTED_CERTS"
+          value: {{if ne (typeOf .Values.env.ROOTFS_TRUSTED_CERTS) "<nil>"}}{{if has (kindOf .Values.env.ROOTFS_TRUSTED_CERTS) (list "map" "slice")}}{{.Values.env.ROOTFS_TRUSTED_CERTS | toJson | quote}}{{else}}{{.Values.env.ROOTFS_TRUSTED_CERTS | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_HOST"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_HOST) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_HOST) (list "map" "slice")}}{{.Values.env.SCF_LOG_HOST | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PORT"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PROTOCOL"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
+        - name: "UAA_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-ca-cert"
+              name: "secrets"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-eirini:7f62bfc6a1afc93143dfc35bf5c59eb85e899282"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - "/opt/fissile/pre-stop.sh"
+        livenessProbe: ~
+        name: "eirini"
+        ports:
+        - containerPort: 8085
+          name: "opi-server"
+          protocol: "TCP"
+        - containerPort: 8080
+          name: "opi-registry"
+          protocol: "TCP"
+        readinessProbe:
+          exec:
+            command:
+            - "/opt/fissile/readiness-probe.sh"
+        resources:
+          requests:
+            {{- if and .Values.config.memory.requests .Values.sizing.eirini.memory.request }}
+            memory: "{{ int .Values.sizing.eirini.memory.request }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.requests .Values.sizing.eirini.cpu.request }}
+            cpu: "{{ int .Values.sizing.eirini.cpu.request }}m"
+            {{- end }}
+
+          limits:
+            {{- if and .Values.config.memory.limits .Values.sizing.eirini.memory.limit }}
+            memory: "{{ int .Values.sizing.eirini.memory.limit }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.limits .Values.sizing.eirini.cpu.limit }}
+            cpu: "{{ int .Values.sizing.eirini.cpu.limit }}m"
+            {{- end }}
+
+        securityContext:
+          privileged: true
+        volumeMounts: ~
+      dnsPolicy: "ClusterFirst"
+      imagePullSecrets:
+      - name: "registry-credentials"
+      restartPolicy: "Always"
+      terminationGracePeriodSeconds: 600
+      volumes: ~
+  {{- if or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 7)) }}
+  updateStrategy:
+    type: "RollingUpdate"
+  {{- end }}
+---
+apiVersion: "v1"
+items:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "eirini-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "opi-server"
+      port: 8085
+      protocol: "TCP"
+      targetPort: 0
+    - name: "opi-registry"
+      port: 5800
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "eirini"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "eirini"
+  spec:
+    ports:
+    - name: "opi-server"
+      port: 8085
+      protocol: "TCP"
+      targetPort: "opi-server"
+    - name: "opi-registry"
+      port: 5800
+      protocol: "TCP"
+      targetPort: "opi-registry"
+    selector:
+      skiff-role-name: "eirini"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "eirini-public"
+  spec:
+    {{- if not .Values.services.loadbalanced }}
+    externalIPs: {{ .Values.kube.external_ips | toJson }}
+    {{- end }}
+
+    ports:
+    - name: "opi-registry"
+      port: 5800
+      protocol: "TCP"
+      targetPort: "opi-registry"
+    selector:
+      skiff-role-name: "eirini"
+
+    {{- if .Values.services.loadbalanced }}
+    type: "LoadBalancer"
+    {{- end }}
+
+kind: "List"

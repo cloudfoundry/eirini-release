@@ -1,0 +1,28 @@
+---
+{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
+apiVersion: "rbac.authorization.k8s.io/v1beta1"
+kind: "Role"
+metadata:
+  name: "configgin-role"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - "pods"
+  verbs:
+  - "get"
+  - "list"
+  - "patch"
+- apiGroups:
+  - ""
+  resources:
+  - "services"
+  verbs:
+  - "get"
+- apiGroups:
+  - "apps"
+  resources:
+  - "statefulsets"
+  verbs:
+  - "get"
+{{- end }}

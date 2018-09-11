@@ -1,0 +1,381 @@
+---
+# The post-deployment-setup instance group contains the following jobs:
+#
+# - global-properties: Dummy BOSH job used to host global parameters that are
+#   required to configure SCF
+#
+# - authorize-internal-ca: Install both internal and UAA CA certificates
+#
+# - uaa-create-user: Create the initial user in UAA
+#
+# - configure-scf: Uses the cf CLI to configure SCF once it's online (things
+#   like proxy settings, service brokers, etc.)
+apiVersion: "batch/v1"
+kind: "Job"
+metadata:
+  name: "post-deployment-setup-{{ .Release.Revision }}"
+spec:
+  template:
+    metadata:
+      name: "post-deployment-setup"
+      labels:
+        skiff-role-name: "post-deployment-setup"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+    spec:
+      containers:
+      - env:
+        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) (list "map" "slice")}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | quote}}{{end}}{{else}}""{{end}}
+        - name: "CATS_SUITES"
+          value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
+        - name: "CLUSTER_ADMIN_AUTHORITIES"
+          value: {{if ne (typeOf .Values.env.CLUSTER_ADMIN_AUTHORITIES) "<nil>"}}{{if has (kindOf .Values.env.CLUSTER_ADMIN_AUTHORITIES) (list "map" "slice")}}{{.Values.env.CLUSTER_ADMIN_AUTHORITIES | toJson | quote}}{{else}}{{.Values.env.CLUSTER_ADMIN_AUTHORITIES | quote}}{{end}}{{else}}{{fail "env.CLUSTER_ADMIN_AUTHORITIES has not been set"}}{{end}}
+        - name: "CLUSTER_ADMIN_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "cluster-admin-password"
+              name: "secrets"
+        - name: "GARDEN_ROOTFS_DRIVER"
+          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
+        - name: "HTTPS_PROXY"
+          value: {{if ne (typeOf .Values.env.HTTPS_PROXY) "<nil>"}}{{if has (kindOf .Values.env.HTTPS_PROXY) (list "map" "slice")}}{{.Values.env.HTTPS_PROXY | toJson | quote}}{{else}}{{.Values.env.HTTPS_PROXY | quote}}{{end}}{{else}}""{{end}}
+        - name: "HTTP_PROXY"
+          value: {{if ne (typeOf .Values.env.HTTP_PROXY) "<nil>"}}{{if has (kindOf .Values.env.HTTP_PROXY) (list "map" "slice")}}{{.Values.env.HTTP_PROXY | toJson | quote}}{{else}}{{.Values.env.HTTP_PROXY | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "KUBERNETES_CLUSTER_DOMAIN"
+          value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
+        {{- end }}
+
+        - name: "NO_PROXY"
+          value: {{if ne (typeOf .Values.env.NO_PROXY) "<nil>"}}{{if has (kindOf .Values.env.NO_PROXY) (list "map" "slice")}}{{.Values.env.NO_PROXY | toJson | quote}}{{else}}{{.Values.env.NO_PROXY | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
+        - name: "PERSI_NFS_BROKER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "persi-nfs-broker-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
+        - name: "PERSI_NFS_BROKER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "persi-nfs-broker-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "SCF_LOG_HOST"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_HOST) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_HOST) (list "map" "slice")}}{{.Values.env.SCF_LOG_HOST | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PORT"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PROTOCOL"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
+        - name: "UAA_ADMIN_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-admin-client-secret"
+              name: "secrets"
+        - name: "UAA_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-ca-cert"
+              name: "secrets"
+
+        {{- if not .Values.secrets.UAA_CC_CLIENT_SECRET }}
+        - name: "UAA_CC_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-cc-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CC_CLIENT_SECRET }}
+        - name: "UAA_CC_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-cc-client-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
+        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-routing-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
+        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-routing-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-dashboards-client-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-dashboards-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-key-client-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-key-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CF_USB_SECRET }}
+        - name: "UAA_CLIENTS_CF_USB_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cf-usb-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CF_USB_SECRET }}
+        - name: "UAA_CLIENTS_CF_USB_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cf-usb-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET }}
+        - name: "UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cloud-controller-username-lookup-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET }}
+        - name: "UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cloud-controller-username-lookup-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET }}
+        - name: "UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-diego-ssh-proxy-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET }}
+        - name: "UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-diego-ssh-proxy-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_DOPPLER_SECRET }}
+        - name: "UAA_CLIENTS_DOPPLER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-doppler-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_DOPPLER_SECRET }}
+        - name: "UAA_CLIENTS_DOPPLER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-doppler-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
+        - name: "UAA_CLIENTS_GOROUTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-gorouter-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
+        - name: "UAA_CLIENTS_GOROUTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-gorouter-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
+        - name: "UAA_CLIENTS_LOGIN_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-login-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
+        - name: "UAA_CLIENTS_LOGIN_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-login-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET }}
+        - name: "UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-scf-auto-config-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET }}
+        - name: "UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-scf-auto-config-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_TCP_EMITTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_EMITTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-tcp-emitter-secret"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_TCP_EMITTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_EMITTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-tcp-emitter-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_TCP_ROUTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_ROUTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-tcp-router-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_TCP_ROUTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_ROUTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-tcp-router-secret"
+              name: "secrets"
+        {{- end }}
+
+        - name: "UAA_HOST"
+          value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
+        - name: "UAA_PORT"
+          value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:5e5dd48d40bbdb8e6923bfc9275f25996e48fb63"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - "/opt/fissile/pre-stop.sh"
+        livenessProbe: ~
+        name: "post-deployment-setup"
+        ports: ~
+        readinessProbe: ~
+        resources:
+          requests:
+            {{- if and .Values.config.memory.requests .Values.sizing.post_deployment_setup.memory.request }}
+            memory: "{{ int .Values.sizing.post_deployment_setup.memory.request }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.requests .Values.sizing.post_deployment_setup.cpu.request }}
+            cpu: "{{ int .Values.sizing.post_deployment_setup.cpu.request }}m"
+            {{- end }}
+
+          limits:
+            {{- if and .Values.config.memory.limits .Values.sizing.post_deployment_setup.memory.limit }}
+            memory: "{{ int .Values.sizing.post_deployment_setup.memory.limit }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.limits .Values.sizing.post_deployment_setup.cpu.limit }}
+            cpu: "{{ int .Values.sizing.post_deployment_setup.cpu.limit }}m"
+            {{- end }}
+
+        securityContext:
+          {{- if has "ALL" .Values.sizing.post_deployment_setup.capabilities }}
+          privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.post_deployment_setup.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.post_deployment_setup.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+        volumeMounts: ~
+      dnsPolicy: "ClusterFirst"
+      imagePullSecrets:
+      - name: "registry-credentials"
+      restartPolicy: "OnFailure"
+      terminationGracePeriodSeconds: 600
+      volumes: ~
