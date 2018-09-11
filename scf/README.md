@@ -1,0 +1,44 @@
+# SCF + Eirini
+
+You are basically two `helm install's` away from deploying `SCF` with `Eirini`. But before you can execute helm you have to do some basic setup. The instructions below will guide you through the necessary steps and redirect you to the official [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF) whenever needed. 
+
+## Prereqs:
+
+- Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes). 
+- Install [helm](https://helm.sh/)
+
+## Deploy
+
+1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. 
+1. Configure your deployment as described in the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment) 
+   
+   Add Eirini-specific values to the `scf-config-values.yml` file:
+
+   ```yaml
+   env:
+     EIRINI_KUBE_ENDPOINT: <kube-endpoint>
+     EIRINI_REGISTRY_ADDRESS: <node-ip>:5800
+     EIRINI_KUBE_CONFIG: <kube-config>
+   ```
+
+   - `EIRINI_KUBE_ENDPOINT`: This is the API endpoint of your Kube cluster. 
+   - `EIRINI_REGISTRY_ADDRESS`: The `eirini-registry` is exposed via NodePort `5800`. So the node-ip has to match any `worker` node in your kube cluster. 
+   - `EIRINI_KUBE_CONFIG`: 
+
+   One way to get your kube-config as compact escaped json is:
+
+   ```bash 
+   $ kubectl config view --flatten -o json | ruby -ryaml -rjson -e 'puts JSON.generate(YAML.load(ARGF))' | sed 's/\"/\\\"/g'
+   ```
+
+1. Create the well-known namespace `eirini`:
+
+   ```bash
+   $ kubectl create namespace eirini
+   ```
+
+   All apps will be deployed to this namespace.
+
+1. Deploy SCF by following the steps in [this](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm) section. The remainder of that document is optional.
+
+1. Enjoy Eirini ;)
