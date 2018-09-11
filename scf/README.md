@@ -7,6 +7,35 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 - Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes). 
 - Install [helm](https://helm.sh/)
 
+### Minikube [in progress and not fully tested yet]
+
+If you want to deploy to `minikube` you will need to do some additional steps before you start:
+
+1. Start minikube with RBAC enabled: `minikube start --extra-config=apiserver.Authorization.Mode=RBAC --cpus 4 --disk-size 100g --memory 8192`
+1. Install Tiller with a serviceaccount:
+
+   ```bash
+   $ kubectl create serviceaccount --namespace kube-system tiller
+   $ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+   $ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+   ```
+1. Apply the `persistent` storage class:
+
+   ```yaml 
+   ---
+   kind: StorageClass
+   apiVersion: storage.k8s.io/v1beta1
+   metadata:
+     name: persistent
+     annotations:
+       storageclass.kubernetes.io/is-default-class: "true"
+   provisioner: kubernetes.io/host-path
+   parameters:
+     path: /tmp	 
+	 ```
+
+Note: The experience on minikube is really slow!
+
 ## Deploy
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. 
