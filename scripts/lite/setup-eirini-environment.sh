@@ -3,6 +3,7 @@
 
 readonly REGISTRY_PORT=8080
 readonly OPI_PORT=8085
+readonly EIRINI_IP="10.244.0.42"
 
 # Each required step is a separate function (they contain the commands that needs to be executed for the particular step) and the `main` tells you the order of the required steps.
 main() {
@@ -98,12 +99,12 @@ add_eirini_routes(){
 
   ssh -o "StrictHostKeyChecking no" jumpbox@192.168.50.6 \
     -i "$BOSH_DEPLOYMENT_DIR"/jumpbox.key \
-    "sudo iptables -t nat -I PREROUTING 2 -p tcp --dport $OPI_PORT -j DNAT --to 10.244.0.142:$OPI_PORT"
+    "sudo iptables -t nat -I PREROUTING 2 -p tcp --dport $OPI_PORT -j DNAT --to $EIRINI_IP:$OPI_PORT"
   verify_exit_code $? "Failed to add route for OPI. If you got 'Too many authentication failures for jumpbox' failure, run '$ ssh-add -D'"
 
   ssh -o "StrictHostKeyChecking no" jumpbox@192.168.50.6 \
     -i "$BOSH_DEPLOYMENT_DIR"/jumpbox.key \
-    "sudo iptables -t nat -I PREROUTING 2 -p tcp --dport $REGISTRY_PORT -j DNAT --to 10.244.0.142:$REGISTRY_PORT"
+    "sudo iptables -t nat -I PREROUTING 2 -p tcp --dport $REGISTRY_PORT -j DNAT --to $EIRINI_IP:$REGISTRY_PORT"
   verify_exit_code $? "Failed to add route for Registry. If you got 'Too many authentication failures for jumpbox' failure, run '$ ssh-add -D'"
 }
 
@@ -112,7 +113,7 @@ add_eirini_routes(){
 setup_minikube() {
   minikube start \
     --host-only-cidr 192.168.50.1/24 \
-    --insecure-registry="10.244.0.142:$REGISTRY_PORT"
+    --insecure-registry="$EIRINI_IP:$REGISTRY_PORT"
   verify_exit_code $? "Failed to setup minikube"
 }
 
@@ -146,6 +147,7 @@ deploy_cf_and_eirini() {
      --ops-file "$EIRINI_RELEASE"/operations/capi-dev-version.yml \
      --ops-file "$EIRINI_RELEASE"/operations/enable-opi.yml \
      --ops-file "$EIRINI_RELEASE"/operations/disable-router-tls.yml \
+     --ops-file "$EIRINI_RELEASE"/operations/bosh-lite-static-ip.yml \
      --vars-store "$CF_DEPLOYMENT"/deployment-vars.yml \
      --var=k8s_flatten_cluster_config="$(kubectl config view --flatten=true)" \
      --var system_domain=bosh-lite.com \
@@ -154,8 +156,9 @@ deploy_cf_and_eirini() {
      --var kube_endpoint="no-endpoint" \
      --var nats_ip=10.244.0.129 \
      --var opi_cf_url="http://opi.service.cf.internal:$OPI_PORT" \
-     --var registry_address="10.244.0.142:$REGISTRY_PORT" \
+     --var registry_address="$EIRINI_IP:$REGISTRY_PORT" \
      --var eirini_local_path="$EIRINI_RELEASE" \
+     --var static_ip="$EIRINI_IP" \
      --var capi_local_path="$CAPI_RELEASE" > "$EIRINI_LITE"/manifest.yml
   verify_exit_code $? "Failed to create manifest"
 

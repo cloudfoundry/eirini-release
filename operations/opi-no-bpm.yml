@@ -47,11 +47,7 @@
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/temporary_local_staging?
   value: false
 
-- type: replace
-  path: /instance_groups/name=eirini/networks
-  value:
-  - name: default
-    static_ips: [10.244.0.142]
+
 
 - type: replace
   path: /addons/name=bosh-dns-aliases/jobs/name=bosh-dns-aliases/properties/aliases/domain=opi.service.cf.internal?/-
