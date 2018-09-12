@@ -11,10 +11,11 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 
 If you want to deploy to `minikube` you will need to do some additional steps before you start:
 
-1. Start minikube with RBAC enabled: `minikube start --extra-config=apiserver.Authorization.Mode=RBAC --cpus 4 --disk-size 100g --memory 8192`
+1. Start minikube with RBAC enabled and enough resources: `minikube start --extra-config=apiserver.Authorization.Mode=RBAC --cpus 4 --disk-size 100g --memory 8192`
 1. Install Tiller with a serviceaccount:
 
    ```bash
+   $ helm init
    $ kubectl create serviceaccount --namespace kube-system tiller
    $ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
    $ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
@@ -33,6 +34,8 @@ If you want to deploy to `minikube` you will need to do some additional steps be
    parameters:
      path: /tmp	 
 	 ```
+
+	 Save the above content to a file and run `$ kubectl create -f <your-file-name>`
 
 Note: The experience on minikube is really slow!
 
