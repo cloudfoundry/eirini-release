@@ -30,6 +30,7 @@
           ccAPI: "((cc_api))"
           ccUser: "internal_user"
           ccPassword: "((cc_internal_api_password))"
+          cc_uploader_ip: "((cc_uploader_ip))"
           kube_config: ((k8s_flatten_cluster_config))
           adminPassword: "((cf_admin_password))"
           skipSslValidation: true

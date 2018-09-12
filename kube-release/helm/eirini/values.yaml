@@ -37,3 +37,4 @@ rbac:
 config:
   opi_image: eirini/opi
   registry_image: eirini/registry
+
