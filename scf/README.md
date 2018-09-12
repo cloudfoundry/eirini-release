@@ -7,7 +7,9 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 - Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes). 
 - Install [helm](https://helm.sh/)
 
-### Minikube [in progress and not fully tested yet]
+### Minikube [not recommended!]
+
+Please note, that we could not fully test the SCF installation on `minikube` yet and that the experience on `minikube` is really slow! 
 
 If you want to deploy to `minikube` you will need to do some additional steps before you start:
 
@@ -20,24 +22,6 @@ If you want to deploy to `minikube` you will need to do some additional steps be
    $ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
    $ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
    ```
-1. Apply the `persistent` storage class:
-
-   ```yaml 
-   ---
-   kind: StorageClass
-   apiVersion: storage.k8s.io/v1beta1
-   metadata:
-     name: persistent
-     annotations:
-       storageclass.kubernetes.io/is-default-class: "true"
-   provisioner: kubernetes.io/host-path
-   parameters:
-     path: /tmp	 
-	 ```
-
-	 Save the above content to a file and run `$ kubectl create -f <your-file-name>`
-
-Note: The experience on minikube is really slow!
 
 ## Deploy
 
