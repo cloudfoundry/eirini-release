@@ -31,6 +31,9 @@ ingress:
     port: 8080
     path: /
 
+rbac:
+  enabled: false
+
 config:
   opi_image: eirini/opi
   registry_image: eirini/registry

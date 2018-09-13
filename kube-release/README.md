@@ -55,8 +55,14 @@ opi:
 
 1. Install the chart using the following `helm` command:
 
-```
+```bash
 $ helm install --set-string ingress.opi.host="eirini-opi.<kube-ingress-endpoint>",ingress.registry.host="eirini-registry.<kube-ingress-endpoint>" ./helm/eirini
+```
+
+If your Kube-Cluster has `Role Based Access Control (RBAC)` enabled, you should enable it with [`rbac.enabled=true`]:
+
+```bash
+$ helm install --set-string ingress.opi.host="eirini-opi.<kube-ingress-endpoint>",ingress.registry.host="eirini-registry.<kube-ingress-endpoint>",rbac.enabled=true ./helm/eirini
 ```
 
 That's it :)
@@ -72,7 +78,3 @@ That's it :)
 ### Create Docker Images
 
 1. Run `docker/generate-docker-image.sh`
-
-
-
-

@@ -7,7 +7,6 @@ metadata:
     app: {{ template "eirini-chart.name" . }}
     release: {{ .Release.Name }}
 spec:
-
   replicas: 1
   selector:
     matchLabels:
@@ -19,6 +18,9 @@ spec:
         app: {{ template "eirini-chart.name" . }}
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: opi
+      {{- end }}
       volumes:
         - name: config-volume
           configMap:
@@ -26,8 +28,6 @@ spec:
             items:
             - key: opi.yaml
               path: opi.yml
-            - key: kube.yaml
-              path: kube.conf
       containers:
       - name: opi
         image: {{ .Values.config.opi_image }}
