@@ -4,7 +4,7 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 
 ## Deployment Options
 
-- [The fissiled way](#deploy-the-fissiled-way)
+- [The fissiled way](#deploy---the-fissiled-way)
 - [The native way](#the-native-way)
 
 ## Prereqs:
@@ -66,24 +66,22 @@ If you want to deploy to `minikube` you will need to do some additional steps be
 
 ## The native way
 
-This approach has several advantages from `opi/eirini` perspective:
+This approach deploys an non-fissiled `eirini` container image with `scf`. It has several advantages from `opi/eirini` perspective:
 
-- No need to provide the `kube-config` to the deployment. `OPI` will use `in-cluster config`, which is not possible with a fissiled docker image.
-- You can access logs directly by using `kubectl logs <eirini-pod>`
+- No need to provide the `kube-config` to the deployment. `OPI` will use `in-cluster config` (this is not possible with a fissiled docker image).
+- You can access logs directly by using `kubectl logs <eirini-pod> [opi|registry]`
 
 ### Deploy 
 
-1. To deploy follow the steps in `The fissiled way` but provide another slightly different config. Copy the config from the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment) and add the following values:
+1. To deploy follow the steps in `The fissiled way` but provide a simplified config. Copy the config from the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment) and add the following values:
 
    ```yaml
    env:
      EIRINI_KUBE_ENDPOINT: <kube-endpoint>
-     EIRINI_REGISTRY_ADDRESS: <node-ip>:5800
-	
-	secrets:
-	   NATS_PASSWORD: changeme
 	```
 
-1. Replace every command that includes `helm` directory with the `hnative` directory.
+  _Note that the kube-config isn't required anymore_
 
-_Note, that the kube-config isn't required anymore_
+1. Replace every command that includes the `helm` directory with the `hnative` directory (eg `$ helm install helm/cf` -> `$ helm install hnative/cf`)
+
+
