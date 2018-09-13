@@ -1,0 +1,35 @@
+---
+{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
+apiVersion: "v1"
+kind: "ServiceAccount"
+metadata:
+  name: "test-brain"
+{{- end }}
+---
+{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
+apiVersion: "rbac.authorization.k8s.io/v1beta1"
+kind: "RoleBinding"
+metadata:
+  name: "test-brain-configgin-role-binding"
+subjects:
+- kind: "ServiceAccount"
+  name: "test-brain"
+roleRef:
+  kind: "Role"
+  name: "configgin-role"
+  apiGroup: "rbac.authorization.k8s.io"
+{{- end }}
+---
+{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
+apiVersion: "rbac.authorization.k8s.io/v1beta1"
+kind: "RoleBinding"
+metadata:
+  name: "test-brain-test-role-binding"
+subjects:
+- kind: "ServiceAccount"
+  name: "test-brain"
+roleRef:
+  kind: "Role"
+  name: "test-role"
+  apiGroup: "rbac.authorization.k8s.io"
+{{- end }}

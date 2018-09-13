@@ -2,6 +2,11 @@
 
 You are basically two `helm install's` away from deploying `SCF` with `Eirini`. But before you can execute helm you have to do some basic setup. The instructions below will guide you through the necessary steps and redirect you to the official [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF) whenever needed. 
 
+## Deployment Options
+
+- [The fissiled way](#deploy-the-fissiled-way)
+- [The native way](#the-native-way)
+
 ## Prereqs:
 
 - Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes). 
@@ -23,7 +28,7 @@ If you want to deploy to `minikube` you will need to do some additional steps be
    $ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
    ```
 
-## Deploy
+## Deploy - The fissiled way
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. 
 1. Configure your deployment as described in the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment) 
@@ -58,3 +63,27 @@ If you want to deploy to `minikube` you will need to do some additional steps be
 1. Deploy SCF by following the steps in [this](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm) section. The remainder of that document is optional.
 
 1. Enjoy Eirini ;)
+
+## The native way
+
+This approach has several advantages from `opi/eirini` perspective:
+
+- No need to provide the `kube-config` to the deployment. `OPI` will use `in-cluster config`, which is not possible with a fissiled docker image.
+- You can access logs directly by using `kubectl logs <eirini-pod>`
+
+### Deploy 
+
+1. To deploy follow the steps in `The fissiled way` but provide another slightly different config. Copy the config from the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment) and add the following values:
+
+   ```yaml
+   env:
+     EIRINI_KUBE_ENDPOINT: <kube-endpoint>
+     EIRINI_REGISTRY_ADDRESS: <node-ip>:5800
+	
+	secrets:
+	   NATS_PASSWORD: changeme
+	```
+
+1. Replace every command that includes `helm` directory with the `hnative` directory.
+
+_Note, that the kube-config isn't required anymore_

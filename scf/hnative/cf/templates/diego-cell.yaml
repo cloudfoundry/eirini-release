@@ -1,0 +1,513 @@
+---
+# The diego-cell instance group contains the following jobs:
+#
+# - global-properties: Dummy BOSH job used to host global parameters that are
+#   required to configure SCF
+#
+# - authorize-internal-ca: Install both internal and UAA CA certificates
+#
+# - wait-for-uaa: Wait for UAA to be ready before starting any jobs
+#
+# - patch-properties: Dummy BOSH job used to host parameters that are used in
+#   SCF patches for upstream bugs
+#
+# Also: rep, cfdot, route_emitter, garden, groot-btrfs, cflinuxfs2-rootfs-setup,
+# opensuse42-rootfs-setup, cf-sle12-setup, metron_agent, nfsv3driver
+
+{{- if gt (int .Values.sizing.diego_cell.count) 254 }}
+_maxReplicas: {{ fail "diego_cell cannot have more than 254 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_cell.count) 1) (lt (int .Values.sizing.diego_cell.count) 3)) }}
+_minHAReplicas: {{ fail "diego_cell must have at least 3 instances for HA" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.diego_cell.count) 1 }}
+_minReplicas: {{ fail "diego_cell must have at least 1 instances" }}
+{{- end }}
+
+{{- if .Values.sizing.HA }}
+_moved_sizing_HA: {{ fail "Bad use of moved variable sizing.HA. The new name to use is config.HA" }}
+{{- end }}
+
+{{- if .Values.sizing.cpu }}
+_moved_sizing_cpu_limits: {{ if .Values.sizing.cpu.limits }} {{ fail "Bad use of moved variable sizing.cpu.limits. The new name to use is config.cpu.limits" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.cpu }}
+_moved_sizing_cpu_requests: {{ if .Values.sizing.cpu.requests }} {{ fail "Bad use of moved variable sizing.cpu.requests. The new name to use is config.cpu.requests" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.memory }}
+_moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad use of moved variable sizing.memory.limits. The new name to use is config.memory.limits" }} {{else}} ok {{end}}
+{{- end }}
+
+{{- if .Values.sizing.memory }}
+_moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
+{{- end }}
+
+apiVersion: "apps/v1beta1"
+kind: "StatefulSet"
+metadata:
+  name: "diego-cell"
+  labels:
+    skiff-role-name: "diego-cell"
+spec:
+  podManagementPolicy: "Parallel"
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_cell.count) 1) -}} 3 {{- else -}} {{ .Values.sizing.diego_cell.count }} {{- end }}
+  serviceName: "diego-cell-set"
+  template:
+    metadata:
+      name: "diego-cell"
+      labels:
+        skiff-role-name: "diego-cell"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "skiff-role-name"
+                  operator: "In"
+                  values:
+                  - "diego-cell"
+              topologyKey: "beta.kubernetes.io/os"
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "skiff-role-name"
+                  operator: "In"
+                  values:
+                  - "router"
+              topologyKey: "beta.kubernetes.io/os"
+            weight: 100
+        {{- if .Values.sizing.diego_cell.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.diego_cell.affinity.nodeAffinity }}
+        {{- end }}
+      containers:
+      - env:
+        {{- if not .Values.secrets.BBS_CLIENT_CRT }}
+        - name: "BBS_CLIENT_CRT"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-client-crt"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_CLIENT_CRT }}
+        - name: "BBS_CLIENT_CRT"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-client-crt"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.BBS_CLIENT_KEY }}
+        - name: "BBS_CLIENT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-client-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_CLIENT_KEY }}
+        - name: "BBS_CLIENT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-client-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.BBS_REP_CERT }}
+        - name: "BBS_REP_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-rep-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_REP_CERT }}
+        - name: "BBS_REP_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-rep-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.BBS_REP_KEY }}
+        - name: "BBS_REP_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-rep-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_REP_KEY }}
+        - name: "BBS_REP_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-rep-key"
+              name: "secrets"
+        {{- end }}
+
+        - name: "CATS_SUITES"
+          value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
+        - name: "DIEGO_CELL_DISK_CAPACITY_MB"
+          value: {{if ne (typeOf .Values.env.DIEGO_CELL_DISK_CAPACITY_MB) "<nil>"}}{{if has (kindOf .Values.env.DIEGO_CELL_DISK_CAPACITY_MB) (list "map" "slice")}}{{.Values.env.DIEGO_CELL_DISK_CAPACITY_MB | toJson | quote}}{{else}}{{.Values.env.DIEGO_CELL_DISK_CAPACITY_MB | quote}}{{end}}{{else}}{{fail "env.DIEGO_CELL_DISK_CAPACITY_MB has not been set"}}{{end}}
+        - name: "DIEGO_CELL_MEMORY_CAPACITY_MB"
+          value: {{if ne (typeOf .Values.env.DIEGO_CELL_MEMORY_CAPACITY_MB) "<nil>"}}{{if has (kindOf .Values.env.DIEGO_CELL_MEMORY_CAPACITY_MB) (list "map" "slice")}}{{.Values.env.DIEGO_CELL_MEMORY_CAPACITY_MB | toJson | quote}}{{else}}{{.Values.env.DIEGO_CELL_MEMORY_CAPACITY_MB | quote}}{{end}}{{else}}{{fail "env.DIEGO_CELL_MEMORY_CAPACITY_MB has not been set"}}{{end}}
+        - name: "DIEGO_CELL_NETWORK_MTU"
+          value: {{if ne (typeOf .Values.env.DIEGO_CELL_NETWORK_MTU) "<nil>"}}{{if has (kindOf .Values.env.DIEGO_CELL_NETWORK_MTU) (list "map" "slice")}}{{.Values.env.DIEGO_CELL_NETWORK_MTU | toJson | quote}}{{else}}{{.Values.env.DIEGO_CELL_NETWORK_MTU | quote}}{{end}}{{else}}{{fail "env.DIEGO_CELL_NETWORK_MTU has not been set"}}{{end}}
+        - name: "DIEGO_CELL_SUBNET"
+          value: {{if ne (typeOf .Values.env.DIEGO_CELL_SUBNET) "<nil>"}}{{if has (kindOf .Values.env.DIEGO_CELL_SUBNET) (list "map" "slice")}}{{.Values.env.DIEGO_CELL_SUBNET | toJson | quote}}{{else}}{{.Values.env.DIEGO_CELL_SUBNET | quote}}{{end}}{{else}}{{fail "env.DIEGO_CELL_SUBNET has not been set"}}{{end}}
+        - name: "GARDEN_APPARMOR_PROFILE"
+          value: {{if ne (typeOf .Values.env.GARDEN_APPARMOR_PROFILE) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_APPARMOR_PROFILE) (list "map" "slice")}}{{.Values.env.GARDEN_APPARMOR_PROFILE | toJson | quote}}{{else}}{{.Values.env.GARDEN_APPARMOR_PROFILE | quote}}{{end}}{{else}}""{{end}}
+        - name: "GARDEN_DOCKER_REGISTRY"
+          value: {{if ne (typeOf .Values.env.GARDEN_DOCKER_REGISTRY) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_DOCKER_REGISTRY) (list "map" "slice")}}{{.Values.env.GARDEN_DOCKER_REGISTRY | toJson | quote}}{{else}}{{.Values.env.GARDEN_DOCKER_REGISTRY | quote}}{{end}}{{else}}{{fail "env.GARDEN_DOCKER_REGISTRY has not been set"}}{{end}}
+        - name: "GARDEN_LINUX_DNS_SERVER"
+          value: {{if ne (typeOf .Values.env.GARDEN_LINUX_DNS_SERVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_LINUX_DNS_SERVER) (list "map" "slice")}}{{.Values.env.GARDEN_LINUX_DNS_SERVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_LINUX_DNS_SERVER | quote}}{{end}}{{else}}""{{end}}
+        - name: "GARDEN_ROOTFS_DRIVER"
+          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
+        - name: "HTTPS_PROXY"
+          value: {{if ne (typeOf .Values.env.HTTPS_PROXY) "<nil>"}}{{if has (kindOf .Values.env.HTTPS_PROXY) (list "map" "slice")}}{{.Values.env.HTTPS_PROXY | toJson | quote}}{{else}}{{.Values.env.HTTPS_PROXY | quote}}{{end}}{{else}}""{{end}}
+        - name: "HTTP_PROXY"
+          value: {{if ne (typeOf .Values.env.HTTP_PROXY) "<nil>"}}{{if has (kindOf .Values.env.HTTP_PROXY) (list "map" "slice")}}{{.Values.env.HTTP_PROXY | toJson | quote}}{{else}}{{.Values.env.HTTP_PROXY | quote}}{{end}}{{else}}""{{end}}
+        - name: "INSECURE_DOCKER_REGISTRIES"
+          value: {{if ne (typeOf .Values.env.INSECURE_DOCKER_REGISTRIES) "<nil>"}}{{if has (kindOf .Values.env.INSECURE_DOCKER_REGISTRIES) (list "map" "slice")}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | toJson | quote}}{{else}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
+        {{- end }}
+
+        - name: "KUBERNETES_CLUSTER_DOMAIN"
+          value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+        - name: "KUBE_AZ"
+          value: "z1"
+        - name: "KUBE_SIZING_NATS_COUNT"
+          value: {{ .Values.sizing.nats.count | quote }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
+        - name: "LOGGREGATOR_CLIENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-client-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
+        - name: "LOGGREGATOR_CLIENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-client-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_CLIENT_KEY }}
+        - name: "LOGGREGATOR_CLIENT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-client-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_CLIENT_KEY }}
+        - name: "LOGGREGATOR_CLIENT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-client-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "LOG_LEVEL"
+          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
+
+        {{- if not .Values.secrets.METRON_CERT }}
+        - name: "METRON_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.METRON_CERT }}
+        - name: "METRON_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.METRON_KEY }}
+        - name: "METRON_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.METRON_KEY }}
+        - name: "METRON_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "metron-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.NATS_PASSWORD }}
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.NATS_PASSWORD }}
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "NO_PROXY"
+          value: {{if ne (typeOf .Values.env.NO_PROXY) "<nil>"}}{{if has (kindOf .Values.env.NO_PROXY) (list "map" "slice")}}{{.Values.env.NO_PROXY | toJson | quote}}{{else}}{{.Values.env.NO_PROXY | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_ALLOWED_IN_MOUNT"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_MOUNT) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_MOUNT) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_MOUNT | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_MOUNT | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_ALLOWED_IN_SOURCE"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_SOURCE) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_SOURCE) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_SOURCE | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_ALLOWED_IN_SOURCE | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_DEFAULT_IN_MOUNT"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_MOUNT) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_MOUNT) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_MOUNT | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_MOUNT | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_DEFAULT_IN_SOURCE"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_SOURCE) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_SOURCE) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_SOURCE | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_DEFAULT_IN_SOURCE | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_DISABLE"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_DISABLE) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_DISABLE) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_DISABLE | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_DISABLE | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_LDAP_HOST"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_LDAP_HOST) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_LDAP_HOST) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_HOST | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_LDAP_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "persi-nfs-driver-ldap-password"
+              name: "secrets"
+        - name: "PERSI_NFS_DRIVER_LDAP_PORT"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_LDAP_PORT) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_LDAP_PORT) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_PORT | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_LDAP_PROTOCOL"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_LDAP_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_LDAP_PROTOCOL) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_PROTOCOL | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_LDAP_USER"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_LDAP_USER) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_LDAP_USER) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_USER | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_USER | quote}}{{end}}{{else}}""{{end}}
+        - name: "PERSI_NFS_DRIVER_LDAP_USER_FQDN"
+          value: {{if ne (typeOf .Values.env.PERSI_NFS_DRIVER_LDAP_USER_FQDN) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DRIVER_LDAP_USER_FQDN) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_USER_FQDN | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DRIVER_LDAP_USER_FQDN | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if .Values.secrets.REP_SERVER_CERT }}
+        - name: "REP_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "rep-server-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.REP_SERVER_CERT }}
+        - name: "REP_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "rep-server-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.REP_SERVER_KEY }}
+        - name: "REP_SERVER_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "rep-server-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.REP_SERVER_KEY }}
+        - name: "REP_SERVER_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "rep-server-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "ROOTFS_TRUSTED_CERTS"
+          value: {{if ne (typeOf .Values.env.ROOTFS_TRUSTED_CERTS) "<nil>"}}{{if has (kindOf .Values.env.ROOTFS_TRUSTED_CERTS) (list "map" "slice")}}{{.Values.env.ROOTFS_TRUSTED_CERTS | toJson | quote}}{{else}}{{.Values.env.ROOTFS_TRUSTED_CERTS | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_HOST"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_HOST) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_HOST) (list "map" "slice")}}{{.Values.env.SCF_LOG_HOST | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PORT"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PROTOCOL"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
+        - name: "SUSE_STACK"
+          value: "opensuse42"
+        - name: "SUSE_STACK_DIRNAME"
+          value: "opensuse42"
+        - name: "TRUSTED_CERTS"
+          value: {{if ne (typeOf .Values.env.TRUSTED_CERTS) "<nil>"}}{{if has (kindOf .Values.env.TRUSTED_CERTS) (list "map" "slice")}}{{.Values.env.TRUSTED_CERTS | toJson | quote}}{{else}}{{.Values.env.TRUSTED_CERTS | quote}}{{end}}{{else}}""{{end}}
+        - name: "UAA_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-ca-cert"
+              name: "secrets"
+
+        {{- if not .Values.secrets.UAA_CLIENTS_TCP_EMITTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_EMITTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-tcp-emitter-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_TCP_EMITTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_EMITTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-tcp-emitter-secret"
+              name: "secrets"
+        {{- end }}
+
+        - name: "UAA_HOST"
+          value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
+        - name: "UAA_PORT"
+          value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:416e1d16d067c256e26039a21cac21e6bd35142a"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - "/opt/fissile/pre-stop.sh"
+        livenessProbe: ~
+        name: "diego-cell"
+        ports:
+        - containerPort: 1801
+          name: "rep-server"
+          protocol: "TCP"
+        - containerPort: 7589
+          name: "nfs-driver"
+          protocol: "TCP"
+        - containerPort: 7590
+          name: "nfs-admin"
+          protocol: "TCP"
+        readinessProbe:
+          exec:
+            command:
+            - "/opt/fissile/readiness-probe.sh"
+        resources:
+          requests:
+            {{- if and .Values.config.memory.requests .Values.sizing.diego_cell.memory.request }}
+            memory: "{{ int .Values.sizing.diego_cell.memory.request }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.requests .Values.sizing.diego_cell.cpu.request }}
+            cpu: "{{ int .Values.sizing.diego_cell.cpu.request }}m"
+            {{- end }}
+
+          limits:
+            {{- if and .Values.config.memory.limits .Values.sizing.diego_cell.memory.limit }}
+            memory: "{{ int .Values.sizing.diego_cell.memory.limit }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.limits .Values.sizing.diego_cell.cpu.limit }}
+            cpu: "{{ int .Values.sizing.diego_cell.cpu.limit }}m"
+            {{- end }}
+
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: "/var/vcap/data/grootfs"
+          name: "grootfs-data"
+          readOnly: false
+        {{- if .Values.kube.hostpath_available }}
+        - mountPath: "/sys/fs/cgroup"
+          name: "host-cgroup"
+          readOnly: false
+        {{- end }}
+      dnsPolicy: "ClusterFirst"
+      imagePullSecrets:
+      - name: "registry-credentials"
+      restartPolicy: "Always"
+      terminationGracePeriodSeconds: 600
+      volumes:
+      {{- if .Values.kube.hostpath_available }}
+      - name: "host-cgroup"
+        hostPath:
+          path: "/sys/fs/cgroup"
+          {{- if (or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 8))) }}
+          type: "Directory"
+          {{- end }}
+      {{- end }}
+  {{- if or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 7)) }}
+  updateStrategy:
+    type: "RollingUpdate"
+  {{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: "grootfs-data"
+      annotations:
+        volume.beta.kubernetes.io/storage-class: {{ .Values.kube.storage_class.persistent | quote }}
+    spec:
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "{{ .Values.sizing.diego_cell.disk_sizes.grootfs_data }}G"
+---
+apiVersion: "v1"
+items:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "diego-cell-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "rep-server"
+      port: 1801
+      protocol: "TCP"
+      targetPort: 0
+    - name: "nfs-driver"
+      port: 7589
+      protocol: "TCP"
+      targetPort: 0
+    - name: "nfs-admin"
+      port: 7590
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "diego-cell"
+kind: "List"

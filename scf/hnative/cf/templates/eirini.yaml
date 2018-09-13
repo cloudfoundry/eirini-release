@@ -1,0 +1,96 @@
+# Deployment
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: "eirini"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "eirini"
+  template:
+    metadata:
+      labels:
+        name: "eirini"
+    spec:
+      dnsPolicy: "ClusterFirst"
+      serviceAccountName: "opi"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: "eirini"
+            items:
+            - key: opi.yaml
+              path: opi.yml
+      containers:
+      - name: opi
+        image: eirini/opi
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-volume
+          mountPath: /workspace/jobs/opi/config
+        ports:
+          - containerPort: 8085
+      - name: registry
+        image: eirini/registry
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+
+# ConfigMap
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "eirini"
+data:
+  opi.yaml: |
+    opi:
+      kube_config: ""
+      kube_namespace: {{ .Values.env.EIRINI_KUBE_NAMESPACE }}
+      kube_endpoint: {{ .Values.env.EIRINI_KUBE_ENDPOINT }}
+      nats_password: {{ .Values.secrets.NATS_PASSWORD }}
+      nats_ip: "nats.scf.svc.cluster.local"
+      api_endpoint: "http://api.{{ .Release.Namespace }}.svc.cluster.local:9022"
+      cf_username: "admin"
+      cf_password: {{ .Values.secrets.CLUSTER_ADMIN_PASSWORD }}
+      external_eirini_address: "eirini.{{ .Release.Namespace }}.svc.cluster.local:8080"
+      skip_ssl_validation: true
+      insecure_skip_verify: true
+
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "eirini"
+spec:
+  ports:
+    - port: 8085
+      protocol: TCP
+      name: opi
+    - port: 8080
+      protocol: TCP
+      name: registry
+  selector:
+    name: "eirini"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opi
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: opi-clust-admin-binding
+subjects:
+  - kind: ServiceAccount
+    name: opi
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
