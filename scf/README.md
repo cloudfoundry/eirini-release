@@ -52,15 +52,13 @@ If you want to deploy to `minikube` you will need to do some additional steps be
    $ kubectl config view --flatten -o json | ruby -ryaml -rjson -e 'puts JSON.generate(YAML.load(ARGF))' | sed 's/\"/\\\"/g'
    ```
 
-1. Create the well-known namespace `eirini`:
-
-   ```bash
-   $ kubectl create namespace eirini
-   ```
-
-   All apps will be deployed to this namespace.
-
 1. Deploy SCF by following the steps in [this](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm) section. The remainder of that document is optional.
+
+   _Info: All apps will be deployed to this namespace._
+
+1. As the `eirini registry` has no secure endpoint it needs to be added as `insecure registry` to the docker daemon. More information about this can be found in the [Docker Doc](https://docs.docker.com/registry/insecure/#deploy-a-plain-http-registry). In Kubernetes the `daemon.json` needs to be applied on every worker node. The IP is one of the IPs you specified as external: `<externalIP>:5800`. This usually requires a node reboot. 
+
+  _Tip: If you don't have direct access to the nodes you could use a Pod with priviliged access to add the `daemon.json`._
 
 1. Enjoy Eirini ;)
 
@@ -78,6 +76,9 @@ This approach deploys an non-fissiled `eirini` container image with `scf`. It ha
    ```yaml
    env:
      EIRINI_KUBE_ENDPOINT: <kube-endpoint>
+
+   secrets:
+     NATS_PASSWORD: changeme
 	```
 
   _Note that the kube-config isn't required anymore_
