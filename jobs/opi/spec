@@ -16,7 +16,7 @@ properties:
   bpm.enabled:
     description: "Enable Bosh Process Manager"
     default: false
-  opi.cc_uploader_ip
+  opi.cc_uploader_ip:
     description: "The cc-uploader ip used when uploading a staged droplet"
   opi.ccAPI:
     description: "The API endpoint of the Cloud Controller"
