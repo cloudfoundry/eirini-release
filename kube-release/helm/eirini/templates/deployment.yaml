@@ -28,6 +28,9 @@ spec:
             items:
             - key: opi.yaml
               path: opi.yml
+        - name: registry-cert
+          secret:
+            secretName: registry-cert
       containers:
       - name: opi
         image: {{ .Values.config.opi_image }}
@@ -42,3 +45,6 @@ spec:
         imagePullPolicy: Always
         ports:
           - containerPort: 8080
+        volumeMounts:
+        - name: registry-cert
+          mountPath: /workspace/jobs/certs

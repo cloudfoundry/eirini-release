@@ -85,4 +85,4 @@ This approach deploys an non-fissiled `eirini` container image with `scf`. It ha
 
 1. Replace every command that includes the `helm` directory with the `hnative` directory (eg `$ helm install helm/cf` -> `$ helm install hnative/cf`)
 
-
+_Note: It can take a while `eirini` comes up._

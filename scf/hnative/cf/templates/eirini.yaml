@@ -29,9 +29,12 @@ spec:
             items:
             - key: opi.yaml
               path: opi.yml
+        - name: registry-cert
+          secret:
+            secretName: "registry-cert"
       containers:
       - name: opi
-        image: eirini/opi
+        image: eirini/opi:secure
         imagePullPolicy: Always
         volumeMounts:
         - name: config-volume
@@ -39,10 +42,14 @@ spec:
         ports:
           - containerPort: 8085
       - name: registry
-        image: eirini/registry
+        image: eirini/registry:secure
         imagePullPolicy: Always
+        restartPolicy: OnFailure
         ports:
           - containerPort: 8080
+        volumeMounts:
+        - name: registry-cert
+          mountPath: /workspace/jobs/certs
 
 # ConfigMap
 ---
@@ -83,6 +90,8 @@ spec:
       name: registry
   selector:
     name: "eirini"
+
+# Service Account
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -102,3 +111,50 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
+
+# create-certs
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: create-certs
+spec:
+  template:
+    metadata:
+      name: create-certs
+    spec:
+      serviceAccountName: "opi"
+      restartPolicy: OnFailure
+      containers:
+      - name: create-certs
+        env:
+        - name: REGISTRY
+          value: "{{ index .Values.kube.external_ips 0 }}:5800"
+        image: eirini/certs-generate
+        imagePullPolicy: Always
+
+# copy-certs
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cert-copier
+spec:
+  template:
+    spec:
+      serviceAccountName: "opi"
+      restartPolicy: OnFailure
+      volumes:
+      - name: host-docker
+        hostPath:
+          path: /etc/docker
+          type: Directory
+      containers:
+      - name: copy-certs
+        env:
+        - name: REGISTRY
+          value: "{{ index .Values.kube.external_ips 0 }}:5800"
+        image: eirini/certs-copy
+        volumeMounts:
+        - name: host-docker
+          mountPath: /workspace/docker
