@@ -9,5 +9,7 @@ echo $$ > $pidfile
 
 exec /var/vcap/packages/eirini/bin/opi registry \
   --rootfs /var/vcap/packages/eirinifs/eirinifs.tar \
+  --cert /var/vcap/jobs/registry/config/registry_cert \
+  --key /var/vcap/jobs/registry/config/registry_key \
   2> >(tee -a $log_dir/registry.stderr.log | logger -p user.error -t vcap.registry) \
   1> >(tee -a $log_dir/registry.stdout.log | logger -t vcap.registry)

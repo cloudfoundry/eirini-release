@@ -23,6 +23,11 @@
       release: cflinuxfs2
     - name: registry
       release: eirini
+      properties:
+        tls:
+          cert: ((opi_registry_tls.certificate))
+          key: ((opi_registry_tls.private_key))
+          ca_cert: ((service_cf_internal_ca.certificate))
     - name: opi
       release: eirini
       properties:
@@ -48,8 +53,6 @@
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/temporary_local_staging?
   value: false
 
-
-
 - type: replace
   path: /addons/name=bosh-dns-aliases/jobs/name=bosh-dns-aliases/properties/aliases/domain=opi.service.cf.internal?/-
   value:
@@ -60,3 +63,16 @@
       deployment: cf
       network: default
       domain: bosh
+
+- type: replace
+  path: /variables/name=opi_registry_tls?
+  value:
+    name: opi_registry_tls
+    options:
+      alternative_names:
+      - opi.service.cf.internal
+      - ((system_domain))
+      - '*.((system_domain))'
+      ca: service_cf_internal_ca
+      common_name: opi.service.cf.internal
+    type: certificate

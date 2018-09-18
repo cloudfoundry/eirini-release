@@ -25,6 +25,10 @@
       release: eirini
       properties:
         bpm: { enabled: true }
+        tls:
+          cert: ((opi_registry_tls.certificate))
+          key: ((opi_registry_tls.private_key))
+          ca_cert: ((service_cf_internal_ca.certificate))
     - name: opi
       release: eirini
       properties:
@@ -63,4 +67,15 @@
       network: default
       domain: bosh
 
-
+- type: replace
+  path: /variables/name=opi_registry_tls?
+  value:
+    name: opi_registry_tls
+    options:
+      alternative_names:
+      - opi.service.cf.internal
+      - ((system_domain))
+      - '*.((system_domain))'
+      ca: service_cf_internal_ca
+      common_name: opi.service.cf.internal
+    type: certificate

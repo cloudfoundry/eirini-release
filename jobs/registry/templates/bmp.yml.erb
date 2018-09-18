@@ -6,6 +6,10 @@ processes:
     - registry
     - --rootfs
     - /var/vcap/packages/eirinifs/eirinifs.tar
+    - --cert
+    - /var/vcap/jobs/registry/config/registry_cert
+    - --key
+    - /var/vcap/jobs/registry/config/registry_key
     limits:
       memory: 3G
       processes: 10
