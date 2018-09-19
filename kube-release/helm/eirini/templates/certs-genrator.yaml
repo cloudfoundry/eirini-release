@@ -15,7 +15,7 @@ spec:
       - name: create-certs
         env:
         - name: REGISTRY
-          value: {{ .Values.ingress.registry.host }}
+          value: "{{ .Values.ingress.registry.host }}:80"
         image: eirini/certs-generate
         imagePullPolicy: Always
 
@@ -39,7 +39,7 @@ spec:
       - name: copy-certs
         env:
         - name: REGISTRY
-          value: {{ .Values.ingress.registry.host }}
+          value: "{{ .Values.ingress.registry.host }}:80"
         image: eirini/certs-copy
         volumeMounts:
         - name: host-docker
