@@ -39,7 +39,7 @@ spec:
       - name: copy-certs
         env:
         - name: REGISTRY
-          value: "{{ .Values.ingress.registry.host }}:80"
+          value: "{{ .Values.ingress.registry.host }}:443"
         image: eirini/certs-copy
         volumeMounts:
         - name: host-docker
