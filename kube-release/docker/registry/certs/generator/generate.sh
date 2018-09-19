@@ -8,13 +8,14 @@ cat >> ssl_conf << EOF
  [ req ]
  distinguished_name     = req_distinguished_name
  prompt                 = no
+ x509_extensions        = v3_ca
 
  [ req_distinguished_name ]
  O                      = Local Secure Registry for Kubernetes
  CN                     = $REGISTRY
  emailAddress           = eirini@cloudfoundry.org
 
- [ req_ext  ]
+ [ v3_ca ]
  subjectAltName = IP:$REGISTRY
 EOF
 }
