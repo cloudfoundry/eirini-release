@@ -129,7 +129,7 @@ spec:
       - name: create-certs
         env:
         - name: REGISTRY
-          value: "{{ index .Values.kube.external_ips 0 }}:5800"
+          value: "{{ index .Values.kube.external_ips 0 }}"
         image: eirini/certs-generate
         imagePullPolicy: Always
 

@@ -15,7 +15,7 @@ spec:
       - name: create-certs
         env:
         - name: REGISTRY
-          value: "{{ .Values.ingress.registry.host }}:80"
+          value: "{{ .Values.ingress.registry.host }}"
         image: eirini/certs-generate
         imagePullPolicy: Always
 

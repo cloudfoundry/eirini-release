@@ -13,6 +13,9 @@ cat >> ssl_conf << EOF
  O                      = Local Secure Registry for Kubernetes
  CN                     = $REGISTRY
  emailAddress           = eirini@cloudfoundry.org
+
+ [ req_ext  ]
+ subjectAltName = IP:$REGISTRY
 EOF
 }
 
