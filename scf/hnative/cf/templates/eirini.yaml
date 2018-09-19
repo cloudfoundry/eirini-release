@@ -23,15 +23,26 @@ spec:
       dnsPolicy: "ClusterFirst"
       serviceAccountName: "opi"
       volumes:
-        - name: config-volume
+        - name: config-map-volume
           configMap:
             name: "eirini"
             items:
             - key: opi.yaml
               path: opi.yml
+        - name: config-volume
+          emptyDir: {}
         - name: registry-cert
           secret:
             secretName: private-registry-cert
+      initContainers:
+      - name: configure-opi-yaml
+        image: eirini/opi-init
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /configs
+        - name: config-volume
+          mountPath: /output
+          readOnly: false
       containers:
       - name: opi
         image: eirini/opi
