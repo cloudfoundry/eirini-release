@@ -1,16 +1,22 @@
 #!/bin/bash
 
-get_cert(){
-  kubectl get secret registry-cert \
-  -o go-template --template '{{(index .data "ca.crt")}}'
+get-cert(){
+    kubectl get secret private-registry-cert \
+      --output go-template \
+      --template '{{(index .data "tls.crt")}}'
 }
 
-if get_cert; then
-  mkdir --parents "/workspace/docker/certs.d/$REGISTRY/"
-  echo "copying certs"
-  get_cert | base64 -d > "/workspace/docker/certs.d/$REGISTRY/ca.crt"
-  echo "Sucessfully copied certs"
+copy-cert() {
+    local cert_dir="/workspace/docker/certs.d/$REGISTRY/"
+    mkdir --parents "$cert_dir"
+    get-cert | base64 -d > "$cert_dir/ca.crt"
+
+    echo "Sucessfully copied certs"
+}
+
+if get-cert; then
+    copy-cert
 else
-	echo "cert not found"
-	exit 1
+    echo "Cert not found"
+    exit 1
 fi

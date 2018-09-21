@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: eirini
+  name: {{ .Values.opi.namespace }}
 
 # Deployment
 ---
@@ -31,10 +31,10 @@ spec:
               path: opi.yml
         - name: registry-cert
           secret:
-            secretName: "registry-cert"
+            secretName: private-registry-cert
       containers:
       - name: opi
-        image: eirini/opi:secure
+        image: eirini/opi
         imagePullPolicy: Always
         volumeMounts:
         - name: config-volume
@@ -42,7 +42,7 @@ spec:
         ports:
           - containerPort: 8085
       - name: registry
-        image: eirini/registry:secure
+        image: eirini/registry
         imagePullPolicy: Always
         restartPolicy: OnFailure
         ports:
@@ -61,14 +61,14 @@ data:
   opi.yaml: |
     opi:
       kube_config: ""
-      kube_namespace: {{ .Values.env.EIRINI_KUBE_NAMESPACE }}
-      kube_endpoint: {{ .Values.env.EIRINI_KUBE_ENDPOINT }}
+      kube_namespace: {{ .Values.opi.namespace }}
+      kube_endpoint: {{ .Values.opi.ingress_endpoint }}
       nats_password: {{ .Values.secrets.NATS_PASSWORD }}
       nats_ip: "nats.scf.svc.cluster.local"
       api_endpoint: "http://api.{{ .Release.Namespace }}.svc.cluster.local:9022"
       cf_username: "admin"
       cf_password: {{ .Values.secrets.CLUSTER_ADMIN_PASSWORD }}
-      external_eirini_address: "{{ index .Values.kube.external_ips 0 }}:5800"
+      external_eirini_address: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
       skip_ssl_validation: true
       insecure_skip_verify: true
 
@@ -79,17 +79,45 @@ kind: Service
 metadata:
   name: "eirini"
 spec:
+{{- if not .Values.opi.use_ingress }}
   externalIPs: {{ .Values.kube.external_ips | toJson }}
+{{- end }}
   ports:
     - port: 8085
       protocol: TCP
       name: opi
-    - port: 5800
+    - port: {{ if .Values.opi.use_ingress }}8080{{ else }}5800{{ end }}
       protocol: TCP
-      targetPort: 8080
+      targetPort: {{ if .Values.opi.use_ingress }}8080{{ else }}8081{{ end }}
       name: registry
   selector:
     name: "eirini"
+
+
+# Ingress
+{{- if .Values.opi.use_ingress }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: eirini-registry
+  labels:
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  tls:
+    - hosts:
+      - "we-love-pandas.{{ .Values.opi.ingress_endpoint }}"
+      secretName: private-registry-cert
+  rules:
+    - host: "we-love-pandas.{{ .Values.opi.ingress_endpoint }}"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: eirini
+              servicePort: 8080
+{{- end }}
 
 # Service Account
 ---
@@ -129,7 +157,7 @@ spec:
       - name: create-certs
         env:
         - name: REGISTRY
-          value: "{{ index .Values.kube.external_ips 0 }}"
+          value: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}"{{ else }}"{{ index .Values.kube.external_ips 0 }}"{{ end }}
         image: eirini/certs-generate
         imagePullPolicy: Always
 
@@ -153,7 +181,7 @@ spec:
       - name: copy-certs
         env:
         - name: REGISTRY
-          value: "{{ index .Values.kube.external_ips 0 }}:5800"
+          value: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
         image: eirini/certs-copy
         volumeMounts:
         - name: host-docker

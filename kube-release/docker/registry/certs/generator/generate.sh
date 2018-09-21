@@ -3,47 +3,72 @@
 set -e
 set -o pipefail
 
-gen_openssl_conf_ip(){
-cat >> ssl_conf << EOF
- [ req ]
- distinguished_name     = req_distinguished_name
- prompt                 = no
- x509_extensions        = v3_ca
+readonly CERTS_DIR="certs"
 
- [ req_distinguished_name ]
- O                      = Local Secure Registry for Kubernetes
- CN                     = $REGISTRY
- emailAddress           = eirini@cloudfoundry.org
+main() {
+    generate-openssl-conf
+    create-certs
+    create-secret
+}
 
- [ v3_ca ]
- subjectAltName = IP:$REGISTRY
+generate-openssl-conf() {
+    if [[ $REGISTRY =~ [0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4} ]]; then
+        echo "Generating ip based CA"
+        gen-openssl-conf-ip
+    else
+        echo "Generating host based CA"
+        gen-openssl-conf
+    fi
+}
+
+gen-openssl-conf-ip(){
+    cat >> ssl.conf << EOF
+[ req ]
+distinguished_name     = req_distinguished_name
+prompt                 = no
+x509_extensions        = v3_ca
+
+[ req_distinguished_name ]
+O                      = Local Secure Registry for Kubernetes
+CN                     = $REGISTRY
+emailAddress           = eirini@cloudfoundry.org
+
+[ v3_ca ]
+subjectAltName = IP:$REGISTRY
 EOF
 }
 
-gen_openssl_conf(){
-cat >> ssl_conf << EOF
- [ req ]
- distinguished_name     = req_distinguished_name
- prompt                 = no
+gen-openssl-conf(){
+    cat >> ssl.conf << EOF
+[ req ]
+distinguished_name     = req_distinguished_name
+prompt                 = no
 
- [ req_distinguished_name ]
- O                      = Local Secure Registry for Kubernetes
- CN                     = $REGISTRY
- emailAddress           = eirini@cloudfoundry.org
+[ req_distinguished_name ]
+O                      = Local Secure Registry for Kubernetes
+CN                     = $REGISTRY
+emailAddress           = eirini@cloudfoundry.org
 EOF
 }
 
-mkdir certs
+create-certs() {
+    mkdir certs
+    openssl req -config /ssl.conf \
+        -newkey rsa:4096 \
+        -nodes \
+        -sha256 \
+        -x509 \
+        -days 265 \
+        -keyout $CERTS_DIR/tls.key \
+        -out $CERTS_DIR/tls.crt
+}
 
-kubectl delete secret registry-cert || true
+create-secret() {
+    kubectl delete secret registry-cert || true
 
-if [[ $REGISTRY =~ [0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4} ]]; then
-	echo "generating ip based CA"
-  gen_openssl_conf_ip
-else
-	gen_openssl_conf
-fi
+    kubectl create secret generic private-registry-cert \
+        --from-file=$CERTS_DIR/tls.crt \
+        --from-file=$CERTS_DIR/tls.key
+}
 
-openssl req -config /ssl_conf -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key -x509 -days 265 -out certs/ca.crt
-
-kubectl create secret generic registry-cert --from-file=./certs/ca.crt --from-file=./certs/domain.key
+main

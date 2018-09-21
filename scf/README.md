@@ -74,8 +74,17 @@ This approach deploys an non-fissiled `eirini` container image with `scf`. It ha
 1. To deploy follow the steps in `The fissiled way` but provide a simplified config. Copy the config from the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment) and add the following values:
 
    ```yaml
-   env:
-     EIRINI_KUBE_ENDPOINT: <kube-endpoint>
+   opi:
+     # The ingress sub-domain or IP
+     ingress_endpoint: <ingress-endpoint>
+
+     # The namespace eirini/opi schedules the apps to.
+     namespace: <kubernetes-namespace>
+
+     # if this property is set to true it will expose the
+     # registry via ingress, default is to NodePort.
+     use_ingress: false
+
 
    secrets:
      NATS_PASSWORD: changeme
