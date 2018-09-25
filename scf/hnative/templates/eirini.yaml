@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.opi.namespace }}
+  name: {{ .Values.opi.namespace }} 
 
 # Deployment
 ---
@@ -23,17 +23,17 @@ spec:
       dnsPolicy: "ClusterFirst"
       serviceAccountName: "opi"
       volumes:
-        - name: config-map-volume
-          configMap:
-            name: "eirini"
-            items:
-            - key: opi.yaml
-              path: opi.yml
-        - name: config-volume
-          emptyDir: {}
-        - name: registry-cert
-          secret:
-            secretName: private-registry-cert
+      - name: config-map-volume
+        configMap:
+          name: "eirini"
+          items:
+          - key: opi.yaml
+            path: opi.yml
+      - name: config-volume
+        emptyDir: {}
+      - name: registry-cert
+        secret:
+          secretName: "registry-cert"
       initContainers:
       - name: configure-opi-yaml
         image: eirini/opi-init
@@ -73,14 +73,14 @@ data:
     opi:
       kube_config: ""
       kube_namespace: {{ .Values.opi.namespace }}
-      kube_endpoint: {{ .Values.opi.ingress_endpoint }}
+      kube_endpoint: {{ .Values.opi.kube_api_endpoint }}
       nats_password: {{ .Values.secrets.NATS_PASSWORD }}
       nats_ip: "nats.scf.svc.cluster.local"
       api_endpoint: "http://api.{{ .Release.Namespace }}.svc.cluster.local:9022"
       cf_username: "admin"
       cc_certs_secret_name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
       cf_password: {{ .Values.secrets.CLUSTER_ADMIN_PASSWORD }}
-      external_eirini_address: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
+      external_eirini_address: "{{ index .Values.kube.external_ips 0 }}:5800"
       eirini_address: "http://eirini.{{ .Release.Namespace }}.svc.cluster.local:8085"
       skip_ssl_validation: true
       insecure_skip_verify: true
@@ -92,45 +92,17 @@ kind: Service
 metadata:
   name: "eirini"
 spec:
-{{- if not .Values.opi.use_ingress }}
   externalIPs: {{ .Values.kube.external_ips | toJson }}
-{{- end }}
   ports:
-    - port: 8085
-      protocol: TCP
-      name: opi
-    - port: {{ if .Values.opi.use_ingress }}8080{{ else }}5800{{ end }}
-      protocol: TCP
-      targetPort: {{ if .Values.opi.use_ingress }}8080{{ else }}8081{{ end }}
-      name: registry
+  - port: 8085
+    protocol: TCP
+    name: opi
+  - port: 5800
+    protocol: TCP
+    targetPort: 8080
+    name: registry
   selector:
     name: "eirini"
-
-
-# Ingress
-{{- if .Values.opi.use_ingress }}
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: eirini-registry
-  labels:
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-spec:
-  tls:
-    - hosts:
-      - "we-love-pandas.{{ .Values.opi.ingress_endpoint }}"
-      secretName: private-registry-cert
-  rules:
-    - host: "we-love-pandas.{{ .Values.opi.ingress_endpoint }}"
-      http:
-        paths:
-          - path: /
-            backend:
-              serviceName: eirini
-              servicePort: 8080
-{{- end }}
 
 # Service Account
 ---
@@ -170,7 +142,7 @@ spec:
       - name: create-certs
         env:
         - name: REGISTRY
-          value: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}"{{ else }}"{{ index .Values.kube.external_ips 0 }}"{{ end }}
+          value: "{{ index .Values.kube.external_ips 0 }}"
         image: eirini/certs-generate
         imagePullPolicy: Always
 
@@ -194,7 +166,7 @@ spec:
       - name: copy-certs
         env:
         - name: REGISTRY
-          value: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
+          value: "{{ index .Values.kube.external_ips 0 }}:5800"
         image: eirini/certs-copy
         volumeMounts:
         - name: host-docker
@@ -212,8 +184,8 @@ spec:
       serviceAccountName: "opi"
       restartPolicy: OnFailure
       containers:
-      - name: smuggle
-        image: dtzar/helm-kubectl
+      - name: smuggle 
+        image: dtzar/helm-kubectl 
         command:
         - "/bin/bash"
         - "-c"
