@@ -1,8 +1,0 @@
----
-- type: replace
-  path: /releases/name=eirini/version
-  value: create
-
-- type: replace
-  path: /releases/name=eirini/url?
-  value: file://((eirini_local_path))

@@ -1,9 +1,0 @@
----
-- type: replace
-  path: /releases/name=capi/version
-  value: create
-
-- type: replace
-  path: /releases/name=capi/url?
-  value: file://((capi_local_path))
-

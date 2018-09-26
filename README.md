@@ -1,43 +1,67 @@
 # eirini-release
 
-This is a BOSH release for [eirini](https://code.cloudfoundry.org/eirini).
+This is a `helm` release for [eirini](https://code.cloudfoundry.org/eirini).
 
 - This is an **experimental** release and is still considered _work in progress_.
-- In all examples, we refer to `bosh` as an alias to `bosh2` CLI.
 
-## CI Pipeline
+## Deploy Eirini
 
-- [Eirini-CI](https://flintstone.ci.cf-app.com/teams/eirini/pipelines/eirini-ci)
+If you want to deploy a full containerized CF (`SCF`) with `Eirini` you should follow the [SCF + Eirini documentation](./scf/README.md)
 
-## Deploy Eirini-Release
+### Prereqs
 
-### Prereq's
+Beside a Kubernetes cluster you should have:
 
-Make sure to have the following tools deployed to your local machine:
+- [helm](https://github.com/kubernetes/helm/blob/master/docs/install.md)
 
-- [Virtual Box](https://www.virtualbox.org/)
-- [Docker](https://docs.docker.com/install/)
-- [Bosh (v2) CLI](https://bosh.io/docs/cli-v2-install/)
-- [CF CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
-- [minikube](https://github.com/kubernetes/minikube#installation)
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- Ruby ( v > 2.4:`capi-release` still uses pre-packaging)
-- Golang
+#### Deploy 
 
-### Deploying
+1. Copy the Kubernetes config file to `helm/eirini/configs/` directory as `kube.yaml` (name is important)
+    ```
+    $ kubectl config view --flatten > `helm/eirini/configs/kube.yaml
+    ```
 
-The deploy script will fetch all necessary resources into the folder you cloned the `eirini-release`.
+1. Create `helm/eirini/configs/opi.yaml` using the following template:
+    ```yaml
+    opi:
+      kube_config: "/workspace/jobs/opi/config/kube.conf"
+      kube_namespace: "<target-kubernetes-namespace>"
+      kube_endpoint: "<target-kubernetes-api-endpoint>"
+      nats_password: "<cf-nats-password>"
+      nats_ip: "<cf-nats-ip>"
+      api_endpoint: "<cf-api-endpoint>"
+      cf_username: "<cf-username>"
+      cf_password: "<cf-password>"
+      external_eirini_address: "<eirini-registry-host>:<port>"
+      eirini_address: "<eirini-opi-host>:<port>"
+      skip_ssl_validation: <true | false>
+      insecure_skip_verify: <true | false>
+    ```
 
-1. Get `eirini-release` by cloning it to your local machine.
-1. Execute the deploy script:
+    - `kube_namespace`: Namespace where CF apps are going to be deployed by OPI
+    - `nats_password & nats_ip`: Nats information can be found in [cf-deployment](https://github.com/cloudfoundry/cf-deployment) manifest and `deployment-vars.yml`
+    - `external_eirini_address`: Host:Port for Eirini registry, usually on port `8080`
+    - `eirini_address`: Host:Port for Eirini opi, usually on port `8085`
+1. Copy certificate files in `helm/eirini/certs/`:
+    - `cc_cert`: Certificate of the `cc-uploader`
+    - `cc_ca`: Certificate authority for the `cc-uploader`
+    - `cc_priv`: TLS private key for the `cc-uploader`
+    
+    _**NOTE:**_ If you are using [cf-deployment](https://github.com/cloudfoundry/cf-deployment) you can get the certificates from the generated `vars.yml`. You can get the values using the following commands:
+    ```
+    $ bosh int <path-to-vars-yaml> --path /cc_bridge_cc_uploader/certificate >cc_cert
+    $ bosh int <path-to-vars-yaml> --path /cc_bridge_cc_uploader/ca >cc_ca
+    $ bosh int <path-to-vars-yaml> --path /cc_bridge_cc_uploader/private_key >cc_priv
+    ```
 
-   ```
-   $ source eirini-release/scripts/lite/come-on-eirini.sh
-   ```
+1. Install the chart using the following `helm` command:
 
-   This script will setup bosh-lite, minikube, plus eirini on your local machine. Moreover it will setup an `eirini` org and `dev` space on CF, such that you are ready to push some apps right after the script finished its work (which takes a while).
+    ```
+    $ helm install --set-string ingress.opi.host="eirini-opi.<kube-ingress-endpoint>",ingress.registry.host="eirini-registry.<kube-ingress-endpoint>" ./helm/eirini
+    ```
 
-   If you want to do things manually or have a running Bosh-Lite and CF, you can take a look at our script `scripts/lite/setup-eirini-environment.sh`. It should explain the steps necessary thoroughly.
+That's it :)
+
 
 #### Enable logging
 

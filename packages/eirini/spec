@@ -1,8 +1,0 @@
----
-name: eirini
-
-dependencies:
-  - golang
-
-files:
-  - code.cloudfoundry.org/eirini/**/*
