@@ -19,7 +19,7 @@ json_get() {
 }
 
 main() {
-  api_ip="$(k8s_api "api/v1" "/services/api" | json_get [\'spec\'][\'clusterIP\'])"
+  api_ip="$(k8s_api "api/v1" "/services/cc-uploader" | json_get [\'spec\'][\'clusterIP\'])"
   cp /configs/opi.yml /output/opi.yml
   goml set -f /output/opi.yml -p opi.cc_uploader_ip -v "$api_ip"
 }
