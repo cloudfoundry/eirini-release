@@ -1,3 +1,4 @@
+{{- if not .Values.env.ENABLE_OPI_STAGING }}
 ---
 # The diego-access instance group contains the following jobs:
 #
@@ -378,3 +379,4 @@ items:
     {{- end }}
 
 kind: "List"
+{{- end }}

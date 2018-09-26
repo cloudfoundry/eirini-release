@@ -1,3 +1,4 @@
+{{- if not .Values.env.ENABLE_OPI_STAGING }}
 ---
 # The diego-cell instance group contains the following jobs:
 #
@@ -511,3 +512,4 @@ items:
     selector:
       skiff-role-name: "diego-cell"
 kind: "List"
+{{- end }}

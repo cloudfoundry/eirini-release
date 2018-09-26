@@ -1,3 +1,4 @@
+{{- if not .Values.env.ENABLE_OPI_STAGING }}
 ---
 # The diego-brain instance group contains the following jobs:
 #
@@ -411,3 +412,4 @@ items:
       skiff-role-name: "diego-brain"
       skiff-role-active: "true"
 kind: "List"
+{{- end }}
