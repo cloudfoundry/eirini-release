@@ -190,7 +190,7 @@ spec:
               name: "secrets"
         {{- end }}
 
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-adapter:fe28fdda3674257996aba4f236a12308ff7a0138"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-adapter:f6820962721aee6596ec35aa68dfed24b8d63da4"
         lifecycle:
           preStop:
             exec:

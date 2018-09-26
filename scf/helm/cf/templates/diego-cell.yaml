@@ -18,7 +18,7 @@
 _maxReplicas: {{ fail "diego_cell cannot have more than 254 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_cell.count) 1) (lt (int .Values.sizing.diego_cell.count) 3)) }}
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_cell.count) 0) (lt (int .Values.sizing.diego_cell.count) 3)) }}
 _minHAReplicas: {{ fail "diego_cell must have at least 3 instances for HA" }}
 {{- end }}
 
@@ -405,7 +405,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:cba29dfaded77310348b354ba9b28897c9a0edb0"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:5284a8b7643f0e870509d6d7e59e750a9c1f3fa9"
         lifecycle:
           preStop:
             exec:
