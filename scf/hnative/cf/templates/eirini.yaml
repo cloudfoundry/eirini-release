@@ -45,7 +45,7 @@ spec:
           readOnly: false
       containers:
       - name: opi
-        image: eirini/opi:init
+        image: eirini/opi
         imagePullPolicy: Always
         volumeMounts:
         - name: config-volume
@@ -53,7 +53,7 @@ spec:
         ports:
         - containerPort: 8085
       - name: registry
-        image: eirini/registry:init
+        image: eirini/registry
         imagePullPolicy: Always
         restartPolicy: OnFailure
         ports:
