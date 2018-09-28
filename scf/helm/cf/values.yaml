@@ -703,10 +703,13 @@ env:
   EIRINI_KUBE_ENDPOINT: "192.168.77.77"
 
   # Kubernetes namespace used to create applications
-  EIRINI_KUBE_NAMESPACE: "eirini"
+  EIRINI_KUBE_NAMESPACE: "opi"
 
   # Eirini's registry address, as it's accessed by Kubernetes
   EIRINI_REGISTRY_ADDRESS: "192.168.77.77:5800"
+
+  # This flags gives you the option to stage the apps natively with Eirini
+  ENABLE_OPI_STAGING: false
 
   # By default, Cloud Foundry does not enable Cloud Controller request logging.
   # To enable this feature, you must set this property to "true". You can learn

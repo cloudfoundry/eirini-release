@@ -32,7 +32,7 @@ If you want to deploy to `minikube` you will need to do some additional steps be
    Add eirini-specific values to the `scf-config-values.yml` file:
 
    ```yaml
-   kube:
+   env:
 	   # To disable diego and use eirini/opi staging, uncomment the following parameter:
 	   # ENABLE_OPI_STAGING: true
 
