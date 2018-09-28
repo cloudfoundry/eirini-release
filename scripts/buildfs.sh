@@ -8,4 +8,4 @@ echo "package main" > $BASEDIR/src/code.cloudfoundry.org/eirini/launcher/buildpa
 
 $BASEDIR/src/code.cloudfoundry.org/eirini/launcher/bin/build-eirinifs.sh
 
-bosh add-blob $BASEDIR/src/code.cloudfoundry.org/eirini/launcher/image/eirinifs.tar eirinifs/eirinifs.tar
+cp $BASEDIR/src/code.cloudfoundry.org/eirini/launcher/image/eirinifs.tar eirinifs.tar
