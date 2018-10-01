@@ -2,7 +2,7 @@
 
 BASEDIR="$(cd $(dirname $0)/.. && pwd)"
 EIRINIDIR="$BASEDIR/src/code.cloudfoundry.org/eirini"
-DOCKERDIR="$BASEDIR/kube-release/docker"
+DOCKERDIR="$BASEDIR/docker"
 TAG=${1?"latest"}
 
 main(){
