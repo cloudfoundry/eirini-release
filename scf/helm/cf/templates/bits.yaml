@@ -1,0 +1,110 @@
+# ConfigMap
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bits
+data:
+  bits-config-key: |
+    logging:
+      level: debug
+    private_endpoint: "https://bits.{{ .Release.Namespace }}.svc.cluster.local"
+    public_endpoint: "https://bits.{{ index .Values.kube.external_ips 0 }}.nip.io"
+    cert_file: /workspace/jobs/bits-service/certs/tls.crt
+    key_file: /workspace/jobs/bits-service/certs/tls.key
+    port: 6666
+    secret:  {{ .Values.secrets.BITS_SERVICE_SECRET }}
+    skip_cert_verify: true
+    max_body_size: 2M
+    signing_users:
+      - username: admin
+        password:  {{ .Values.secrets.BITS_SERVICE_SIGNING_USER_PASSWORD }}
+    app_stash_config:
+      maximum_size: 512M
+      minimum_size: 64K
+
+    buildpacks:
+      blobstore_type: webdav
+      webdav_config: &webdav_config
+        directory_key: cc-buildpacks
+        private_endpoint: https://blobstore-blobstore.{{ .Release.Namespace }}.svc.cluster.local:4443
+        public_endpoint: https://blobstore.{{ index .Values.kube.external_ips 0 }}.nip.io
+        username: blobstore_user
+        password: {{ .Values.secrets.BLOBSTORE_PASSWORD  }}
+        # TODO: provide proper cert file here
+        ca_cert_path: /workspace/jobs/bits-service/certs/tls.crt
+        # TODO: remove this skip, when we have propert cert file above
+        skip_cert_verify: true
+    droplets:
+      blobstore_type: webdav
+      webdav_config:
+        <<: *webdav_config
+        directory_key: cc-droplets
+    packages:
+      blobstore_type: webdav
+      webdav_config:
+        <<: *webdav_config
+        directory_key: cc-packages
+    app_stash:
+      blobstore_type: webdav
+      webdav_config:
+        <<: *webdav_config
+        directory_key: cc-resources
+
+    enable_registry: true
+
+# Deployment
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: "bits"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "bits"
+  template:
+    metadata:
+      labels:
+        name: "bits"
+    spec:
+      dnsPolicy: "ClusterFirst"
+      volumes:
+        - name: bits-config
+          configMap:
+            name: "bits"
+            items:
+            - key: bits-config-key
+              path: bits-service.yml
+        - name: bits-cert
+          secret:
+            secretName: private-registry-cert
+      containers:
+      - name: bits
+        image: flintstonecf/bits-service:latest
+        imagePullPolicy: Always
+        restartPolicy: OnFailure
+        ports:
+          - containerPort: 4443
+        volumeMounts:
+        - name: bits-config
+          mountPath: /workspace/jobs/bits-service/config
+        - name: bits-cert
+          mountPath: /workspace/jobs/bits-service/certs
+
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "bits"
+spec:
+  externalIPs: {{ .Values.kube.external_ips | toJson }}
+  ports:
+    - port: 6666
+      protocol: TCP
+      targetPort: 6666
+      name: bits
+  selector:
+    name: "bits"
