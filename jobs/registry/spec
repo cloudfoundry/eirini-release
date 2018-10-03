@@ -5,6 +5,8 @@ templates:
   registry_ctl.erb: bin/registry_ctl
   registry_as_vcap.erb: bin/registry_as_vcap
   bmp.yml.erb: config/bpm.yml
+  tls.crt.erb: config/certs/tls.crt
+  tls.key.erb: config/certs/tls.key
 
 packages:
   - pid_utils
@@ -15,3 +17,9 @@ properties:
   bpm.enabled:
     description: "Enable Bosh Process Manager"
     default: false
+
+  tls.cert:
+    description: "PEM-encoded certificate"
+
+  tls.key:
+    description: "PEM-encoded key"
