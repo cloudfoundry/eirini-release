@@ -26,7 +26,7 @@ If you want to deploy to `minikube` you will need to do some additional steps be
 
 ## Deploy
 
-1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it.
+1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. For additional information you can take a look at [Cloud Specifics](#cloud-specifics)
 1. Configure your deployment as described in the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment)
    
    Add eirini-specific values to the `scf-config-values.yml` file:
@@ -58,6 +58,13 @@ If you want to deploy to `minikube` you will need to do some additional steps be
 
 ### Cloud Specifics
 
+
 #### IBMCloud Container Service (Kubernetes)
 
 - As storage class, you should deploy a `hostpath` provisioner to your cluster. You can for example follow the documentation in this [repository](https://github.com/MaZderMind/hostpath-provisioner#dynamic-provisioning-of-kubernetes-hostpath-volumes). The reason for this is that the `database` jobs in SCF are not working with the existing storage classes.
+You can execute the following commands:
+```
+$ kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/rbac.yaml
+$ kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/deployment.yaml
+$ kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/storageclass.yaml
+```

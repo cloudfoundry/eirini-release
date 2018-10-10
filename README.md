@@ -8,6 +8,8 @@ This is a `helm` release for [eirini](https://code.cloudfoundry.org/eirini).
 
 If you want to deploy a full containerized CF (`SCF`) with `Eirini` you should follow the [SCF + Eirini documentation](./scf/README.md)
 
+If you want to deploy _only_ Eirini on a Kube cluster, you can follow the instruction below:
+
 ### Prereqs
 
 Beside a Kubernetes cluster you should have:
