@@ -1,5 +1,5 @@
 ---
-# The database instance group contains the following jobs:
+# The mysql instance group contains the following jobs:
 #
 # - global-uaa-properties: Dummy BOSH job used to host global parameters that
 #   are required to configure SCF / fissile
@@ -9,16 +9,16 @@
 #
 # Also: mysql, proxy
 
-{{- if gt (int .Values.sizing.database.count) 3 }}
-_maxReplicas: {{ fail "database cannot have more than 3 instances" }}
+{{- if gt (int .Values.sizing.mysql.count) 3 }}
+_maxReplicas: {{ fail "mysql cannot have more than 3 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.database.count) 1) (lt (int .Values.sizing.database.count) 2)) }}
-_minHAReplicas: {{ fail "database must have at least 2 instances for HA" }}
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.mysql.count) 1) (lt (int .Values.sizing.mysql.count) 2)) }}
+_minHAReplicas: {{ fail "mysql must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.database.count) 1 }}
-_minReplicas: {{ fail "database must have at least 1 instances" }}
+{{- if lt (int .Values.sizing.mysql.count) 1 }}
+_minReplicas: {{ fail "mysql must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -44,18 +44,18 @@ _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "
 apiVersion: "apps/v1beta1"
 kind: "StatefulSet"
 metadata:
-  name: "database"
+  name: "mysql"
   labels:
-    skiff-role-name: "database"
+    skiff-role-name: "mysql"
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.database.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.database.count }} {{- end }}
-  serviceName: "database-set"
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.mysql.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.mysql.count }} {{- end }}
+  serviceName: "mysql-set"
   template:
     metadata:
-      name: "database"
+      name: "mysql"
       labels:
-        skiff-role-name: "database"
+        skiff-role-name: "mysql"
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -171,14 +171,14 @@ spec:
               name: "secrets"
         {{- end }}
 
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-database:a521c958a350ce1aa9e2ba91f676729c2288dc91"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-mysql:213c131a8513528d3d8fa8295aacb7586e66b85f"
         lifecycle:
           preStop:
             exec:
               command:
               - "/opt/fissile/pre-stop.sh"
         livenessProbe: ~
-        name: "database"
+        name: "mysql"
         ports:
         - containerPort: 13306
           name: "mysql"
@@ -215,32 +215,32 @@ spec:
             - "curl --silent --fail http://${HOSTNAME}:1936/"
         resources:
           requests:
-            {{- if and .Values.config.memory.requests .Values.sizing.database.memory.request }}
-            memory: "{{ int .Values.sizing.database.memory.request }}Mi"
+            {{- if and .Values.config.memory.requests .Values.sizing.mysql.memory.request }}
+            memory: "{{ int .Values.sizing.mysql.memory.request }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.requests .Values.sizing.database.cpu.request }}
-            cpu: "{{ int .Values.sizing.database.cpu.request }}m"
+            {{- if and .Values.config.cpu.requests .Values.sizing.mysql.cpu.request }}
+            cpu: "{{ int .Values.sizing.mysql.cpu.request }}m"
             {{- end }}
 
           limits:
-            {{- if and .Values.config.memory.limits .Values.sizing.database.memory.limit }}
-            memory: "{{ int .Values.sizing.database.memory.limit }}Mi"
+            {{- if and .Values.config.memory.limits .Values.sizing.mysql.memory.limit }}
+            memory: "{{ int .Values.sizing.mysql.memory.limit }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.limits .Values.sizing.database.cpu.limit }}
-            cpu: "{{ int .Values.sizing.database.cpu.limit }}m"
+            {{- if and .Values.config.cpu.limits .Values.sizing.mysql.cpu.limit }}
+            cpu: "{{ int .Values.sizing.mysql.cpu.limit }}m"
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.database.capabilities }}
+          {{- if has "ALL" .Values.sizing.mysql.capabilities }}
           privileged: true
           {{- end }}
 
-          {{- if not (has "ALL" .Values.sizing.database.capabilities) }}
+          {{- if not (has "ALL" .Values.sizing.mysql.capabilities) }}
           capabilities:
             add:
-            {{- range .Values.sizing.database.capabilities }}
+            {{- range .Values.sizing.mysql.capabilities }}
             - {{ . | upper }}
             {{- end }}
           {{- end }}
@@ -269,14 +269,14 @@ spec:
       - "ReadWriteOnce"
       resources:
         requests:
-          storage: "{{ .Values.sizing.database.disk_sizes.mysql_data }}G"
+          storage: "{{ .Values.sizing.mysql.disk_sizes.mysql_data }}G"
 ---
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "database-set"
+    name: "mysql-set"
   spec:
     clusterIP: "None"
     ports:
@@ -317,5 +317,111 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "database"
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-mysql-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "mysql"
+      port: 13306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-tcp"
+      port: 4567
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-udp"
+      port: 4567
+      protocol: "UDP"
+      targetPort: 0
+    - name: "galera-ist"
+      port: 4568
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthcheck"
+      port: 9200
+      protocol: "TCP"
+      targetPort: 0
+    - name: "xtrabackup"
+      port: 4444
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-mysql"
+  spec:
+    ports:
+    - name: "mysql"
+      port: 13306
+      protocol: "TCP"
+      targetPort: 13306
+    - name: "galera-tcp"
+      port: 4567
+      protocol: "TCP"
+      targetPort: 4567
+    - name: "galera-udp"
+      port: 4567
+      protocol: "UDP"
+      targetPort: 4567
+    - name: "galera-ist"
+      port: 4568
+      protocol: "TCP"
+      targetPort: 4568
+    - name: "healthcheck"
+      port: 9200
+      protocol: "TCP"
+      targetPort: 9200
+    - name: "xtrabackup"
+      port: 4444
+      protocol: "TCP"
+      targetPort: 4444
+    selector:
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-proxy-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "mysql-proxy"
+      port: 3306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "api"
+      port: 80
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthck-proxy"
+      port: 1936
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-proxy"
+  spec:
+    ports:
+    - name: "mysql-proxy"
+      port: 3306
+      protocol: "TCP"
+      targetPort: 3306
+    - name: "api"
+      port: 80
+      protocol: "TCP"
+      targetPort: 80
+    - name: "healthck-proxy"
+      port: 1936
+      protocol: "TCP"
+      targetPort: 1936
+    selector:
+      skiff-role-name: "mysql"
 kind: "List"

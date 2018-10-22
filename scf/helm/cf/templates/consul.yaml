@@ -74,28 +74,27 @@ spec:
               name: "secrets"
         {{- end }}
 
+        {{- if not .Values.secrets.CONSUL_SERVER_CERT_KEY }}
+        - name: "CONSUL_SERVER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "consul-server-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.CONSUL_SERVER_CERT_KEY }}
+        - name: "CONSUL_SERVER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "consul-server-cert-key"
+              name: "secrets"
+        {{- end }}
+
         - name: "CONSUL_SERVER_ENCRYPT_KEY"
           valueFrom:
             secretKeyRef:
               key: "consul-server-encrypt-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-
-        {{- if not .Values.secrets.CONSUL_SERVER_KEY }}
-        - name: "CONSUL_SERVER_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "consul-server-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.CONSUL_SERVER_KEY }}
-        - name: "CONSUL_SERVER_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "consul-server-key"
-              name: "secrets"
-        {{- end }}
-
         - name: "GARDEN_ROOTFS_DRIVER"
           value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
 
@@ -144,7 +143,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-consul:5e18956fa36fbc799047ca1e6373b74ac7a1e477"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-consul:7615bcad10a8290904fdc45bd2695340d0e50f8f"
         lifecycle:
           preStop:
             exec:
@@ -240,6 +239,55 @@ items:
       port: 8301
       protocol: "UDP"
       targetPort: 0
+    selector:
+      skiff-role-name: "consul"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "consul-consul-agent-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "consul-server"
+      port: 8300
+      protocol: "TCP"
+      targetPort: 0
+    - name: "consul-http"
+      port: 8500
+      protocol: "TCP"
+      targetPort: 0
+    - name: "serf-tcp"
+      port: 8301
+      protocol: "TCP"
+      targetPort: 0
+    - name: "serf-udp"
+      port: 8301
+      protocol: "UDP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "consul"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "consul-consul-agent"
+  spec:
+    ports:
+    - name: "consul-server"
+      port: 8300
+      protocol: "TCP"
+      targetPort: 8300
+    - name: "consul-http"
+      port: 8500
+      protocol: "TCP"
+      targetPort: 8500
+    - name: "serf-tcp"
+      port: 8301
+      protocol: "TCP"
+      targetPort: 8301
+    - name: "serf-udp"
+      port: 8301
+      protocol: "UDP"
+      targetPort: 8301
     selector:
       skiff-role-name: "consul"
 kind: "List"

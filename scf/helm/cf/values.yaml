@@ -8,6 +8,9 @@ kube:
   storage_class:
     persistent: "persistent"
     shared: "shared"
+  psp:
+    nonprivileged: ~
+    privileged: ~
 
   # Whether HostPath volume mounts are available
   hostpath_available: false
@@ -47,7 +50,6 @@ secrets:
 
   # MD5 fingerprint of the host key of the SSH proxy that brokers connections to
   # application instances.
-  # This value uses a generated default.
   APP_SSH_KEY_FINGERPRINT: ~
 
   # PEM-encoded certificate
@@ -55,112 +57,117 @@ secrets:
   AUCTIONEER_REP_CERT: ~
 
   # PEM-encoded key
-  # This value uses a generated default.
-  AUCTIONEER_REP_KEY: ~
+  AUCTIONEER_REP_CERT_KEY: ~
 
   # PEM-encoded server certificate
   # This value uses a generated default.
   AUCTIONEER_SERVER_CERT: ~
 
   # PEM-encoded server key
-  # This value uses a generated default.
-  AUCTIONEER_SERVER_KEY: ~
+  AUCTIONEER_SERVER_CERT_KEY: ~
 
-  # PEM-encoded certificate
+  # A PEM-encoded TLS certificate for clients to connect to the Autoscaler
+  # Actors. This includes the Autoscaler Scheduler and the Scaling Engine.
   # This value uses a generated default.
   AUTOSCALER_ASACTORS_CLIENT_CERT: ~
 
-  # PEM-encoded key.
-  # This value uses a generated default.
-  AUTOSCALER_ASACTORS_CLIENT_KEY: ~
+  # A PEM-encoded TLS key for clients to connect to the Autoscaler Actors. This
+  # includes the Autoscaler Scheduler and the Scaling Engine.
+  AUTOSCALER_ASACTORS_CLIENT_CERT_KEY: ~
 
-  # PEM-encoded server certificate
+  # A PEM-encoded TLS certificate of the Autoscaler Actors https server. This
+  # includes the Autoscaler Scheduler and the Scaling Engine.
   # This value uses a generated default.
   AUTOSCALER_ASACTORS_SERVER_CERT: ~
 
-  # PEM-encoded server key
-  # This value uses a generated default.
-  AUTOSCALER_ASACTORS_SERVER_KEY: ~
+  # A PEM-encoded TLS key of the Autoscaler Actors https server. This includes
+  # the Autoscaler Scheduler and the Scaling Engine.
+  AUTOSCALER_ASACTORS_SERVER_CERT_KEY: ~
 
-  # PEM-encoded certificate
+  # A PEM-encoded TLS certificate for clients to connect to the Autoscaler API.
+  # This includes the Autoscaler ApiServer and the Service Broker.
   # This value uses a generated default.
   AUTOSCALER_ASAPI_CLIENT_CERT: ~
 
-  # PEM-encoded key.
-  # This value uses a generated default.
-  AUTOSCALER_ASAPI_CLIENT_KEY: ~
+  # A PEM-encoded TLS key for clients to connect to the Autoscaler API. This
+  # includes the Autoscaler ApiServer and the Service Broker.
+  AUTOSCALER_ASAPI_CLIENT_CERT_KEY: ~
 
-  # PEM-encoded server certificate
+  # A PEM-encoded TLS certificate of the Autoscaler API public https server.
+  # This includes the Autoscaler ApiServer and the Service Broker.
   # This value uses a generated default.
   AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT: ~
 
-  # PEM-encoded server key
-  # This value uses a generated default.
-  AUTOSCALER_ASAPI_PUBLIC_SERVER_KEY: ~
+  # A PEM-encoded TLS key of the Autoscaler API public https server. This
+  # includes the Autoscaler ApiServer and the Service Broker.
+  AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY: ~
 
-  # PEM-encoded server certificate
+  # A PEM-encoded TLS certificate of the Autoscaler API https server. This
+  # includes the Autoscaler ApiServer and the Service Broker.
   # This value uses a generated default.
   AUTOSCALER_ASAPI_SERVER_CERT: ~
 
-  # PEM-encoded server key
-  # This value uses a generated default.
-  AUTOSCALER_ASAPI_SERVER_KEY: ~
+  # A PEM-encoded TLS key of the Autoscaler API https server. This includes the
+  # Autoscaler ApiServer and the Service Broker.
+  AUTOSCALER_ASAPI_SERVER_CERT_KEY: ~
 
-  # PEM-encoded certificate
+  # A PEM-encoded TLS certificate for clients to connect to the Autoscaler
+  # Metrics. This includes the Autoscaler Metrics Collector and Event Generator.
   # This value uses a generated default.
   AUTOSCALER_ASMETRICS_CLIENT_CERT: ~
 
-  # PEM-encoded key.
-  # This value uses a generated default.
-  AUTOSCALER_ASMETRICS_CLIENT_KEY: ~
+  # A PEM-encoded TLS key for clients to connect to the Autoscaler Metrics. This
+  # includes the Autoscaler Metrics Collector and Event Generator.
+  AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY: ~
 
-  # PEM-encoded server certificate
+  # A PEM-encoded TLS certificate of the Autoscaler Metrics https server. This
+  # includes the Autoscaler Metrics Collector and Event Generator.
   # This value uses a generated default.
   AUTOSCALER_ASMETRICS_SERVER_CERT: ~
 
-  # PEM-encoded server key
-  # This value uses a generated default.
-  AUTOSCALER_ASMETRICS_SERVER_KEY: ~
+  # A PEM-encoded TLS key of the Autoscaler Metrics https server. This includes
+  # the Autoscaler Metrics Collector and Event Generator.
+  AUTOSCALER_ASMETRICS_SERVER_CERT_KEY: ~
 
-  # The password for app-autoscaler postgres database.
+  # The password for the Autoscaler postgres database.
   # This value uses a generated default.
-  AUTOSCALER_DB_ROLE_PASSWORD: ~
+  AUTOSCALER_DB_PASSWORD: ~
 
-  # The password for the app-autoscaler service broker.
+  # The password for the Autoscaler Service Broker.
   # This value uses a generated default.
   AUTOSCALER_SERVICE_BROKER_PASSWORD: ~
+
+  # the uaa client secret used by Autoscaler.
+  # This value uses a generated default.
+  AUTOSCALER_UAA_CLIENT_SECRET: ~
 
   # PEM-encoded certificate
   # This value uses a generated default.
   BBS_AUCTIONEER_CERT: ~
 
   # PEM-encoded key
-  # This value uses a generated default.
-  BBS_AUCTIONEER_KEY: ~
+  BBS_AUCTIONEER_CERT_KEY: ~
 
   # PEM-encoded client certificate.
   # This value uses a generated default.
   BBS_CLIENT_CRT: ~
 
   # PEM-encoded client key.
-  # This value uses a generated default.
-  BBS_CLIENT_KEY: ~
+  BBS_CLIENT_CRT_KEY: ~
 
   # PEM-encoded certificate
   # This value uses a generated default.
   BBS_REP_CERT: ~
 
   # PEM-encoded key
-  # This value uses a generated default.
-  BBS_REP_KEY: ~
+  BBS_REP_CERT_KEY: ~
 
   # PEM-encoded client certificate.
   # This value uses a generated default.
   BBS_SERVER_CRT: ~
 
   # PEM-encoded client key.
-  # This value uses a generated default.
-  BBS_SERVER_KEY: ~
+  BBS_SERVER_CRT_KEY: ~
 
   # The basic auth password that Cloud Controller uses to connect to the
   # blobstore server. Auto-generated if not provided. Passwords must be
@@ -178,8 +185,7 @@ secrets:
   BLOBSTORE_TLS_CERT: ~
 
   # The PEM-encoded private key for signing TLS/SSL traffic.
-  # This value uses a generated default.
-  BLOBSTORE_TLS_KEY: ~
+  BLOBSTORE_TLS_CERT_KEY: ~
 
   # The password for the bulk api.
   # This value uses a generated default.
@@ -193,24 +199,21 @@ secrets:
   CC_SERVER_CRT: ~
 
   # The PEM-encoded private key for internal cloud controller traffic.
-  # This value uses a generated default.
-  CC_SERVER_KEY: ~
+  CC_SERVER_CRT_KEY: ~
 
   # The PEM-encoded certificate for internal cloud controller uploader traffic.
   # This value uses a generated default.
   CC_UPLOADER_CRT: ~
 
   # The PEM-encoded private key for internal cloud controller uploader traffic.
-  # This value uses a generated default.
-  CC_UPLOADER_KEY: ~
+  CC_UPLOADER_CRT_KEY: ~
 
   # PEM-encoded broker server certificate.
   # This value uses a generated default.
   CF_USB_BROKER_SERVER_CERT: ~
 
   # PEM-encoded broker server key.
-  # This value uses a generated default.
-  CF_USB_BROKER_SERVER_KEY: ~
+  CF_USB_BROKER_SERVER_CERT_KEY: ~
 
   # The password for access to the Universal Service Broker.
   # This value uses a generated default.
@@ -225,32 +228,42 @@ secrets:
   CONSUL_CLIENT_CERT: ~
 
   # PEM-encoded consul client key
-  # This value uses a generated default.
-  CONSUL_CLIENT_KEY: ~
+  CONSUL_CLIENT_CERT_KEY: ~
 
   # PEM-encoded server certificate
   # This value uses a generated default.
   CONSUL_SERVER_CERT: ~
 
   # PEM-encoded server key
+  CONSUL_SERVER_CERT_KEY: ~
+
+  # PEM-encoded server certificate
   # This value uses a generated default.
-  CONSUL_SERVER_KEY: ~
+  CREDHUB_SERVER_CERT: ~
+
+  # PEM-encoded server key
+  CREDHUB_SERVER_CERT_KEY: ~
 
   # PEM-encoded client certificate
   # This value uses a generated default.
   DIEGO_CLIENT_CERT: ~
 
   # PEM-encoded client key
-  # This value uses a generated default.
-  DIEGO_CLIENT_KEY: ~
+  DIEGO_CLIENT_CERT_KEY: ~
 
   # PEM-encoded certificate.
   # This value uses a generated default.
   DOPPLER_CERT: ~
 
   # PEM-encoded key.
+  DOPPLER_CERT_KEY: ~
+
+  # PEM-encoded certificate
   # This value uses a generated default.
-  DOPPLER_KEY: ~
+  EIRINI_REGISTRY_CERT: ~
+
+  # PEM-encoded key
+  EIRINI_REGISTRY_CERT_KEY: ~
 
   # Basic auth password for access to the Cloud Controller's internal API.
   # This value uses a generated default.
@@ -262,24 +275,21 @@ secrets:
   INTERNAL_CA_CERT: ~
 
   # PEM-encoded CA key.
+  INTERNAL_CA_CERT_KEY: ~
+
+  # PEM-encoded certificate.
   # This value uses a generated default.
-  INTERNAL_CA_KEY: ~
+  LOGGREGATOR_AGENT_CERT: ~
+
+  # PEM-encoded key.
+  LOGGREGATOR_AGENT_CERT_KEY: ~
 
   # PEM-encoded client certificate for loggregator mutual authentication
   # This value uses a generated default.
   LOGGREGATOR_CLIENT_CERT: ~
 
   # PEM-encoded client key for loggregator mutual authentication
-  # This value uses a generated default.
-  LOGGREGATOR_CLIENT_KEY: ~
-
-  # PEM-encoded certificate.
-  # This value uses a generated default.
-  METRON_CERT: ~
-
-  # PEM-encoded key.
-  # This value uses a generated default.
-  METRON_KEY: ~
+  LOGGREGATOR_CLIENT_CERT_KEY: ~
 
   # Password used for the monit API.
   # This value uses a generated default.
@@ -301,6 +311,10 @@ secrets:
   # The password for the cluster logger health user.
   # This value uses a generated default.
   MYSQL_CLUSTER_HEALTH_PASSWORD: ~
+
+  # The password for access to the credhub-user database.
+  # This value uses a generated default.
+  MYSQL_CREDHUB_USER_PASSWORD: ~
 
   # Database password for the diego locket service.
   # This value uses a generated default.
@@ -342,8 +356,7 @@ secrets:
   REP_SERVER_CERT: ~
 
   # PEM-encoded server key
-  # This value uses a generated default.
-  REP_SERVER_KEY: ~
+  REP_SERVER_CERT_KEY: ~
 
   # Support for route services is disabled when no value is configured. A robust
   # passphrase is recommended.
@@ -357,8 +370,7 @@ secrets:
 
   # The private ssl key for ssl termination. Will be ignored if ROUTER_TLS_PEM
   # is set.
-  # This value uses a generated default.
-  ROUTER_SSL_KEY: ~
+  ROUTER_SSL_CERT_KEY: ~
 
   # Password for HTTP basic auth to the varz/status endpoint.
   # This value uses a generated default.
@@ -388,24 +400,21 @@ secrets:
   SYSLOG_ADAPT_CERT: ~
 
   # PEM-encoded key.
-  # This value uses a generated default.
-  SYSLOG_ADAPT_KEY: ~
+  SYSLOG_ADAPT_CERT_KEY: ~
 
   # PEM-encoded certificate
   # This value uses a generated default.
   SYSLOG_RLP_CERT: ~
 
   # PEM-encoded key.
-  # This value uses a generated default.
-  SYSLOG_RLP_KEY: ~
+  SYSLOG_RLP_CERT_KEY: ~
 
   # PEM-encoded certificate
   # This value uses a generated default.
   SYSLOG_SCHED_CERT: ~
 
   # PEM-encoded key.
-  # This value uses a generated default.
-  SYSLOG_SCHED_KEY: ~
+  SYSLOG_SCHED_CERT_KEY: ~
 
   # PEM-encoded client certificate for internal communication between the cloud
   # controller and TPS.
@@ -414,8 +423,7 @@ secrets:
 
   # PEM-encoded client key for internal communication between the cloud
   # controller and TPS.
-  # This value uses a generated default.
-  TPS_CC_CLIENT_KEY: ~
+  TPS_CC_CLIENT_CRT_KEY: ~
 
   # PEM-encoded certificate for communication with the traffic controller of the
   # log infra structure.
@@ -424,8 +432,7 @@ secrets:
 
   # PEM-encoded key for communication with the traffic controller of the log
   # infra structure.
-  # This value uses a generated default.
-  TRAFFICCONTROLLER_KEY: ~
+  TRAFFICCONTROLLER_CERT_KEY: ~
 
   # The password of the admin client - a client named admin with uaa.admin as an
   # authority.
@@ -458,6 +465,10 @@ secrets:
   # This value uses a generated default.
   UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET: ~
 
+  # The password for UAA access by the client for the user-accessible credhub
+  # This value uses a generated default.
+  UAA_CLIENTS_CREDHUB_USER_CLI_SECRET: ~
+
   # The password for UAA access by the SSH proxy.
   # This value uses a generated default.
   UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET: ~
@@ -488,6 +499,10 @@ secrets:
   UAA_CLIENTS_TCP_ROUTER_SECRET: ~
 
 env:
+  # The number of parallel test executors to spawn for Cloud Foundry acceptance
+  # tests. The larger the number the higher the stress on the system.
+  ACCEPTANCE_TEST_NODES: "4"
+
   # List of domains (including scheme) from which Cross-Origin requests will be
   # accepted, a * can be used as a wildcard for any part of a domain.
   ALLOWED_CORS_DOMAINS: "[]"
@@ -498,124 +513,253 @@ env:
   # Extra token expiry time while uploading big apps, in seconds.
   APP_TOKEN_UPLOAD_GRACE_PERIOD: "1200"
 
+  # Idle connection timeout for the Autoscaler API Server database, in seconds.
   AUTOSCALER_API_SERVER_DB_CONFIG_IDLE_TIMEOUT: "100"
+
+  # The maximum number of connections to the Autoscaler API Server database.
   AUTOSCALER_API_SERVER_DB_CONFIG_MAX_CONNECTIONS: "10"
+
+  # The minimum number of connections to the Autoscaler API Server database.
   AUTOSCALER_API_SERVER_DB_CONFIG_MIN_CONNECTIONS: "0"
+
+  # The build version of Autoscaler. It should be defined when it is deployed to
+  # a product environment.
   AUTOSCALER_API_SERVER_INFO_BUILD: "beta"
+
+  # The description of Autoscaler. It should be defined when it is deployed to a
+  # product environment.
   AUTOSCALER_API_SERVER_INFO_DESCRIPTION: "autoscaler"
+
+  # The name of the Autoscaler API Server. It should be defined when it is
+  # deployed to a product environment.
   AUTOSCALER_API_SERVER_INFO_NAME: "autoscalerapiserver"
+
+  # The support url of autoscaler where the users could find support
+  # information. It should be defined when it is deployed to a product
+  # environment.
   AUTOSCALER_API_SERVER_INFO_SUPPORT_URL: ""
 
-  # autoscaler api server internal port
-  AUTOSCALER_API_SERVER_PORT: "6100"
-
-  # autoscaler api server public port
-  AUTOSCALER_API_SERVER_PUBLIC_PORT: "6106"
-
-  AUTOSCALER_API_SERVER_REQUIRE_CONSUL: "false"
+  # The maximum age of a connection that can be reused for the Autoscaler
+  # appmetrics database.
   AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME: "60s"
+
+  # The maximum number of connections to the Autoscaler appmetrics database.
   AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS: "10"
+
+  # The minimum number of connections to the Autoscaler appmetrics database.
   AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
-  AUTOSCALER_APPMETRICS_DB_PORT: "5432"
-  AUTOSCALER_APPMETRICS_DB_SCHEME: "postgres"
-  AUTOSCALER_BINDING_DB_PORT: "5432"
-  AUTOSCALER_BINDING_DB_SCHEME: "postgres"
+
+  # Whether to skip ssl validation when Autoscaler components to communicate
+  # with CloudFoundry components.
+  AUTOSCALER_CF_SKIP_SSL_VALIDATION: "true"
+
+  # The maximum number of connections the Autoscaler postgres database server
+  # could serve.
   AUTOSCALER_DATABASE_MAX_CONNECTIONS: "1000"
-  AUTOSCALER_DB_NAME: "autoscaler"
-  AUTOSCALER_DB_ROLE_NAME: "postgres"
-  AUTOSCALER_DB_ROLE_TAG: "default"
-  AUTOSCALER_DB_TAG: "default"
+
+  # The default breach duration for the Autoscaler Event Generator, in
+  # seconds.The breach duration means the App Autoscaler won’t take the
+  # desired adjustment until the application has been breaching the Autoscaler
+  # policy for a period longer than breach_duration_secs setting.
   AUTOSCALER_DEFAULT_BREACH_DURATION_SECS: "300"
+
+  # The default cooldown duration between two scaling action for the Autoscaler
+  # Event Generator, in seconds.
   AUTOSCALER_DEFAULT_COOLDOWN_SECS: "300"
+
+  # The default statistic window duration between two scaling action for the
+  # Autoscaler Event Generator, in seconds.
   AUTOSCALER_DEFAULT_STAT_WINDOW_SECS: "300"
+
+  # The size of golang channel used by the Autoscaler Event Generator as a
+  # buffer to save metrics by batch.
   AUTOSCALER_EVENT_GENERATOR_AGGREGATOR_APP_METRIC_CHANNEL_SIZE: "1000"
+
+  # The size of golang channel used by the Autoscaler Event Generator to
+  # exchange data.
   AUTOSCALER_EVENT_GENERATOR_AGGREGATOR_APP_MONITOR_CHANNEL_SIZE: "200"
+
+  # The duration defines how long does Autoscaler Event Generator aggregate
+  # appmetrics.
   AUTOSCALER_EVENT_GENERATOR_AGGREGATOR_EXECUTE_INTERVAL: "40s"
+
+  # The number of metricpollers in Autoscaler Event Generator.
   AUTOSCALER_EVENT_GENERATOR_AGGREGATOR_METRIC_POLLER_COUNT: "20"
+
+  # The duration defines how long does the Autoscaler Event Generator reload
+  # data from policy database.
   AUTOSCALER_EVENT_GENERATOR_AGGREGATOR_POLICY_POLLER_INTERVAL: "40s"
+
+  # The duration defines how long does the Autoscaler Event Generator save
+  # appmetrics to database by batch.
   AUTOSCALER_EVENT_GENERATOR_AGGREGATOR_SAVE_INTERVAL: "5s"
+
+  # The initial exponential back off interval for the circuit breaker of the
+  # Autoscaler Event Generator.
   AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_BACK_OFF_INITIAL_INTERVAL: "5m"
+
+  # The maximum exponential back off interval for the circuit breaker of the
+  # Autoscaler Event Generator.
   AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_BACK_OFF_MAX_INTERVAL: "120m"
+
+  # The number of consecutive failure to trip the circuit down for the circuit
+  # breaker of the Autoscaler Event Generator.
   AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_CONSECUTIVE_FAILURE_COUNT: "3"
-  AUTOSCALER_EVENT_GENERATOR_ENABLE_DB_LOCK: "true"
+
+  # The duration defines how long does the Autoscaler Event Generator evaluate
+  # appmetrics.
   AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATION_MANAGER_EXECUTE_INTERVAL: "40s"
+
+  # The number of evaluators in the Autoscaler Event Generator.
   AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATOR_COUNT: "20"
+
+  # The size of golang channel used by the Autoscaler Event Generator App
+  # Evaluation Manager to pass triggers to evaluators.
   AUTOSCALER_EVENT_GENERATOR_EVALUATOR_TRIGGER_ARRAY_CHANNEL_SIZE: "200"
-  AUTOSCALER_EVENT_GENERATOR_LOGGING_LEVEL: "info"
-  AUTOSCALER_EVENT_GENERATOR_REQUIRE_CONSUL: "false"
+
+  # The maximum age of a connection that can be reused for the Autoscaler
+  # instance metrics database.
   AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME: "60s"
+
+  # The maximum number of idle connections to the Autoscaler instance metrics
+  # database.
   AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS: "10"
+
+  # The maximum number of connections to the Autoscaler instance metrics
+  # database.
   AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
-  AUTOSCALER_INSTANCE_METRICS_DB_PORT: "5432"
-  AUTOSCALER_INSTANCE_METRICS_DB_SCHEME: "postgres"
+
+  # The maximum age of a connection that can be reused for the Autoscaler lock
+  # database.
   AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME: "60s"
+
+  # The maximum number of idle connections to the Autoscaler lock database.
   AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS: "10"
+
+  # The maximum number of connections to the Autoscaler lock database.
   AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
-  AUTOSCALER_LOCK_DB_PORT: "5432"
-  AUTOSCALER_LOCK_DB_SCHEME: "postgres"
+
+  # The duration defines how long does the Autoscaler Metrics Collector
+  # aggregate collected instance metrics.
   AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_COLLECT_INTERVAL: "30s"
+
+  # The duration defines how long does the Autoscaler Metrics Collector reload
+  # data from policy database.
   AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_REFRESH_INTERVAL: "60s"
+
+  # The duration defines how long does the Autoscaler Metrics Collector save
+  # instance metrics to database by batch.
   AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_SAVE_INTERVAL: "30s"
+
+  # The method type of the Autoscaler Metrics Collector to fetch metrics from
+  # cloudfoundry: polling or streaming.
   AUTOSCALER_METRICS_COLLECTOR_COLLECT_METHOD: "streaming"
-  AUTOSCALER_METRICS_COLLECTOR_ENABLE_DB_LOCK: "true"
-  AUTOSCALER_METRICS_COLLECTOR_LOGGIN_LEVEL: "info"
-  AUTOSCALER_METRICS_COLLECTOR_PORT: "6103"
-  AUTOSCALER_METRICS_COLLECTOR_REQUIRE_CONSUL: "false"
+
+  # The maximum age of a connection that can be reused for the Autoscaler policy
+  # database.
   AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME: "60s"
+
+  # The maximum number of idle connections to the Autoscaler policy database.
   AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS: "10"
+
+  # The maximum number of connections to the Autoscaler policy database.
   AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
-  AUTOSCALER_POLICY_DB_PORT: "5432"
-  AUTOSCALER_POLICY_DB_SCHEME: "postgres"
+
+  # The duration defines how many days of appmetrics data does the Autoscaler
+  # Pruner kept for each pruning.
   AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS: "30"
+
+  # The duration between two pruning opertions for appmetrics database in the
+  # Autoscaler Pruner.
   AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL: "24h"
+
+  # Whether to enable the Autoscaler Pruner's db lock. If there are more than
+  # one pruners, the value should be true
   AUTOSCALER_PRUNER_ENABLE_DB_LOCK: "true"
+
+  # The duration defines how many days of instance metrics data does the
+  # Autoscaler Pruner kept for each pruning.
   AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS: "30"
+
+  # The duration between two pruning opertions for instance metrics database in
+  # the Autoscaler Pruner.
   AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL: "24h"
-  AUTOSCALER_PRUNER_LOCK_CONSUL_CLUSTER_CONFIG: "http://127.0.0.1:8500"
+
+  # The interval for each Autoscaler Pruner instance to retry to get database
+  # lock.
   AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL: "10s"
+
+  # The maximum duration of a Autoscaler Pruner instance could hold the database
+  # lock.
   AUTOSCALER_PRUNER_LOCK_TTL: "15s"
-  AUTOSCALER_PRUNER_LOGGING_LEVEL: "info"
-  AUTOSCALER_PRUNER_REQUIRE_CONSUL: "false"
+
+  # The duration defines how many days of the scaling history data does the
+  # Autoscaler Pruner kept for each pruning.
   AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS: "30"
+
+  # The duration between two pruning opertions for scalingengine database in the
+  # Autoscaler Pruner.
   AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL: "24h"
-  AUTOSCALER_SCALING_ENGINE_CONSUL_CLUSTER: "http://127.0.0.1:8500"
+
+  # The maximum age of a connection that can be reused for the Autoscaler
+  # Scaling Engine database.
   AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME: "60s"
+
+  # The maximum number of idle connections to the Autoscaler Scaling Engine
+  # database.
   AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS: "10"
+
+  # The maximum number of connections to the Autoscaler Scaling Engine database.
   AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
-  AUTOSCALER_SCALING_ENGINE_DB_PORT: "5432"
-  AUTOSCALER_SCALING_ENGINE_DB_SCHEME: "postgres"
+
+  # The time interval to emit health metrics for the Autoscaler Scaling Engine."
+  AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL: "15s"
+
+  # The lock number of the Autoscaler Scaling Engine to do synchronization for
+  # multiple scaling requests.
   AUTOSCALER_SCALING_ENGINE_LOCK_SIZE: "32"
-  AUTOSCALER_SCALING_ENGINE_LOGGING_LEVEL: "info"
-  AUTOSCALER_SCALING_ENGINE_PORT: "6104"
-  AUTOSCALER_SCALING_ENGINE_REQUIRE_CONSUL: "false"
+
+  # The duration defines how long does the Autoscaler Scaling Engine to
+  # synchronize its schedules with the Autoscaler Scheduler database.
   AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL: "600s"
-  AUTOSCALER_SCHEDULER_CONSUL_TTL: "20"
+
+  # The maximum age of a connection that can be reused for the Autoscaler
+  # Scheduler database.
   AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME: "60s"
+
+  # The maximum number of idle connections to the Autoscaler Scheduler database.
   AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS: "10"
+
+  # The maximum number of connections to the Autoscaler Scaling Engine database.
   AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
-  AUTOSCALER_SCHEDULER_DB_PORT: "5432"
-  AUTOSCALER_SCHEDULER_DB_SCHEME: "postgres"
+
+  # Rescheduling interval for quartz job for the Autoscaler Scheduler, in
+  # milliseconds.
   AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_INTERVAL_MILISECOND: "100"
+
+  # Maximum number of jobs can be re-scheduled in the Autoscaler Scheduler.
   AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_MAXCOUNT: "6"
+
+  # Maximum number of notification sent to Autoscaler Scaling Engine for job
+  # re-schedule.
   AUTOSCALER_SCHEDULER_NOTIFICATION_RESCHEDULE_MAXCOUNT: "3"
-  AUTOSCALER_SCHEDULER_PORT: "6102"
-  AUTOSCALER_SCHEDULER_REQUIRE_CONSUL: "false"
+
+  # Idle connection timeout for the Autoscaler Service Broker database, in
+  # seconds.
   AUTOSCALER_SERVICE_BROKER_DB_CONFIG_IDLE_TIMEOUT: "1000"
+
+  # The maximum number of connections to the Autoscaler Service Broker database.
   AUTOSCALER_SERVICE_BROKER_DB_CONFIG_MAX_CONNECTIONS: "10"
+
+  # The minimum number of connections to the Autoscaler Service Broker database.
   AUTOSCALER_SERVICE_BROKER_DB_CONFIG_MIN_CONNECTIONS: "0"
+
+  # The timeout in milliseconds for http request from Autoscaler Service Broker
+  # to other Autoscaler components.
   AUTOSCALER_SERVICE_BROKER_HTTP_REQUEST_TIMEOUT: "5000"
 
-  # broker port
-  AUTOSCALER_SERVICE_BROKER_PORT: "6107"
-
-  # broker port
-  AUTOSCALER_SERVICE_BROKER_PUBLIC_PORT: "6101"
-
-  AUTOSCALER_SERVICE_BROKER_REQUIRE_CONSUL: "false"
-  AUTOSCALER_SERVICE_BROKER_USERNAME: "username"
-
-  # the uaa client secret used by autoscaler
-  AUTOSCALER_UAA_CLIENT_SECRET: "autoscaler_client_secret"
+  # Whether Autoscaler is provided as a cloudfoundry service, default is false.
+  AUTOSCALER_SERVICE_OFFERING_ENABLED: "false"
 
   # List of allow / deny rules for the blobstore internal server. Will be
   # followed by 'deny all'. Each entry must be follow by a semicolon.
@@ -623,6 +767,10 @@ env:
 
   # Maximal allowed file size for upload to blobstore, in megabytes.
   BLOBSTORE_MAX_UPLOAD_SIZE: "5000"
+
+  # For requests to service brokers, this is the HTTP (open and read) timeout
+  # setting, in seconds.
+  BROKER_CLIENT_TIMEOUT_SECONDS: "70"
 
   # The set of CAT test suites to run. If not specified it falls back to a
   # hardwired set of suites.
@@ -665,7 +813,7 @@ env:
   DEFAULT_APP_SSH_ACCESS: "true"
 
   # The default stack to use if no custom stack is specified by an app.
-  DEFAULT_STACK: "opensuse42"
+  DEFAULT_STACK: "cflinuxfs2"
 
   # The container disk capacity the cell should manage. If this capacity is
   # larger than the actual disk quota of the cell component, over-provisioning
@@ -703,13 +851,13 @@ env:
   EIRINI_KUBE_ENDPOINT: "192.168.77.77"
 
   # Kubernetes namespace used to create applications
-  EIRINI_KUBE_NAMESPACE: "opi"
+  EIRINI_KUBE_NAMESPACE: "eirini"
 
   # Eirini's registry address, as it's accessed by Kubernetes
   EIRINI_REGISTRY_ADDRESS: "192.168.77.77:5800"
 
-  # This flags gives you the option to stage the apps natively with Eirini
-  ENABLE_OPI_STAGING: false
+  # Enable if you want apps to be staged in Eirini
+  ENABLE_OPI_STAGING: "false"
 
   # By default, Cloud Foundry does not enable Cloud Controller request logging.
   # To enable this feature, you must set this property to "true". You can learn
@@ -803,8 +951,7 @@ env:
   PERSI_NFS_DRIVER_ALLOWED_IN_MOUNT: "auto_cache"
 
   # Comma separated list of white-listed options that may be configured in
-  # supported in the mount_config.source URL query params
-  #
+  # supported in the mount_config.source URL query params.
   # Example: "uid,gid,auto-traverse-mounts,dircache"
   PERSI_NFS_DRIVER_ALLOWED_IN_SOURCE: "uid,gid"
 
@@ -901,6 +1048,11 @@ env:
   # Whether or not to use privileged containers for staging tasks.
   USE_STAGER_PRIVILEGED_CONTAINERS: "false"
 
+# Custom OPI specific configurations
+opi:
+  # This tag will be used for all opi images. Use latest by default
+  image_tag: "latest"
+
 # The sizing section contains configuration to change each individual instance
 # group. Due to limitations on the allowable names, any dashes ("-") in the
 # instance group names are replaced with underscores ("_").
@@ -910,7 +1062,7 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: adapter, metron_agent
+  # Also: adapter, loggregator_agent
   adapter:
     # Node affinity rules can be specified here
     affinity: {}
@@ -950,7 +1102,7 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: metron_agent, statsd_injector, go-buildpack, binary-buildpack,
+  # Also: loggregator_agent, statsd_injector, go-buildpack, binary-buildpack,
   # nodejs-buildpack, ruby-buildpack, php-buildpack, python-buildpack,
   # staticfile-buildpack, java-buildpack, dotnet-core-buildpack
   api:
@@ -1101,7 +1253,7 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: blobstore, metron_agent
+  # Also: blobstore, loggregator_agent
   blobstore:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1136,7 +1288,7 @@ sizing:
   #   Cloud Controller clean up tasks for app usage events, audit events, failed
   #   jobs, and more. Only single instance of this job is necessary.
   #
-  # Also: metron_agent, statsd_injector
+  # Also: loggregator_agent, statsd_injector
   cc_clock:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1144,7 +1296,8 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The cc-clock instance group cannot be scaled.
+    # The cc-clock instance group can scale between 1 and 3 instances.
+    # For high availability it needs at least 2 instances.
     count: 1
 
     # Unit [millicore]
@@ -1164,10 +1317,13 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: tps, cc_uploader, metron_agent
+  # Also: tps, cc_uploader, loggregator_agent
   cc_uploader:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The cc-uploader instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1193,7 +1349,7 @@ sizing:
   # - cloud_controller_worker: Cloud Controller worker processes background
   #   tasks submitted via the.
   #
-  # Also: metron_agent
+  # Also: loggregator_agent
   cc_worker:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1274,37 +1430,33 @@ sizing:
       request: 256
       limit: ~
 
-  # The database instance group contains the following jobs:
+  # The credhub-user instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # - patch-properties: Dummy BOSH job used to host parameters that are used in
-  #   SCF patches for upstream bugs
+  # - route_registrar: Used for registering routes
   #
-  # Also: mysql, proxy
-  database:
+  # Also: credhub
+  credhub_user:
     # Node affinity rules can be specified here
     affinity: {}
 
     # Additional privileges can be specified here
     capabilities: []
 
-    # The database instance group can scale between 1 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: 1
+    # The credhub-user instance group can scale between 0 and 1 instances.
+    # For high availability it needs at least 1 instances.
+    count: 0
 
     # Unit [millicore]
     cpu:
       request: 2000
       limit: ~
 
-    disk_sizes:
-      mysql_data: 20
-
     # Unit [MiB]
     memory:
-      request: 2950
+      request: 256
       limit: ~
 
   # The diego-access instance group contains the following jobs:
@@ -1314,12 +1466,15 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: ssh_proxy, metron_agent, file_server
+  # Also: ssh_proxy, loggregator_agent, file_server
   diego_access:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The diego-access instance group can scale between 1 and 3 instances.
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The diego-access instance group can scale between 0 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1343,12 +1498,15 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: bbs, cfdot, metron_agent, locket
+  # Also: bbs, cfdot, loggregator_agent
   diego_api:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The diego-api instance group can scale between 1 and 3 instances.
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The diego-api instance group can scale between 0 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1372,12 +1530,15 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: auctioneer, cfdot, metron_agent
+  # Also: auctioneer, cfdot, loggregator_agent
   diego_brain:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The diego-brain instance group can scale between 1 and 3 instances.
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The diego-brain instance group can scale between 0 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1405,12 +1566,12 @@ sizing:
   #
   # Also: rep, cfdot, route_emitter, garden, groot-btrfs,
   # cflinuxfs2-rootfs-setup, opensuse42-rootfs-setup, cf-sle12-setup,
-  # metron_agent, nfsv3driver
+  # loggregator_agent, nfsv3driver
   diego_cell:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The diego-cell instance group can scale between 1 and 254 instances.
+    # The diego-cell instance group can scale between 0 and 254 instances.
     # For high availability it needs at least 3 instances.
     count: 1
 
@@ -1432,7 +1593,7 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: doppler, metron_agent
+  # Also: doppler, loggregator_agent
   doppler:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1482,6 +1643,38 @@ sizing:
       request: 256
       limit: ~
 
+  # The locket instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
+  #
+  # - patch-properties: Dummy BOSH job used to host parameters that are used in
+  #   SCF patches for upstream bugs
+  #
+  # Also: loggregator_agent, locket
+  locket:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The locket instance group can scale between 1 and 3 instances.
+    # For high availability it needs at least 2 instances.
+    count: 1
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 310
+      limit: ~
+
   # The log-api instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
@@ -1491,7 +1684,7 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: loggregator_trafficcontroller, metron_agent, reverse_log_proxy
+  # Also: loggregator_trafficcontroller, loggregator_agent, reverse_log_proxy
   log_api:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1513,6 +1706,39 @@ sizing:
       request: 250
       limit: ~
 
+  # The mysql instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - patch-properties: Dummy BOSH job used to host parameters that are used in
+  #   SCF patches for upstream bugs
+  #
+  # Also: mysql, proxy
+  mysql:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The mysql instance group can scale between 1 and 3 instances.
+    # For high availability it needs at least 2 instances.
+    count: 1
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    disk_sizes:
+      mysql_data: 20
+
+    # Unit [MiB]
+    memory:
+      request: 2950
+      limit: ~
+
   # The nats instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
@@ -1521,10 +1747,13 @@ sizing:
   # - nats: The NATS server provides publish-subscribe messaging system for the
   #   Cloud Controller, the DEA , HM9000, and other Cloud Foundry components.
   #
-  # Also: metron_agent
+  # Also: loggregator_agent
   nats:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The nats instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1547,7 +1776,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: metron_agent, nfsbroker
+  # Also: loggregator_agent, nfsbroker
   nfs_broker:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1642,10 +1871,13 @@ sizing:
   #   most closely matches the host header of the request and load balances
   #   across the associated backends.
   #
-  # Also: metron_agent
+  # Also: loggregator_agent
   router:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The router instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
@@ -1668,10 +1900,13 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: metron_agent, routing-api
+  # Also: loggregator_agent, routing-api
   routing_api:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The routing-api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1715,7 +1950,7 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: scheduler, metron_agent
+  # Also: scheduler, loggregator_agent
   syslog_scheduler:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1723,7 +1958,8 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The syslog-scheduler instance group cannot be scaled.
+    # The syslog-scheduler instance group can scale between 1 and 3 instances.
+    # For high availability it needs at least 2 instances.
     count: 1
 
     # Unit [millicore]
@@ -1745,7 +1981,7 @@ sizing:
   #
   # - wait-for-uaa: Wait for UAA to be ready before starting any jobs
   #
-  # Also: tcp_router, metron_agent
+  # Also: tcp_router, loggregator_agent
   tcp_router:
     # Node affinity rules can be specified here
     affinity: {}

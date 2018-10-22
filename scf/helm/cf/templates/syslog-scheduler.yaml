@@ -4,10 +4,14 @@
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
 #
-# Also: scheduler, metron_agent
+# Also: scheduler, loggregator_agent
 
-{{- if gt (int .Values.sizing.syslog_scheduler.count) 1 }}
-_maxReplicas: {{ fail "syslog_scheduler cannot have more than 1 instances" }}
+{{- if gt (int .Values.sizing.syslog_scheduler.count) 3 }}
+_maxReplicas: {{ fail "syslog_scheduler cannot have more than 3 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.syslog_scheduler.count) 1) (lt (int .Values.sizing.syslog_scheduler.count) 2)) }}
+_minHAReplicas: {{ fail "syslog_scheduler must have at least 2 instances for HA" }}
 {{- end }}
 
 {{- if lt (int .Values.sizing.syslog_scheduler.count) 1 }}
@@ -42,7 +46,7 @@ metadata:
     skiff-role-name: "syslog-scheduler"
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ .Values.sizing.syslog_scheduler.count }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.syslog_scheduler.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.syslog_scheduler.count }} {{- end }}
   serviceName: "syslog-scheduler-set"
   template:
     metadata:
@@ -99,35 +103,35 @@ spec:
         - name: "KUBE_AZ"
           value: "z1"
 
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -170,23 +174,23 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.SYSLOG_SCHED_KEY }}
-        - name: "SYSLOG_SCHED_KEY"
+        {{- if not .Values.secrets.SYSLOG_SCHED_CERT_KEY }}
+        - name: "SYSLOG_SCHED_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "syslog-sched-key"
+              key: "syslog-sched-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.SYSLOG_SCHED_KEY }}
-        - name: "SYSLOG_SCHED_KEY"
+        {{- if .Values.secrets.SYSLOG_SCHED_CERT_KEY }}
+        - name: "SYSLOG_SCHED_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "syslog-sched-key"
+              key: "syslog-sched-cert-key"
               name: "secrets"
         {{- end }}
 
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-syslog-scheduler:e3bbd7ff58d9142c77dd4d8d4477f3b0d3ef3adf"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-syslog-scheduler:c66fc39064995a850a8042660917a22cd032b9a9"
         lifecycle:
           preStop:
             exec:
@@ -202,7 +206,7 @@ spec:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --silent --fail http://${HOSTNAME}:8080/health"
+            - "curl --silent --fail --head http://${HOSTNAME}:8080/health"
         resources:
           requests:
             {{- if and .Values.config.memory.requests .Values.sizing.syslog_scheduler.memory.request }}
@@ -260,6 +264,31 @@ items:
       port: 8080
       protocol: "TCP"
       targetPort: 0
+    selector:
+      skiff-role-name: "syslog-scheduler"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "syslog-scheduler-scheduler-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "sched-health"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "syslog-scheduler"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "syslog-scheduler-scheduler"
+  spec:
+    ports:
+    - name: "sched-health"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 8080
     selector:
       skiff-role-name: "syslog-scheduler"
 kind: "List"

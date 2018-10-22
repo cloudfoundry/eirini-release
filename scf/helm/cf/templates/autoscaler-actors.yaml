@@ -59,10 +59,6 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_APPMETRICS_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_APPMETRICS_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
 
         {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
         - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
@@ -80,27 +76,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-client-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asactors-client-key"
+              key: "autoscaler-asactors-client-cert-key"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_SERVER_CERT }}
-        - name: "AUTOSCALER_ASACTORS_SERVER_CERT"
+        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-server-cert"
+              key: "autoscaler-asactors-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -112,47 +100,49 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_SERVER_KEY }}
-        - name: "AUTOSCALER_ASACTORS_SERVER_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_SERVER_CERT }}
+        - name: "AUTOSCALER_ASACTORS_SERVER_CERT"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-server-key"
+              key: "autoscaler-asactors-server-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_SERVER_KEY }}
-        - name: "AUTOSCALER_ASACTORS_SERVER_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-server-key"
-              name: "secrets"
-        {{- end }}
-
-        - name: "AUTOSCALER_DB_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_NAME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_ROLE_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if not .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-db-role-password"
+              key: "autoscaler-asactors-server-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-db-role-password"
+              key: "autoscaler-asactors-server-cert-key"
               name: "secrets"
         {{- end }}
 
-        - name: "AUTOSCALER_DB_ROLE_TAG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_TAG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_TAG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_TAG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_TAG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_TAG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_TAG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_TAG | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_CF_SKIP_SSL_VALIDATION"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION) (list "map" "slice")}}{{.Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if not .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-db-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-db-password"
+              name: "secrets"
+        {{- end }}
+
         - name: "AUTOSCALER_DEFAULT_COOLDOWN_SECS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_DEFAULT_COOLDOWN_SECS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DEFAULT_COOLDOWN_SECS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DEFAULT_COOLDOWN_SECS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DEFAULT_COOLDOWN_SECS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
@@ -161,30 +151,18 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_INSTANCE_METRICS_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_INSTANCE_METRICS_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_LOCK_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_LOCK_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_POLICY_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_POLICY_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL"
@@ -195,66 +173,55 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_LOCK_CONSUL_CLUSTER_CONFIG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_LOCK_CONSUL_CLUSTER_CONFIG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_LOCK_CONSUL_CLUSTER_CONFIG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_CONSUL_CLUSTER_CONFIG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_CONSUL_CLUSTER_CONFIG | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_PRUNER_LOCK_TTL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_LOCK_TTL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_LOCK_TTL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_TTL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_TTL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_LOGGING_LEVEL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_LOGGING_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_LOGGING_LEVEL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_LOGGING_LEVEL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_LOGGING_LEVEL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_REQUIRE_CONSUL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_REQUIRE_CONSUL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_REQUIRE_CONSUL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_REQUIRE_CONSUL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_REQUIRE_CONSUL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_CONSUL_CLUSTER"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_CONSUL_CLUSTER) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_CONSUL_CLUSTER) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_CONSUL_CLUSTER | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_CONSUL_CLUSTER | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_LOCK_SIZE"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_LOGGING_LEVEL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_LOGGING_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_LOGGING_LEVEL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_LOGGING_LEVEL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_LOGGING_LEVEL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_REQUIRE_CONSUL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_REQUIRE_CONSUL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_REQUIRE_CONSUL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_REQUIRE_CONSUL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_REQUIRE_CONSUL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCHEDULER_CONSUL_TTL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_CONSUL_TTL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_CONSUL_TTL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_CONSUL_TTL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_CONSUL_TTL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCHEDULER_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCHEDULER_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_INTERVAL_MILISECOND"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_INTERVAL_MILISECOND) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_INTERVAL_MILISECOND) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_INTERVAL_MILISECOND | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_INTERVAL_MILISECOND | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_MAXCOUNT"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_MAXCOUNT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_MAXCOUNT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_MAXCOUNT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_JOB_RESCHEDULE_MAXCOUNT | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_NOTIFICATION_RESCHEDULE_MAXCOUNT"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_NOTIFICATION_RESCHEDULE_MAXCOUNT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_NOTIFICATION_RESCHEDULE_MAXCOUNT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_NOTIFICATION_RESCHEDULE_MAXCOUNT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_NOTIFICATION_RESCHEDULE_MAXCOUNT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCHEDULER_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCHEDULER_REQUIRE_CONSUL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_REQUIRE_CONSUL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_REQUIRE_CONSUL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_REQUIRE_CONSUL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_REQUIRE_CONSUL | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
         - name: "AUTOSCALER_UAA_CLIENT_SECRET"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) (list "map" "slice")}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | quote}}{{end}}{{else}}""{{end}}
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
+        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets"
+        {{- end }}
+
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
@@ -284,6 +251,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: "metadata.namespace"
+        - name: "LOG_LEVEL"
+          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -312,7 +281,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-actors:ede4a1ee97aba27b7aecdb8b90d5bc5c4c153722"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-actors:1822e0499bba95ebd1685df2af48d6244f76d7f5"
         lifecycle:
           preStop:
             exec:
@@ -321,10 +290,10 @@ spec:
         livenessProbe: ~
         name: "autoscaler-actors"
         ports:
-        - containerPort: 6104
+        - containerPort: 7104
           name: "scaling-engine"
           protocol: "TCP"
-        - containerPort: 6102
+        - containerPort: 7102
           name: "scheduler"
           protocol: "TCP"
         readinessProbe:
@@ -387,11 +356,11 @@ items:
     clusterIP: "None"
     ports:
     - name: "scaling-engine"
-      port: 6104
+      port: 7104
       protocol: "TCP"
       targetPort: 0
     - name: "scheduler"
-      port: 6102
+      port: 7102
       protocol: "TCP"
       targetPort: 0
     selector:
@@ -399,17 +368,51 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "autoscaler-actors"
+    name: "autoscaler-actors-scalingengine-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "scaling-engine"
+      port: 7104
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "autoscaler-actors"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-actors-scalingengine"
   spec:
     ports:
     - name: "scaling-engine"
-      port: 6104
+      port: 7104
       protocol: "TCP"
-      targetPort: "scaling-engine"
+      targetPort: 7104
+    selector:
+      skiff-role-name: "autoscaler-actors"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-actors-scheduler-set"
+  spec:
+    clusterIP: "None"
+    ports:
     - name: "scheduler"
-      port: 6102
+      port: 7102
       protocol: "TCP"
-      targetPort: "scheduler"
+      targetPort: 0
+    selector:
+      skiff-role-name: "autoscaler-actors"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-actors-scheduler"
+  spec:
+    ports:
+    - name: "scheduler"
+      port: 7102
+      protocol: "TCP"
+      targetPort: 7102
     selector:
       skiff-role-name: "autoscaler-actors"
 kind: "List"

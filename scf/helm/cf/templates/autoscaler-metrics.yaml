@@ -59,18 +59,6 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_APPMETRICS_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_APPMETRICS_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_APPMETRICS_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asactors-client-cert"
-              name: "secrets"
-        {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
         - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
@@ -80,20 +68,28 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-client-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+              key: "autoscaler-asactors-client-cert"
+              name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-client-key"
+              key: "autoscaler-asactors-client-cert-key"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asactors-client-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_CERT }}
@@ -112,19 +108,19 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASMETRICS_CLIENT_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asmetrics-client-key"
+              key: "autoscaler-asmetrics-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASMETRICS_CLIENT_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asmetrics-client-key"
+              key: "autoscaler-asmetrics-client-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -144,47 +140,41 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASMETRICS_SERVER_KEY }}
-        - name: "AUTOSCALER_ASMETRICS_SERVER_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASMETRICS_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASMETRICS_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asmetrics-server-key"
+              key: "autoscaler-asmetrics-server-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_SERVER_KEY }}
-        - name: "AUTOSCALER_ASMETRICS_SERVER_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASMETRICS_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asmetrics-server-key"
+              key: "autoscaler-asmetrics-server-cert-key"
               name: "secrets"
         {{- end }}
 
-        - name: "AUTOSCALER_DB_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_NAME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_ROLE_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_CF_SKIP_SSL_VALIDATION"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION) (list "map" "slice")}}{{.Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION | quote}}{{end}}{{else}}""{{end}}
 
-        {{- if .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
+        {{- if not .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-db-role-password"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-db-role-password"
+              key: "autoscaler-db-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        - name: "AUTOSCALER_DB_ROLE_TAG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_TAG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_TAG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_TAG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_TAG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_TAG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_TAG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_TAG | quote}}{{end}}{{else}}""{{end}}
+        {{- if .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-db-password"
+              name: "secrets"
+        {{- end }}
+
         - name: "AUTOSCALER_DEFAULT_BREACH_DURATION_SECS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_DEFAULT_BREACH_DURATION_SECS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DEFAULT_BREACH_DURATION_SECS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DEFAULT_BREACH_DURATION_SECS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DEFAULT_BREACH_DURATION_SECS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_DEFAULT_STAT_WINDOW_SECS"
@@ -207,38 +197,18 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_BACK_OFF_MAX_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_BACK_OFF_MAX_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_BACK_OFF_MAX_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_BACK_OFF_MAX_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_CONSECUTIVE_FAILURE_COUNT"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_CONSECUTIVE_FAILURE_COUNT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_CONSECUTIVE_FAILURE_COUNT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_CONSECUTIVE_FAILURE_COUNT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_CIRCUIT_BREAKER_CONSECUTIVE_FAILURE_COUNT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_EVENT_GENERATOR_ENABLE_DB_LOCK"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_ENABLE_DB_LOCK) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_ENABLE_DB_LOCK) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_ENABLE_DB_LOCK | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_ENABLE_DB_LOCK | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATION_MANAGER_EXECUTE_INTERVAL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATION_MANAGER_EXECUTE_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATION_MANAGER_EXECUTE_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATION_MANAGER_EXECUTE_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATION_MANAGER_EXECUTE_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATOR_COUNT"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATOR_COUNT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATOR_COUNT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATOR_COUNT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_EVALUATOR_COUNT | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_EVENT_GENERATOR_EVALUATOR_TRIGGER_ARRAY_CHANNEL_SIZE"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_TRIGGER_ARRAY_CHANNEL_SIZE) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_TRIGGER_ARRAY_CHANNEL_SIZE) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_TRIGGER_ARRAY_CHANNEL_SIZE | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_EVALUATOR_TRIGGER_ARRAY_CHANNEL_SIZE | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_EVENT_GENERATOR_LOGGING_LEVEL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_LOGGING_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_LOGGING_LEVEL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_LOGGING_LEVEL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_LOGGING_LEVEL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_EVENT_GENERATOR_REQUIRE_CONSUL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_EVENT_GENERATOR_REQUIRE_CONSUL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_EVENT_GENERATOR_REQUIRE_CONSUL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_REQUIRE_CONSUL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_EVENT_GENERATOR_REQUIRE_CONSUL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_INSTANCE_METRICS_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_INSTANCE_METRICS_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_INSTANCE_METRICS_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_LOCK_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_LOCK_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_COLLECT_INTERVAL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_COLLECT_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_COLLECT_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_COLLECT_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_COLLECT_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_REFRESH_INTERVAL"
@@ -247,28 +217,29 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_SAVE_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_SAVE_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_SAVE_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECTOR_SAVE_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_METRICS_COLLECTOR_COLLECT_METHOD"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECT_METHOD) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECT_METHOD) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECT_METHOD | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_COLLECT_METHOD | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_METRICS_COLLECTOR_ENABLE_DB_LOCK"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_ENABLE_DB_LOCK) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_ENABLE_DB_LOCK) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_ENABLE_DB_LOCK | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_ENABLE_DB_LOCK | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_METRICS_COLLECTOR_LOGGIN_LEVEL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_LOGGIN_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_LOGGIN_LEVEL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_LOGGIN_LEVEL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_LOGGIN_LEVEL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_METRICS_COLLECTOR_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_METRICS_COLLECTOR_REQUIRE_CONSUL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_REQUIRE_CONSUL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_REQUIRE_CONSUL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_REQUIRE_CONSUL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_REQUIRE_CONSUL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_POLICY_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_POLICY_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_PORT | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
         - name: "AUTOSCALER_UAA_CLIENT_SECRET"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) (list "map" "slice")}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | quote}}{{end}}{{else}}""{{end}}
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
+        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets"
+        {{- end }}
+
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
@@ -298,6 +269,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: "metadata.namespace"
+        - name: "LOG_LEVEL"
+          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -326,7 +299,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-metrics:d94fc90118b24660ac975ffe109c553899b32ade"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-metrics:7c98c08fab7678262269e7aa2115f6591d53ae0a"
         lifecycle:
           preStop:
             exec:
@@ -335,8 +308,11 @@ spec:
         livenessProbe: ~
         name: "autoscaler-metrics"
         ports:
-        - containerPort: 6103
+        - containerPort: 7103
           name: "metrics"
+          protocol: "TCP"
+        - containerPort: 7105
+          name: "eventgen"
           protocol: "TCP"
         readinessProbe:
           exec:
@@ -398,7 +374,11 @@ items:
     clusterIP: "None"
     ports:
     - name: "metrics"
-      port: 6103
+      port: 7103
+      protocol: "TCP"
+      targetPort: 0
+    - name: "eventgen"
+      port: 7105
       protocol: "TCP"
       targetPort: 0
     selector:
@@ -406,13 +386,51 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "autoscaler-metrics"
+    name: "autoscaler-metrics-metricscollector-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "metrics"
+      port: 7103
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "autoscaler-metrics"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-metrics-metricscollector"
   spec:
     ports:
     - name: "metrics"
-      port: 6103
+      port: 7103
       protocol: "TCP"
-      targetPort: "metrics"
+      targetPort: 7103
+    selector:
+      skiff-role-name: "autoscaler-metrics"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-metrics-eventgenerator-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "eventgen"
+      port: 7105
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "autoscaler-metrics"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-metrics-eventgenerator"
+  spec:
+    ports:
+    - name: "eventgen"
+      port: 7105
+      protocol: "TCP"
+      targetPort: 7105
     selector:
       skiff-role-name: "autoscaler-metrics"
 kind: "List"

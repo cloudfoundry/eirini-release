@@ -3,33 +3,34 @@
 apiVersion: "v1"
 kind: "ServiceAccount"
 metadata:
-  name: "secret-generator"
+  name: "default-privileged"
 {{- end }}
 ---
 {{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
 apiVersion: "rbac.authorization.k8s.io/v1beta1"
 kind: "RoleBinding"
 metadata:
-  name: "secret-generator-configgin-role-binding"
+  name: "default-privileged-configgin-role-binding"
 subjects:
 - kind: "ServiceAccount"
-  name: "secret-generator"
+  name: "default-privileged"
 roleRef:
   kind: "Role"
   name: "configgin-role"
   apiGroup: "rbac.authorization.k8s.io"
 {{- end }}
 ---
-{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
-apiVersion: "rbac.authorization.k8s.io/v1beta1"
-kind: "RoleBinding"
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") .Values.kube.psp.privileged }}
+apiVersion: "rbac.authorization.k8s.io/v1"
+kind: "ClusterRoleBinding"
 metadata:
-  name: "secret-generator-secrets-role-binding"
+  name: "default-privileged-binding-psp"
 subjects:
 - kind: "ServiceAccount"
-  name: "secret-generator"
+  name: "default-privileged"
+  namespace: {{ .Release.Namespace }}
 roleRef:
-  kind: "Role"
-  name: "secrets-role"
+  kind: "ClusterRole"
+  name: "psp-role-privileged"
   apiGroup: "rbac.authorization.k8s.io"
 {{- end }}

@@ -12,7 +12,7 @@
 #   most closely matches the host header of the request and load balances across
 #   the associated backends.
 #
-# Also: metron_agent
+# Also: loggregator_agent
 
 {{- if gt (int .Values.sizing.router.count) 65535 }}
 _maxReplicas: {{ fail "router cannot have more than 65535 instances" }}
@@ -73,15 +73,6 @@ spec:
                 - key: "skiff-role-name"
                   operator: "In"
                   values:
-                  - "diego-cell"
-              topologyKey: "beta.kubernetes.io/os"
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: "skiff-role-name"
-                  operator: "In"
-                  values:
                   - "router"
               topologyKey: "beta.kubernetes.io/os"
             weight: 100
@@ -123,40 +114,41 @@ spec:
           value: "z1"
         - name: "KUBE_SIZING_NATS_COUNT"
           value: {{ .Values.sizing.nats.count | quote }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
+        {{- end }}
+
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets"
-        {{- end }}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -229,19 +221,19 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.ROUTER_SSL_KEY }}
-        - name: "ROUTER_SSL_KEY"
+        {{- if .Values.secrets.ROUTER_SSL_CERT_KEY }}
+        - name: "ROUTER_SSL_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "router-ssl-key"
+              key: "router-ssl-cert-key"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.ROUTER_SSL_KEY }}
-        - name: "ROUTER_SSL_KEY"
+        {{- if not .Values.secrets.ROUTER_SSL_CERT_KEY }}
+        - name: "ROUTER_SSL_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "router-ssl-key"
+              key: "router-ssl-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -298,7 +290,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:406541bf111cc1688f3997a5377427993821d76b"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:dc05d23b9630208a5be3a505ad4cdded966b85d6"
         lifecycle:
           preStop:
             exec:
@@ -307,20 +299,20 @@ spec:
         livenessProbe: ~
         name: "router"
         ports:
-        - containerPort: 80
+        - containerPort: 8000
           name: "router"
           protocol: "TCP"
         - containerPort: 443
-          name: "router2"
+          name: "router-ssl"
           protocol: "TCP"
         - containerPort: 443
-          name: "router3"
+          name: "doppler-ssl"
           protocol: "TCP"
         readinessProbe:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --silent --fail http://${HOSTNAME}:8080/health"
+            - "curl --silent --fail --head http://${HOSTNAME}:8080/health"
         resources:
           requests:
             {{- if and .Values.config.memory.requests .Values.sizing.router.memory.request }}
@@ -341,12 +333,26 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.router.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.router.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.router.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
         volumeMounts: ~
       dnsPolicy: "ClusterFirst"
       imagePullSecrets:
       - name: "registry-credentials"
       restartPolicy: "Always"
+      {{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
+      serviceAccountName: "default-privileged"
+      {{- end }}
       terminationGracePeriodSeconds: 600
       volumes: ~
   {{- if or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 7)) }}
@@ -367,11 +373,11 @@ items:
       port: 80
       protocol: "TCP"
       targetPort: 0
-    - name: "router2"
+    - name: "router-ssl"
       port: 443
       protocol: "TCP"
       targetPort: 0
-    - name: "router3"
+    - name: "doppler-ssl"
       port: 4443
       protocol: "TCP"
       targetPort: 0
@@ -380,7 +386,48 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "router-public"
+    name: "router-gorouter-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "router"
+      port: 80
+      protocol: "TCP"
+      targetPort: 0
+    - name: "router-ssl"
+      port: 443
+      protocol: "TCP"
+      targetPort: 0
+    - name: "doppler-ssl"
+      port: 4443
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "router"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "router-gorouter"
+  spec:
+    ports:
+    - name: "router"
+      port: 80
+      protocol: "TCP"
+      targetPort: 8000
+    - name: "router-ssl"
+      port: 443
+      protocol: "TCP"
+      targetPort: 443
+    - name: "doppler-ssl"
+      port: 4443
+      protocol: "TCP"
+      targetPort: 443
+    selector:
+      skiff-role-name: "router"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "router-gorouter-public"
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -390,15 +437,15 @@ items:
     - name: "router"
       port: 80
       protocol: "TCP"
-      targetPort: "router"
-    - name: "router2"
+      targetPort: 8000
+    - name: "router-ssl"
       port: 443
       protocol: "TCP"
-      targetPort: "router2"
-    - name: "router3"
+      targetPort: 443
+    - name: "doppler-ssl"
       port: 4443
       protocol: "TCP"
-      targetPort: "router3"
+      targetPort: 443
     selector:
       skiff-role-name: "router"
 

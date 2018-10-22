@@ -55,43 +55,27 @@ spec:
       - env:
         - name: "AUTOSCALER_DATABASE_MAX_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_DATABASE_MAX_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DATABASE_MAX_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DATABASE_MAX_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DATABASE_MAX_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_NAME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_ROLE_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | quote}}{{end}}{{else}}""{{end}}
 
-        {{- if .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
+        {{- if not .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-db-role-password"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-db-role-password"
+              key: "autoscaler-db-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        - name: "AUTOSCALER_DB_ROLE_TAG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_TAG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_TAG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_POLICY_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | quote}}{{end}}{{else}}""{{end}}
+        {{- if .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-db-password"
+              name: "secrets"
+        {{- end }}
+
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
           value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
-
-        {{- if .Values.secrets.INTERNAL_CA_CERT }}
-        - name: "INTERNAL_CA_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "internal-ca-cert"
-              name: "secrets"
-        {{- end }}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -99,6 +83,14 @@ spec:
             secretKeyRef:
               key: "internal-ca-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
         {{- end }}
 
         - name: "KUBERNETES_CLUSTER_DOMAIN"
@@ -130,7 +122,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-postgres:1061fd8884fbde0d9c639e64219a97e77fd4a40f"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-postgres:325e5746c78c974b8cf62516d42de0e1b6c7ca04"
         lifecycle:
           preStop:
             exec:
@@ -224,13 +216,26 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "autoscaler-postgres"
+    name: "autoscaler-postgres-postgres-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "postgres"
+      port: 5432
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "autoscaler-postgres"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-postgres-postgres"
   spec:
     ports:
     - name: "postgres"
       port: 5432
       protocol: "TCP"
-      targetPort: "postgres"
+      targetPort: 5432
     selector:
       skiff-role-name: "autoscaler-postgres"
 kind: "List"

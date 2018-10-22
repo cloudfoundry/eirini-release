@@ -8,7 +8,7 @@
 #
 # - route_registrar: Used for registering routes
 #
-# Also: loggregator_trafficcontroller, metron_agent, reverse_log_proxy
+# Also: loggregator_trafficcontroller, loggregator_agent, reverse_log_proxy
 
 {{- if gt (int .Values.sizing.log_api.count) 65535 }}
 _maxReplicas: {{ fail "log_api cannot have more than 65535 instances" }}
@@ -111,35 +111,35 @@ spec:
         - name: "KUBE_SIZING_NATS_COUNT"
           value: {{ .Values.sizing.nats.count | quote }}
 
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -198,19 +198,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.SYSLOG_RLP_KEY }}
-        - name: "SYSLOG_RLP_KEY"
+        {{- if .Values.secrets.SYSLOG_RLP_CERT_KEY }}
+        - name: "SYSLOG_RLP_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "syslog-rlp-key"
+              key: "syslog-rlp-cert-key"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.SYSLOG_RLP_KEY }}
-        - name: "SYSLOG_RLP_KEY"
+        {{- if not .Values.secrets.SYSLOG_RLP_CERT_KEY }}
+        - name: "SYSLOG_RLP_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "syslog-rlp-key"
+              key: "syslog-rlp-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -230,19 +230,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.TRAFFICCONTROLLER_KEY }}
-        - name: "TRAFFICCONTROLLER_KEY"
+        {{- if .Values.secrets.TRAFFICCONTROLLER_CERT_KEY }}
+        - name: "TRAFFICCONTROLLER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "trafficcontroller-key"
+              key: "trafficcontroller-cert-key"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.TRAFFICCONTROLLER_KEY }}
-        - name: "TRAFFICCONTROLLER_KEY"
+        {{- if not .Values.secrets.TRAFFICCONTROLLER_CERT_KEY }}
+        - name: "TRAFFICCONTROLLER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "trafficcontroller-key"
+              key: "trafficcontroller-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -272,7 +272,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-log-api:c28b6b8f6175045771b386a8fc72d28ec6ef3bb9"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-log-api:ab3bf2188bac1bfb171643d7d1759db46e42b168"
         lifecycle:
           preStop:
             exec:
@@ -291,7 +291,7 @@ spec:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --silent --fail http://${HOSTNAME}:8081/set-cookie"
+            - "curl --silent --fail --head http://${HOSTNAME}:8081/set-cookie"
         resources:
           requests:
             {{- if and .Values.config.memory.requests .Values.sizing.log_api.memory.request }}
@@ -358,17 +358,51 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "log-api"
+    name: "log-api-loggregator-trafficcontroller-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "dropsonde"
+      port: 8081
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "log-api"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "log-api-loggregator-trafficcontroller"
   spec:
     ports:
     - name: "dropsonde"
       port: 8081
       protocol: "TCP"
-      targetPort: "dropsonde"
+      targetPort: 8081
+    selector:
+      skiff-role-name: "log-api"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "log-api-reverse-log-proxy-set"
+  spec:
+    clusterIP: "None"
+    ports:
     - name: "rlp"
       port: 8082
       protocol: "TCP"
-      targetPort: "rlp"
+      targetPort: 0
+    selector:
+      skiff-role-name: "log-api"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "log-api-reverse-log-proxy"
+  spec:
+    ports:
+    - name: "rlp"
+      port: 8082
+      protocol: "TCP"
+      targetPort: 8082
     selector:
       skiff-role-name: "log-api"
 kind: "List"

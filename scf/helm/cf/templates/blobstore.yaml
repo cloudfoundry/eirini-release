@@ -6,7 +6,7 @@
 #
 # - route_registrar: Used for registering routes
 #
-# Also: blobstore, metron_agent
+# Also: blobstore, loggregator_agent
 
 {{- if gt (int .Values.sizing.blobstore.count) 1 }}
 _maxReplicas: {{ fail "blobstore cannot have more than 1 instances" }}
@@ -109,19 +109,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.BLOBSTORE_TLS_KEY }}
-        - name: "BLOBSTORE_TLS_KEY"
+        {{- if not .Values.secrets.BLOBSTORE_TLS_CERT_KEY }}
+        - name: "BLOBSTORE_TLS_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "blobstore-tls-key"
+              key: "blobstore-tls-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.BLOBSTORE_TLS_KEY }}
-        - name: "BLOBSTORE_TLS_KEY"
+        {{- if .Values.secrets.BLOBSTORE_TLS_CERT_KEY }}
+        - name: "BLOBSTORE_TLS_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "blobstore-tls-key"
+              key: "blobstore-tls-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -159,35 +159,35 @@ spec:
         - name: "KUBE_SIZING_NATS_COUNT"
           value: {{ .Values.sizing.nats.count | quote }}
 
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -229,7 +229,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-blobstore:ebc342050e036b2b36b5804b54e440425238e613"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-blobstore:0e0ab55583cc20b26c51deaa5167afd49da7fbc4"
         lifecycle:
           preStop:
             exec:
@@ -328,17 +328,34 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "blobstore"
+    name: "blobstore-blobstore-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "blobstore-ext"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 0
+    - name: "blobstore"
+      port: 4443
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "blobstore"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "blobstore-blobstore"
   spec:
     ports:
     - name: "blobstore-ext"
       port: 8080
       protocol: "TCP"
-      targetPort: "blobstore-ext"
+      targetPort: 8080
     - name: "blobstore"
       port: 4443
       protocol: "TCP"
-      targetPort: "blobstore"
+      targetPort: 4443
     selector:
       skiff-role-name: "blobstore"
 kind: "List"

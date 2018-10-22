@@ -8,7 +8,7 @@
 #
 # - wait-for-uaa: Wait for UAA to be ready before starting any jobs
 #
-# Also: tcp_router, metron_agent
+# Also: tcp_router, loggregator_agent
 
 {{- if gt (int .Values.sizing.tcp_router.count) 3 }}
 _maxReplicas: {{ fail "tcp_router cannot have more than 3 instances" }}
@@ -106,40 +106,41 @@ spec:
               fieldPath: "metadata.namespace"
         - name: "KUBE_AZ"
           value: "z1"
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
+        {{- end }}
+
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets"
-        {{- end }}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -189,7 +190,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-tcp-router:1be8ea3e6a2ea9c7f9eaa8bdfc6fc63e0aa68c69"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-tcp-router:607fecb2d54f2feb2ec44773f25cabd89dc26d62"
         lifecycle:
           preStop:
             exec:
@@ -198,7 +199,7 @@ spec:
         livenessProbe: ~
         name: "tcp-router"
         ports:
-        - containerPort: 80
+        - containerPort: 8080
           name: "healthcheck"
           protocol: "TCP"
 
@@ -220,7 +221,7 @@ spec:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --silent --fail http://${HOSTNAME}/health"
+            - "curl --silent --fail --head http://${HOSTNAME}:8080/health"
         resources:
           requests:
             {{- if and .Values.config.memory.requests .Values.sizing.tcp_router.memory.request }}
@@ -289,13 +290,32 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "tcp-router"
+    name: "tcp-router-tcp-router-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "healthcheck"
+      port: 2341
+      protocol: "TCP"
+      targetPort: 0
+    {{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
+    - name: "tcp-route-{{ $port }}"
+      port: {{ add 20000 $port }}
+      protocol: "TCP"
+      targetPort: 0
+    {{- end }}
+    selector:
+      skiff-role-name: "tcp-router"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "tcp-router-tcp-router"
   spec:
     ports:
     - name: "healthcheck"
       port: 2341
       protocol: "TCP"
-      targetPort: "healthcheck"
+      targetPort: 8080
     {{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
     - name: "tcp-route-{{ $port }}"
       port: {{ add 20000 $port }}
@@ -307,7 +327,7 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "tcp-router-public"
+    name: "tcp-router-tcp-router-public"
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}

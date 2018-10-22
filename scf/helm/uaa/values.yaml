@@ -8,6 +8,9 @@ kube:
   storage_class:
     persistent: "persistent"
     shared: "shared"
+  psp:
+    nonprivileged: ~
+    privileged: ~
 
   # Whether HostPath volume mounts are available
   hostpath_available: false
@@ -47,16 +50,14 @@ secrets:
   INTERNAL_CA_CERT: ~
 
   # PEM-encoded CA key.
-  # This value uses a generated default.
-  INTERNAL_CA_KEY: ~
+  INTERNAL_CA_CERT_KEY: ~
 
   # PEM-encoded JWT certificate.
   # This value uses a generated default.
   JWT_SIGNING_CERT: ~
 
   # PEM-encoded JWT signing key.
-  # This value uses a generated default.
-  JWT_SIGNING_KEY: ~
+  JWT_SIGNING_CERT_KEY: ~
 
   # Password used for the monit API.
   # This value uses a generated default.
@@ -83,8 +84,7 @@ secrets:
   SAML_SERVICEPROVIDER_CERT: ~
 
   # PEM-encoded key.
-  # This value uses a generated default.
-  SAML_SERVICEPROVIDER_KEY: ~
+  SAML_SERVICEPROVIDER_CERT_KEY: ~
 
   # The password for access to the UAA database.
   # This value uses a generated default.
@@ -100,8 +100,7 @@ secrets:
   UAA_SERVER_CERT: ~
 
   # The server's ssl private key. Only passphrase-less keys are supported.
-  # This value uses a generated default.
-  UAA_SERVER_KEY: ~
+  UAA_SERVER_CERT_KEY: ~
 
 env:
   # Expiration for generated certificates (in days)
@@ -128,11 +127,34 @@ env:
   # values are tcp, and udp. The default is tcp.
   SCF_LOG_PROTOCOL: "tcp"
 
+  # If true, authenticate against the SMTP server using AUTH command. See
+  # https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html
+  SMTP_AUTH: "false"
+
+  # SMTP from address, for password reset emails etc.
+  SMTP_FROM_ADDRESS: ~
+
+  # SMTP server host address, for password reset emails etc.
+  SMTP_HOST: ~
+
+  # SMTP server password, for password reset emails etc.
+  SMTP_PASSWORD: ~
+
+  # SMTP server port, for password reset emails etc.
+  SMTP_PORT: "25"
+
+  # If true, send STARTTLS command before logging in to SMTP server. See
+  # https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html
+  SMTP_STARTTLS: "false"
+
+  # SMTP server username, for password reset emails etc.
+  SMTP_USER: ~
+
 # The sizing section contains configuration to change each individual instance
 # group. Due to limitations on the allowable names, any dashes ("-") in the
 # instance group names are replaced with underscores ("_").
 sizing:
-  # The database instance group contains the following jobs:
+  # The mysql instance group contains the following jobs:
   #
   # - global-uaa-properties: Dummy BOSH job used to host global parameters that
   #   are required to configure SCF / fissile
@@ -141,14 +163,14 @@ sizing:
   #   SCF patches for upstream bugs
   #
   # Also: mysql, proxy
-  database:
+  mysql:
     # Node affinity rules can be specified here
     affinity: {}
 
     # Additional privileges can be specified here
     capabilities: []
 
-    # The database instance group can scale between 1 and 3 instances.
+    # The mysql instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 

@@ -6,7 +6,7 @@
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# Also: metron_agent, routing-api
+# Also: loggregator_agent, routing-api
 
 {{- if gt (int .Values.sizing.routing_api.count) 3 }}
 _maxReplicas: {{ fail "routing_api cannot have more than 3 instances" }}
@@ -94,19 +94,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.DIEGO_CLIENT_KEY }}
-        - name: "DIEGO_CLIENT_KEY"
+        {{- if not .Values.secrets.DIEGO_CLIENT_CERT_KEY }}
+        - name: "DIEGO_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "diego-client-key"
+              key: "diego-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.DIEGO_CLIENT_KEY }}
-        - name: "DIEGO_CLIENT_KEY"
+        {{- if .Values.secrets.DIEGO_CLIENT_CERT_KEY }}
+        - name: "DIEGO_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "diego-client-key"
+              key: "diego-client-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -143,40 +143,41 @@ spec:
           value: {{ add 20000 .Values.sizing.tcp_router.ports.tcp_route.count -1 | quote }}
         - name: "KUBE_SIZING_TCP_ROUTER_PORTS_TCP_ROUTE_MIN"
           value: "20000"
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
-
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -225,7 +226,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-routing-api:9fdd57bafded6ad5592870c068b3ab524a28b7b6"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-routing-api:c232bfa623af06ce1046cc77844b906a223969b7"
         lifecycle:
           preStop:
             exec:
@@ -263,7 +264,18 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.routing_api.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.routing_api.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.routing_api.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
         volumeMounts: ~
       dnsPolicy: "ClusterFirst"
       imagePullSecrets:
@@ -295,13 +307,27 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "routing-api"
+    name: "routing-api-routing-api-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "routing-api"
+      port: 3000
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "routing-api"
+      skiff-role-active: "true"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "routing-api-routing-api"
   spec:
     ports:
     - name: "routing-api"
       port: 3000
       protocol: "TCP"
-      targetPort: "routing-api"
+      targetPort: 3000
     selector:
       skiff-role-name: "routing-api"
       skiff-role-active: "true"

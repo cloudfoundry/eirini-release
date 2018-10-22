@@ -96,19 +96,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.CF_USB_BROKER_SERVER_KEY }}
-        - name: "CF_USB_BROKER_SERVER_KEY"
+        {{- if not .Values.secrets.CF_USB_BROKER_SERVER_CERT_KEY }}
+        - name: "CF_USB_BROKER_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cf-usb-broker-server-key"
+              key: "cf-usb-broker-server-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.CF_USB_BROKER_SERVER_KEY }}
-        - name: "CF_USB_BROKER_SERVER_KEY"
+        {{- if .Values.secrets.CF_USB_BROKER_SERVER_CERT_KEY }}
+        - name: "CF_USB_BROKER_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cf-usb-broker-server-key"
+              key: "cf-usb-broker-server-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -238,7 +238,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb:3a601dc5fb6a28d01889f58b8c19187964d6df69"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb:2ad1a1e0f72d1f87a5b6af8226471c4c9d9613b2"
         lifecycle:
           preStop:
             exec:
@@ -323,17 +323,34 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "cf-usb"
+    name: "cf-usb-cf-usb-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "usb"
+      port: 24054
+      protocol: "TCP"
+      targetPort: 0
+    - name: "usb2"
+      port: 24053
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "cf-usb"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "cf-usb-cf-usb"
   spec:
     ports:
     - name: "usb"
       port: 24054
       protocol: "TCP"
-      targetPort: "usb"
+      targetPort: 24054
     - name: "usb2"
       port: 24053
       protocol: "TCP"
-      targetPort: "usb2"
+      targetPort: 24053
     selector:
       skiff-role-name: "cf-usb"
 kind: "List"

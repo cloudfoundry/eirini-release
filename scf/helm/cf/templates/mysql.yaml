@@ -1,5 +1,5 @@
 ---
-# The database instance group contains the following jobs:
+# The mysql instance group contains the following jobs:
 #
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
@@ -9,16 +9,16 @@
 #
 # Also: mysql, proxy
 
-{{- if gt (int .Values.sizing.database.count) 3 }}
-_maxReplicas: {{ fail "database cannot have more than 3 instances" }}
+{{- if gt (int .Values.sizing.mysql.count) 3 }}
+_maxReplicas: {{ fail "mysql cannot have more than 3 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.database.count) 1) (lt (int .Values.sizing.database.count) 2)) }}
-_minHAReplicas: {{ fail "database must have at least 2 instances for HA" }}
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.mysql.count) 1) (lt (int .Values.sizing.mysql.count) 2)) }}
+_minHAReplicas: {{ fail "mysql must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.database.count) 1 }}
-_minReplicas: {{ fail "database must have at least 1 instances" }}
+{{- if lt (int .Values.sizing.mysql.count) 1 }}
+_minReplicas: {{ fail "mysql must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -44,18 +44,18 @@ _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "
 apiVersion: "apps/v1beta1"
 kind: "StatefulSet"
 metadata:
-  name: "database"
+  name: "mysql"
   labels:
-    skiff-role-name: "database"
+    skiff-role-name: "mysql"
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.database.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.database.count }} {{- end }}
-  serviceName: "database-set"
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.mysql.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.mysql.count }} {{- end }}
+  serviceName: "mysql-set"
   template:
     metadata:
-      name: "database"
+      name: "mysql"
       labels:
-        skiff-role-name: "database"
+        skiff-role-name: "mysql"
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -71,8 +71,8 @@ spec:
                   - "mysql"
               topologyKey: "beta.kubernetes.io/os"
             weight: 100
-        {{- if .Values.sizing.database.affinity.nodeAffinity }}
-        nodeAffinity: {{ toJson .Values.sizing.database.affinity.nodeAffinity }}
+        {{- if .Values.sizing.mysql.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.mysql.affinity.nodeAffinity }}
         {{- end }}
       containers:
       - env:
@@ -104,20 +104,20 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "monit-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.MYSQL_ADMIN_PASSWORD }}
@@ -168,6 +168,14 @@ spec:
               name: "secrets"
         {{- end }}
 
+        {{- if .Values.secrets.MYSQL_CLUSTER_HEALTH_PASSWORD }}
+        - name: "MYSQL_CLUSTER_HEALTH_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-cluster-health-password"
+              name: "secrets"
+        {{- end }}
+
         {{- if not .Values.secrets.MYSQL_CLUSTER_HEALTH_PASSWORD }}
         - name: "MYSQL_CLUSTER_HEALTH_PASSWORD"
           valueFrom:
@@ -176,11 +184,27 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_CLUSTER_HEALTH_PASSWORD }}
-        - name: "MYSQL_CLUSTER_HEALTH_PASSWORD"
+        {{- if not .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
+        - name: "MYSQL_CREDHUB_USER_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "mysql-cluster-health-password"
+              key: "mysql-credhub-user-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
+        - name: "MYSQL_CREDHUB_USER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-credhub-user-password"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_DIEGO_LOCKET_PASSWORD }}
+        - name: "MYSQL_DIEGO_LOCKET_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-diego-locket-password"
               name: "secrets"
         {{- end }}
 
@@ -192,12 +216,12 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_DIEGO_LOCKET_PASSWORD }}
-        - name: "MYSQL_DIEGO_LOCKET_PASSWORD"
+        {{- if not .Values.secrets.MYSQL_DIEGO_PASSWORD }}
+        - name: "MYSQL_DIEGO_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "mysql-diego-locket-password"
-              name: "secrets"
+              key: "mysql-diego-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if .Values.secrets.MYSQL_DIEGO_PASSWORD }}
@@ -206,14 +230,6 @@ spec:
             secretKeyRef:
               key: "mysql-diego-password"
               name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.MYSQL_DIEGO_PASSWORD }}
-        - name: "MYSQL_DIEGO_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-diego-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if .Values.secrets.MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD }}
@@ -232,20 +248,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_PERSI_NFS_PASSWORD }}
-        - name: "MYSQL_PERSI_NFS_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-persi-nfs-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MYSQL_PERSI_NFS_PASSWORD }}
         - name: "MYSQL_PERSI_NFS_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "mysql-persi-nfs-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_PERSI_NFS_PASSWORD }}
+        - name: "MYSQL_PERSI_NFS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-persi-nfs-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.MYSQL_PROXY_ADMIN_PASSWORD }}
@@ -289,14 +305,14 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-database:c4a6d396ef79ef7cee84386ceaafc528065e2d39"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-mysql:2bb602dd1edb139162079c4a40687cd464308726"
         lifecycle:
           preStop:
             exec:
               command:
               - "/opt/fissile/pre-stop.sh"
         livenessProbe: ~
-        name: "database"
+        name: "mysql"
         ports:
         - containerPort: 13306
           name: "mysql"
@@ -316,11 +332,11 @@ spec:
         - containerPort: 4444
           name: "xtrabackup"
           protocol: "TCP"
+        - containerPort: 8080
+          name: "api-proxy"
+          protocol: "TCP"
         - containerPort: 3306
           name: "mysql-proxy"
-          protocol: "TCP"
-        - containerPort: 80
-          name: "api"
           protocol: "TCP"
         - containerPort: 1936
           name: "healthck-proxy"
@@ -329,36 +345,36 @@ spec:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --silent --fail http://${HOSTNAME}:9200/"
-            - "curl --silent --fail http://${HOSTNAME}:1936/"
+            - "curl --silent --fail --head http://${HOSTNAME}:9200/"
+            - "curl --silent --fail --head http://${HOSTNAME}:1936/"
         resources:
           requests:
-            {{- if and .Values.config.memory.requests .Values.sizing.database.memory.request }}
-            memory: "{{ int .Values.sizing.database.memory.request }}Mi"
+            {{- if and .Values.config.memory.requests .Values.sizing.mysql.memory.request }}
+            memory: "{{ int .Values.sizing.mysql.memory.request }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.requests .Values.sizing.database.cpu.request }}
-            cpu: "{{ int .Values.sizing.database.cpu.request }}m"
+            {{- if and .Values.config.cpu.requests .Values.sizing.mysql.cpu.request }}
+            cpu: "{{ int .Values.sizing.mysql.cpu.request }}m"
             {{- end }}
 
           limits:
-            {{- if and .Values.config.memory.limits .Values.sizing.database.memory.limit }}
-            memory: "{{ int .Values.sizing.database.memory.limit }}Mi"
+            {{- if and .Values.config.memory.limits .Values.sizing.mysql.memory.limit }}
+            memory: "{{ int .Values.sizing.mysql.memory.limit }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.limits .Values.sizing.database.cpu.limit }}
-            cpu: "{{ int .Values.sizing.database.cpu.limit }}m"
+            {{- if and .Values.config.cpu.limits .Values.sizing.mysql.cpu.limit }}
+            cpu: "{{ int .Values.sizing.mysql.cpu.limit }}m"
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.database.capabilities }}
+          {{- if has "ALL" .Values.sizing.mysql.capabilities }}
           privileged: true
           {{- end }}
 
-          {{- if not (has "ALL" .Values.sizing.database.capabilities) }}
+          {{- if not (has "ALL" .Values.sizing.mysql.capabilities) }}
           capabilities:
             add:
-            {{- range .Values.sizing.database.capabilities }}
+            {{- range .Values.sizing.mysql.capabilities }}
             - {{ . | upper }}
             {{- end }}
           {{- end }}
@@ -387,14 +403,14 @@ spec:
       - "ReadWriteOnce"
       resources:
         requests:
-          storage: "{{ .Values.sizing.database.disk_sizes.mysql_data }}G"
+          storage: "{{ .Values.sizing.mysql.disk_sizes.mysql_data }}G"
 ---
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "database-set"
+    name: "mysql-set"
   spec:
     clusterIP: "None"
     ports:
@@ -422,12 +438,12 @@ items:
       port: 4444
       protocol: "TCP"
       targetPort: 0
-    - name: "mysql-proxy"
-      port: 3306
+    - name: "api-proxy"
+      port: 8080
       protocol: "TCP"
       targetPort: 0
-    - name: "api"
-      port: 80
+    - name: "mysql-proxy"
+      port: 3306
       protocol: "TCP"
       targetPort: 0
     - name: "healthck-proxy"
@@ -435,5 +451,111 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "database"
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-mysql-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "mysql"
+      port: 13306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-tcp"
+      port: 4567
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-udp"
+      port: 4567
+      protocol: "UDP"
+      targetPort: 0
+    - name: "galera-ist"
+      port: 4568
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthcheck"
+      port: 9200
+      protocol: "TCP"
+      targetPort: 0
+    - name: "xtrabackup"
+      port: 4444
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-mysql"
+  spec:
+    ports:
+    - name: "mysql"
+      port: 13306
+      protocol: "TCP"
+      targetPort: 13306
+    - name: "galera-tcp"
+      port: 4567
+      protocol: "TCP"
+      targetPort: 4567
+    - name: "galera-udp"
+      port: 4567
+      protocol: "UDP"
+      targetPort: 4567
+    - name: "galera-ist"
+      port: 4568
+      protocol: "TCP"
+      targetPort: 4568
+    - name: "healthcheck"
+      port: 9200
+      protocol: "TCP"
+      targetPort: 9200
+    - name: "xtrabackup"
+      port: 4444
+      protocol: "TCP"
+      targetPort: 4444
+    selector:
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-proxy-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "api-proxy"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 0
+    - name: "mysql-proxy"
+      port: 3306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthck-proxy"
+      port: 1936
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-proxy"
+  spec:
+    ports:
+    - name: "api-proxy"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 8080
+    - name: "mysql-proxy"
+      port: 3306
+      protocol: "TCP"
+      targetPort: 3306
+    - name: "healthck-proxy"
+      port: 1936
+      protocol: "TCP"
+      targetPort: 1936
+    selector:
+      skiff-role-name: "mysql"
 kind: "List"

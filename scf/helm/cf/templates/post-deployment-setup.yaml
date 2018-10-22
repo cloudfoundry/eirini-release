@@ -25,8 +25,22 @@ spec:
     spec:
       containers:
       - env:
+        {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
         - name: "AUTOSCALER_UAA_CLIENT_SECRET"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_UAA_CLIENT_SECRET) (list "map" "slice")}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_UAA_CLIENT_SECRET | quote}}{{end}}{{else}}""{{end}}
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
+        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets"
+        {{- end }}
+
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "CLUSTER_ADMIN_AUTHORITIES"
@@ -36,20 +50,16 @@ spec:
             secretKeyRef:
               key: "cluster-admin-password"
               name: "secrets"
+        - name: "EIRINI_KUBE_CONFIG"
+          value: {{if ne (typeOf .Values.env.EIRINI_KUBE_CONFIG) "<nil>"}}{{if has (kindOf .Values.env.EIRINI_KUBE_CONFIG) (list "map" "slice")}}{{.Values.env.EIRINI_KUBE_CONFIG | toJson | quote}}{{else}}{{.Values.env.EIRINI_KUBE_CONFIG | quote}}{{end}}{{else}}""{{end}}
+        - name: "EIRINI_KUBE_NAMESPACE"
+          value: {{if ne (typeOf .Values.env.EIRINI_KUBE_NAMESPACE) "<nil>"}}{{if has (kindOf .Values.env.EIRINI_KUBE_NAMESPACE) (list "map" "slice")}}{{.Values.env.EIRINI_KUBE_NAMESPACE | toJson | quote}}{{else}}{{.Values.env.EIRINI_KUBE_NAMESPACE | quote}}{{end}}{{else}}""{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
           value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
         - name: "HTTPS_PROXY"
           value: {{if ne (typeOf .Values.env.HTTPS_PROXY) "<nil>"}}{{if has (kindOf .Values.env.HTTPS_PROXY) (list "map" "slice")}}{{.Values.env.HTTPS_PROXY | toJson | quote}}{{else}}{{.Values.env.HTTPS_PROXY | quote}}{{end}}{{else}}""{{end}}
         - name: "HTTP_PROXY"
           value: {{if ne (typeOf .Values.env.HTTP_PROXY) "<nil>"}}{{if has (kindOf .Values.env.HTTP_PROXY) (list "map" "slice")}}{{.Values.env.HTTP_PROXY | toJson | quote}}{{else}}{{.Values.env.HTTP_PROXY | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if .Values.secrets.INTERNAL_CA_CERT }}
-        - name: "INTERNAL_CA_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "internal-ca-cert"
-              name: "secrets"
-        {{- end }}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -59,20 +69,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
+        {{- end }}
+
         - name: "KUBERNETES_CLUSTER_DOMAIN"
           value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
         - name: "KUBERNETES_NAMESPACE"
           valueFrom:
             fieldRef:
               fieldPath: "metadata.namespace"
-
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -82,16 +92,16 @@ spec:
               name: "secrets"
         {{- end }}
 
-        - name: "NO_PROXY"
-          value: {{if ne (typeOf .Values.env.NO_PROXY) "<nil>"}}{{if has (kindOf .Values.env.NO_PROXY) (list "map" "slice")}}{{.Values.env.NO_PROXY | toJson | quote}}{{else}}{{.Values.env.NO_PROXY | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
-        - name: "PERSI_NFS_BROKER_PASSWORD"
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "persi-nfs-broker-password"
-              name: "secrets"
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
+
+        - name: "NO_PROXY"
+          value: {{if ne (typeOf .Values.env.NO_PROXY) "<nil>"}}{{if has (kindOf .Values.env.NO_PROXY) (list "map" "slice")}}{{.Values.env.NO_PROXY | toJson | quote}}{{else}}{{.Values.env.NO_PROXY | quote}}{{end}}{{else}}""{{end}}
 
         {{- if not .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
         - name: "PERSI_NFS_BROKER_PASSWORD"
@@ -99,6 +109,14 @@ spec:
             secretKeyRef:
               key: "persi-nfs-broker-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
+        - name: "PERSI_NFS_BROKER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "persi-nfs-broker-password"
+              name: "secrets"
         {{- end }}
 
         - name: "SCF_LOG_HOST"
@@ -166,20 +184,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
-        - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-cc-service-key-client-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
         - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-cc-service-key-client-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-key-client-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_CF_USB_SECRET }}
@@ -214,19 +232,19 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET }}
-        - name: "UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET"
+        {{- if not .Values.secrets.UAA_CLIENTS_CREDHUB_USER_CLI_SECRET }}
+        - name: "UAA_CLIENTS_CREDHUB_USER_CLI_SECRET"
           valueFrom:
             secretKeyRef:
-              key: "uaa-clients-diego-ssh-proxy-secret"
+              key: "uaa-clients-credhub-user-cli-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET }}
-        - name: "UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET"
+        {{- if .Values.secrets.UAA_CLIENTS_CREDHUB_USER_CLI_SECRET }}
+        - name: "UAA_CLIENTS_CREDHUB_USER_CLI_SECRET"
           valueFrom:
             secretKeyRef:
-              key: "uaa-clients-diego-ssh-proxy-secret"
+              key: "uaa-clients-credhub-user-cli-secret"
               name: "secrets"
         {{- end }}
 
@@ -262,20 +280,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
-        - name: "UAA_CLIENTS_LOGIN_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-login-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
         - name: "UAA_CLIENTS_LOGIN_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-login-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
+        - name: "UAA_CLIENTS_LOGIN_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-login-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET }}
@@ -330,7 +348,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:0756a895759d61be189f79741be6da75baf749e0"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:061da774267c35b4346f5252db63a2529c2ca3ab"
         lifecycle:
           preStop:
             exec:

@@ -67,20 +67,6 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_INFO_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_INFO_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_INFO_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_INFO_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_API_SERVER_INFO_SUPPORT_URL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_API_SERVER_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_API_SERVER_PUBLIC_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_PUBLIC_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_PUBLIC_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_PUBLIC_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_PUBLIC_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_API_SERVER_REQUIRE_CONSUL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_REQUIRE_CONSUL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_REQUIRE_CONSUL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_REQUIRE_CONSUL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_REQUIRE_CONSUL | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asactors-client-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
         - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
@@ -90,19 +76,27 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-client-key"
+              key: "autoscaler-asactors-client-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-client-key"
+              key: "autoscaler-asactors-client-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asactors-client-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -122,28 +116,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASAPI_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASAPI_CLIENT_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASAPI_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asapi-client-key"
+              key: "autoscaler-asapi-client-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.AUTOSCALER_ASAPI_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asapi-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.AUTOSCALER_ASAPI_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASAPI_CLIENT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asapi-client-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT }}
-        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asapi-public-server-cert"
-              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT }}
@@ -154,20 +140,28 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_KEY }}
-        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT }}
+        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asapi-public-server-key"
+              key: "autoscaler-asapi-public-server-cert"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_KEY }}
-        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asapi-public-server-key"
+              key: "autoscaler-asapi-public-server-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asapi-public-server-cert-key"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT }}
@@ -186,27 +180,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASAPI_SERVER_KEY }}
-        - name: "AUTOSCALER_ASAPI_SERVER_KEY"
+        {{- if not .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asapi-server-key"
+              key: "autoscaler-asapi-server-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASAPI_SERVER_KEY }}
-        - name: "AUTOSCALER_ASAPI_SERVER_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asapi-server-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_CERT }}
-        - name: "AUTOSCALER_ASMETRICS_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asmetrics-client-cert"
+              key: "autoscaler-asapi-server-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -218,61 +204,49 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASMETRICS_CLIENT_KEY"
+        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_CERT }}
+        - name: "AUTOSCALER_ASMETRICS_CLIENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asmetrics-client-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_KEY }}
-        - name: "AUTOSCALER_ASMETRICS_CLIENT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asmetrics-client-key"
+              key: "autoscaler-asmetrics-client-cert"
               name: "secrets"
         {{- end }}
 
-        - name: "AUTOSCALER_BINDING_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_BINDING_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_BINDING_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_BINDING_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_BINDING_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_BINDING_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_BINDING_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_BINDING_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_BINDING_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_BINDING_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_NAME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_ROLE_NAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_NAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_NAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_NAME | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
+        {{- if not .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-db-role-password"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.AUTOSCALER_DB_ROLE_PASSWORD }}
-        - name: "AUTOSCALER_DB_ROLE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-db-role-password"
+              key: "autoscaler-asmetrics-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        - name: "AUTOSCALER_DB_ROLE_TAG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_ROLE_TAG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_ROLE_TAG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_ROLE_TAG | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_DB_TAG"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_DB_TAG) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_DB_TAG) (list "map" "slice")}}{{.Values.env.AUTOSCALER_DB_TAG | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_DB_TAG | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_METRICS_COLLECTOR_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_METRICS_COLLECTOR_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_POLICY_DB_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_POLICY_DB_SCHEME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_SCHEME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_SCHEME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_SCHEME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_SCHEME | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCHEDULER_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_PORT | quote}}{{end}}{{else}}""{{end}}
+        {{- if .Values.secrets.AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asmetrics-client-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        - name: "AUTOSCALER_CF_SKIP_SSL_VALIDATION"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION) (list "map" "slice")}}{{.Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_CF_SKIP_SSL_VALIDATION | quote}}{{end}}{{else}}""{{end}}
+
+        {{- if not .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-db-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_DB_PASSWORD }}
+        - name: "AUTOSCALER_DB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-db-password"
+              name: "secrets"
+        {{- end }}
+
         - name: "AUTOSCALER_SERVICE_BROKER_DB_CONFIG_IDLE_TIMEOUT"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SERVICE_BROKER_DB_CONFIG_IDLE_TIMEOUT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SERVICE_BROKER_DB_CONFIG_IDLE_TIMEOUT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_DB_CONFIG_IDLE_TIMEOUT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_DB_CONFIG_IDLE_TIMEOUT | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SERVICE_BROKER_DB_CONFIG_MAX_CONNECTIONS"
@@ -298,14 +272,8 @@ spec:
               name: "secrets"
         {{- end }}
 
-        - name: "AUTOSCALER_SERVICE_BROKER_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SERVICE_BROKER_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SERVICE_BROKER_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SERVICE_BROKER_PUBLIC_PORT"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SERVICE_BROKER_PUBLIC_PORT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SERVICE_BROKER_PUBLIC_PORT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_PUBLIC_PORT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_PUBLIC_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SERVICE_BROKER_REQUIRE_CONSUL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SERVICE_BROKER_REQUIRE_CONSUL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SERVICE_BROKER_REQUIRE_CONSUL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_REQUIRE_CONSUL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_REQUIRE_CONSUL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SERVICE_BROKER_USERNAME"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SERVICE_BROKER_USERNAME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SERVICE_BROKER_USERNAME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_USERNAME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SERVICE_BROKER_USERNAME | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_SERVICE_OFFERING_ENABLED"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
@@ -338,20 +306,20 @@ spec:
         - name: "KUBE_SIZING_NATS_COUNT"
           value: {{ .Values.sizing.nats.count | quote }}
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "monit-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.NATS_PASSWORD }}
@@ -376,7 +344,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-api:ddbf2fb8448ab9a2d7de1fc0fe0b5ee97374f6e8"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-api:291e6facfad72bd79c6a0ba7d7ef42c7635a2f92"
         lifecycle:
           preStop:
             exec:
@@ -385,16 +353,16 @@ spec:
         livenessProbe: ~
         name: "autoscaler-api"
         ports:
-        - containerPort: 6100
+        - containerPort: 7100
           name: "api"
           protocol: "TCP"
-        - containerPort: 6106
+        - containerPort: 7106
           name: "api-public"
           protocol: "TCP"
-        - containerPort: 6107
+        - containerPort: 7107
           name: "broker"
           protocol: "TCP"
-        - containerPort: 6101
+        - containerPort: 7101
           name: "broker-public"
           protocol: "TCP"
         readinessProbe:
@@ -457,19 +425,19 @@ items:
     clusterIP: "None"
     ports:
     - name: "api"
-      port: 6100
+      port: 7100
       protocol: "TCP"
       targetPort: 0
     - name: "api-public"
-      port: 6106
+      port: 7106
       protocol: "TCP"
       targetPort: 0
     - name: "broker"
-      port: 6107
+      port: 7107
       protocol: "TCP"
       targetPort: 0
     - name: "broker-public"
-      port: 6101
+      port: 7101
       protocol: "TCP"
       targetPort: 0
     selector:
@@ -477,31 +445,40 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "autoscaler-api"
+    name: "autoscaler-api-apiserver-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "api"
+      port: 7100
+      protocol: "TCP"
+      targetPort: 0
+    - name: "api-public"
+      port: 7106
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "autoscaler-api"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-api-apiserver"
   spec:
     ports:
     - name: "api"
-      port: 6100
+      port: 7100
       protocol: "TCP"
-      targetPort: "api"
+      targetPort: 7100
     - name: "api-public"
-      port: 6106
+      port: 7106
       protocol: "TCP"
-      targetPort: "api-public"
-    - name: "broker"
-      port: 6107
-      protocol: "TCP"
-      targetPort: "broker"
-    - name: "broker-public"
-      port: 6101
-      protocol: "TCP"
-      targetPort: "broker-public"
+      targetPort: 7106
     selector:
       skiff-role-name: "autoscaler-api"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "autoscaler-api-public"
+    name: "autoscaler-api-apiserver-public"
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -509,13 +486,63 @@ items:
 
     ports:
     - name: "api-public"
-      port: 6106
+      port: 7106
       protocol: "TCP"
-      targetPort: "api-public"
+      targetPort: 7106
+    selector:
+      skiff-role-name: "autoscaler-api"
+
+    {{- if .Values.services.loadbalanced }}
+    type: "LoadBalancer"
+    {{- end }}
+
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-api-servicebroker-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "broker"
+      port: 7107
+      protocol: "TCP"
+      targetPort: 0
     - name: "broker-public"
-      port: 6101
+      port: 7101
       protocol: "TCP"
-      targetPort: "broker-public"
+      targetPort: 0
+    selector:
+      skiff-role-name: "autoscaler-api"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-api-servicebroker"
+  spec:
+    ports:
+    - name: "broker"
+      port: 7107
+      protocol: "TCP"
+      targetPort: 7107
+    - name: "broker-public"
+      port: 7101
+      protocol: "TCP"
+      targetPort: 7101
+    selector:
+      skiff-role-name: "autoscaler-api"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "autoscaler-api-servicebroker-public"
+  spec:
+    {{- if not .Values.services.loadbalanced }}
+    externalIPs: {{ .Values.kube.external_ips | toJson }}
+    {{- end }}
+
+    ports:
+    - name: "broker-public"
+      port: 7101
+      protocol: "TCP"
+      targetPort: 7101
     selector:
       skiff-role-name: "autoscaler-api"
 

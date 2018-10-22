@@ -6,7 +6,7 @@
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# Also: tps, cc_uploader, metron_agent
+# Also: tps, cc_uploader, loggregator_agent
 
 {{- if gt (int .Values.sizing.cc_uploader.count) 3 }}
 _maxReplicas: {{ fail "cc_uploader cannot have more than 3 instances" }}
@@ -91,19 +91,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.BBS_CLIENT_KEY }}
-        - name: "BBS_CLIENT_KEY"
+        {{- if not .Values.secrets.BBS_CLIENT_CRT_KEY }}
+        - name: "BBS_CLIENT_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "bbs-client-key"
+              key: "bbs-client-crt-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.BBS_CLIENT_KEY }}
-        - name: "BBS_CLIENT_KEY"
+        {{- if .Values.secrets.BBS_CLIENT_CRT_KEY }}
+        - name: "BBS_CLIENT_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "bbs-client-key"
+              key: "bbs-client-crt-key"
               name: "secrets"
         {{- end }}
 
@@ -126,19 +126,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.CC_SERVER_KEY }}
-        - name: "CC_SERVER_KEY"
+        {{- if not .Values.secrets.CC_SERVER_CRT_KEY }}
+        - name: "CC_SERVER_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cc-server-key"
+              key: "cc-server-crt-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.CC_SERVER_KEY }}
-        - name: "CC_SERVER_KEY"
+        {{- if .Values.secrets.CC_SERVER_CRT_KEY }}
+        - name: "CC_SERVER_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cc-server-key"
+              key: "cc-server-crt-key"
               name: "secrets"
         {{- end }}
 
@@ -158,19 +158,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.CC_UPLOADER_KEY }}
-        - name: "CC_UPLOADER_KEY"
+        {{- if not .Values.secrets.CC_UPLOADER_CRT_KEY }}
+        - name: "CC_UPLOADER_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cc-uploader-key"
+              key: "cc-uploader-crt-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.CC_UPLOADER_KEY }}
-        - name: "CC_UPLOADER_KEY"
+        {{- if .Values.secrets.CC_UPLOADER_CRT_KEY }}
+        - name: "CC_UPLOADER_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cc-uploader-key"
+              key: "cc-uploader-crt-key"
               name: "secrets"
         {{- end }}
 
@@ -201,40 +201,41 @@ spec:
               fieldPath: "metadata.namespace"
         - name: "KUBE_AZ"
           value: "z1"
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
-
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets"
-        {{- end }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -275,19 +276,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.TPS_CC_CLIENT_KEY }}
-        - name: "TPS_CC_CLIENT_KEY"
+        {{- if not .Values.secrets.TPS_CC_CLIENT_CRT_KEY }}
+        - name: "TPS_CC_CLIENT_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "tps-cc-client-key"
+              key: "tps-cc-client-crt-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.TPS_CC_CLIENT_KEY }}
-        - name: "TPS_CC_CLIENT_KEY"
+        {{- if .Values.secrets.TPS_CC_CLIENT_CRT_KEY }}
+        - name: "TPS_CC_CLIENT_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "tps-cc-client-key"
+              key: "tps-cc-client-crt-key"
               name: "secrets"
         {{- end }}
 
@@ -296,7 +297,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-uploader:48552b451a7ba03dec1398f374a62e2d26a42a12"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-uploader:a6ffd6bbb959e678cd83164953a6098d1a661638"
         lifecycle:
           preStop:
             exec:
@@ -335,7 +336,18 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.cc_uploader.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.cc_uploader.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.cc_uploader.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
         volumeMounts: ~
       dnsPolicy: "ClusterFirst"
       imagePullSecrets:
@@ -370,17 +382,34 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "cc-uploader"
+    name: "cc-uploader-cc-uploader-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "cc-up-listen"
+      port: 9091
+      protocol: "TCP"
+      targetPort: 0
+    - name: "cc-up-dbg"
+      port: 17018
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "cc-uploader"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "cc-uploader-cc-uploader"
   spec:
     ports:
     - name: "cc-up-listen"
       port: 9091
       protocol: "TCP"
-      targetPort: "cc-up-listen"
+      targetPort: 9091
     - name: "cc-up-dbg"
       port: 17018
       protocol: "TCP"
-      targetPort: "cc-up-dbg"
+      targetPort: 17018
     selector:
       skiff-role-name: "cc-uploader"
 kind: "List"

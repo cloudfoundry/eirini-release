@@ -1,24 +1,16 @@
 ---
-# The nats instance group contains the following jobs:
+# The credhub-user instance group contains the following jobs:
 #
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
 #
-# - nats: The NATS server provides publish-subscribe messaging system for the
-#   Cloud Controller, the DEA , HM9000, and other Cloud Foundry components.
+# - route_registrar: Used for registering routes
 #
-# Also: loggregator_agent
+# Also: credhub
+{{- if gt (int .Values.sizing.credhub_user.count) 0 }}
 
-{{- if gt (int .Values.sizing.nats.count) 3 }}
-_maxReplicas: {{ fail "nats cannot have more than 3 instances" }}
-{{- end }}
-
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.nats.count) 1) (lt (int .Values.sizing.nats.count) 2)) }}
-_minHAReplicas: {{ fail "nats must have at least 2 instances for HA" }}
-{{- end }}
-
-{{- if lt (int .Values.sizing.nats.count) 1 }}
-_minReplicas: {{ fail "nats must have at least 1 instances" }}
+{{- if gt (int .Values.sizing.credhub_user.count) 1 }}
+_maxReplicas: {{ fail "credhub_user cannot have more than 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -44,40 +36,65 @@ _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "
 apiVersion: "apps/v1beta1"
 kind: "StatefulSet"
 metadata:
-  name: "nats"
+  name: "credhub-user"
   labels:
-    skiff-role-name: "nats"
+    skiff-role-name: "credhub-user"
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.nats.count }} {{- end }}
-  serviceName: "nats-set"
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.credhub_user.count) 0) -}} 1 {{- else -}} {{ .Values.sizing.credhub_user.count }} {{- end }}
+  serviceName: "credhub-user-set"
   template:
     metadata:
-      name: "nats"
+      name: "credhub-user"
       labels:
-        skiff-role-name: "nats"
+        skiff-role-name: "credhub-user"
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: "skiff-role-name"
-                  operator: "In"
-                  values:
-                  - "nats"
-              topologyKey: "beta.kubernetes.io/os"
-            weight: 100
-        {{- if .Values.sizing.nats.affinity.nodeAffinity }}
-        nodeAffinity: {{ toJson .Values.sizing.nats.affinity.nodeAffinity }}
-        {{- end }}
       containers:
       - env:
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
+        - name: "CREDHUB_ENCRYPT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "credhub-encrypt-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+
+        {{- if not .Values.secrets.CREDHUB_SERVER_CERT }}
+        - name: "CREDHUB_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "credhub-server-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.CREDHUB_SERVER_CERT }}
+        - name: "CREDHUB_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "credhub-server-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.CREDHUB_SERVER_CERT_KEY }}
+        - name: "CREDHUB_SERVER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "credhub-server-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.CREDHUB_SERVER_CERT_KEY }}
+        - name: "CREDHUB_SERVER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "credhub-server-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        - name: "DOMAIN"
+          value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
           value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
 
@@ -103,41 +120,17 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: "metadata.namespace"
-        - name: "KUBE_AZ"
-          value: "z1"
         - name: "KUBE_SIZING_NATS_COUNT"
           value: {{ .Values.sizing.nats.count | quote }}
+        - name: "LOG_LEVEL"
+          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
-        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
-        - name: "LOGGREGATOR_AGENT_CERT"
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "loggregator-agent-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
-        - name: "LOGGREGATOR_AGENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert"
+              key: "monit-password"
               name: "secrets"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
@@ -148,12 +141,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
+        {{- if .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
+        - name: "MYSQL_CREDHUB_USER_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "monit-password"
+              key: "mysql-credhub-user-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
+        - name: "MYSQL_CREDHUB_USER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-credhub-user-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.NATS_PASSWORD }}
@@ -178,53 +179,56 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-nats:ff5e7199df7c24c0b0637818dce24814b9802f4c"
+        - name: "UAA_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-ca-cert"
+              name: "secrets"
+        - name: "UAA_HOST"
+          value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
+        - name: "UAA_PORT"
+          value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:6b0988e35c8e90095ad2f4ea93825541444b4e5d"
         lifecycle:
           preStop:
             exec:
               command:
               - "/opt/fissile/pre-stop.sh"
         livenessProbe: ~
-        name: "nats"
-        ports:
-        - containerPort: 4222
-          name: "nats"
-          protocol: "TCP"
-        - containerPort: 4223
-          name: "nats-routes"
-          protocol: "TCP"
+        name: "credhub-user"
+        ports: ~
         readinessProbe:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
         resources:
           requests:
-            {{- if and .Values.config.memory.requests .Values.sizing.nats.memory.request }}
-            memory: "{{ int .Values.sizing.nats.memory.request }}Mi"
+            {{- if and .Values.config.memory.requests .Values.sizing.credhub_user.memory.request }}
+            memory: "{{ int .Values.sizing.credhub_user.memory.request }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.requests .Values.sizing.nats.cpu.request }}
-            cpu: "{{ int .Values.sizing.nats.cpu.request }}m"
+            {{- if and .Values.config.cpu.requests .Values.sizing.credhub_user.cpu.request }}
+            cpu: "{{ int .Values.sizing.credhub_user.cpu.request }}m"
             {{- end }}
 
           limits:
-            {{- if and .Values.config.memory.limits .Values.sizing.nats.memory.limit }}
-            memory: "{{ int .Values.sizing.nats.memory.limit }}Mi"
+            {{- if and .Values.config.memory.limits .Values.sizing.credhub_user.memory.limit }}
+            memory: "{{ int .Values.sizing.credhub_user.memory.limit }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.limits .Values.sizing.nats.cpu.limit }}
-            cpu: "{{ int .Values.sizing.nats.cpu.limit }}m"
+            {{- if and .Values.config.cpu.limits .Values.sizing.credhub_user.cpu.limit }}
+            cpu: "{{ int .Values.sizing.credhub_user.cpu.limit }}m"
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.nats.capabilities }}
+          {{- if has "ALL" .Values.sizing.credhub_user.capabilities }}
           privileged: true
           {{- end }}
 
-          {{- if not (has "ALL" .Values.sizing.nats.capabilities) }}
+          {{- if not (has "ALL" .Values.sizing.credhub_user.capabilities) }}
           capabilities:
             add:
-            {{- range .Values.sizing.nats.capabilities }}
+            {{- range .Values.sizing.credhub_user.capabilities }}
             - {{ . | upper }}
             {{- end }}
           {{- end }}
@@ -240,57 +244,4 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
----
-apiVersion: "v1"
-items:
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "nats-set"
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "nats"
-      port: 4222
-      protocol: "TCP"
-      targetPort: 0
-    - name: "nats-routes"
-      port: 4223
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      skiff-role-name: "nats"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "nats-nats-set"
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "nats"
-      port: 4222
-      protocol: "TCP"
-      targetPort: 0
-    - name: "nats-routes"
-      port: 4223
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      skiff-role-name: "nats"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "nats-nats"
-  spec:
-    ports:
-    - name: "nats"
-      port: 4222
-      protocol: "TCP"
-      targetPort: 4222
-    - name: "nats-routes"
-      port: 4223
-      protocol: "TCP"
-      targetPort: 4223
-    selector:
-      skiff-role-name: "nats"
-kind: "List"
+{{- end }}

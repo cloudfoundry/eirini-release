@@ -4,7 +4,7 @@
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
 #
-# Also: doppler, metron_agent
+# Also: doppler, loggregator_agent
 
 {{- if gt (int .Values.sizing.doppler.count) 65535 }}
 _maxReplicas: {{ fail "doppler cannot have more than 65535 instances" }}
@@ -92,19 +92,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.DOPPLER_KEY }}
-        - name: "DOPPLER_KEY"
+        {{- if not .Values.secrets.DOPPLER_CERT_KEY }}
+        - name: "DOPPLER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "doppler-key"
+              key: "doppler-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.DOPPLER_KEY }}
-        - name: "DOPPLER_KEY"
+        {{- if .Values.secrets.DOPPLER_CERT_KEY }}
+        - name: "DOPPLER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "doppler-key"
+              key: "doppler-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -136,35 +136,35 @@ spec:
         - name: "KUBE_AZ"
           value: "z1"
 
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "metron-cert"
+              key: "loggregator-agent-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "metron-key"
+              key: "loggregator-agent-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -190,7 +190,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-doppler:d49a12980b7944b4ddf4986ab4bc8cf1327a858d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-doppler:50c2ba000b1aef073d9b72aff41a0b23bf0ee0df"
         lifecycle:
           preStop:
             exec:
@@ -292,6 +292,63 @@ items:
       port: 8082
       protocol: "TCP"
       targetPort: 0
+    selector:
+      skiff-role-name: "doppler"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "doppler-doppler-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "dropsonde-udp"
+      port: 3457
+      protocol: "UDP"
+      targetPort: 0
+    - name: "dropsonde-tcp"
+      port: 3458
+      protocol: "TCP"
+      targetPort: 0
+    - name: "doppler-tls"
+      port: 3459
+      protocol: "TCP"
+      targetPort: 0
+    - name: "doppler-ws"
+      port: 8081
+      protocol: "TCP"
+      targetPort: 0
+    - name: "doppler-grpc"
+      port: 8082
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "doppler"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "doppler-doppler"
+  spec:
+    ports:
+    - name: "dropsonde-udp"
+      port: 3457
+      protocol: "UDP"
+      targetPort: 3457
+    - name: "dropsonde-tcp"
+      port: 3458
+      protocol: "TCP"
+      targetPort: 3458
+    - name: "doppler-tls"
+      port: 3459
+      protocol: "TCP"
+      targetPort: 3459
+    - name: "doppler-ws"
+      port: 8081
+      protocol: "TCP"
+      targetPort: 8081
+    - name: "doppler-grpc"
+      port: 8082
+      protocol: "TCP"
+      targetPort: 8082
     selector:
       skiff-role-name: "doppler"
 kind: "List"

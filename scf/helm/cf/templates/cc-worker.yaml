@@ -9,7 +9,7 @@
 # - cloud_controller_worker: Cloud Controller worker processes background tasks
 #   submitted via the.
 #
-# Also: metron_agent
+# Also: loggregator_agent
 
 {{- if gt (int .Values.sizing.cc_worker.count) 65535 }}
 _maxReplicas: {{ fail "cc_worker cannot have more than 65535 instances" }}
@@ -81,14 +81,6 @@ spec:
         - name: "ALLOW_APP_SSH_ACCESS"
           value: {{if ne (typeOf .Values.env.ALLOW_APP_SSH_ACCESS) "<nil>"}}{{if has (kindOf .Values.env.ALLOW_APP_SSH_ACCESS) (list "map" "slice")}}{{.Values.env.ALLOW_APP_SSH_ACCESS | toJson | quote}}{{else}}{{.Values.env.ALLOW_APP_SSH_ACCESS | quote}}{{end}}{{else}}{{fail "env.ALLOW_APP_SSH_ACCESS has not been set"}}{{end}}
 
-        {{- if not .Values.secrets.BLOBSTORE_PASSWORD }}
-        - name: "BLOBSTORE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "blobstore-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.BLOBSTORE_PASSWORD }}
         - name: "BLOBSTORE_PASSWORD"
           valueFrom:
@@ -97,6 +89,16 @@ spec:
               name: "secrets"
         {{- end }}
 
+        {{- if not .Values.secrets.BLOBSTORE_PASSWORD }}
+        - name: "BLOBSTORE_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "blobstore-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        - name: "BROKER_CLIENT_TIMEOUT_SECONDS"
+          value: {{if ne (typeOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) "<nil>"}}{{if has (kindOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) (list "map" "slice")}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | toJson | quote}}{{else}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "CC_DB_CURRENT_KEY_LABEL"
@@ -123,19 +125,19 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.CC_SERVER_KEY }}
-        - name: "CC_SERVER_KEY"
+        {{- if not .Values.secrets.CC_SERVER_CRT_KEY }}
+        - name: "CC_SERVER_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cc-server-key"
+              key: "cc-server-crt-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.CC_SERVER_KEY }}
-        - name: "CC_SERVER_KEY"
+        {{- if .Values.secrets.CC_SERVER_CRT_KEY }}
+        - name: "CC_SERVER_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "cc-server-key"
+              key: "cc-server-crt-key"
               name: "secrets"
         {{- end }}
 
@@ -203,44 +205,45 @@ spec:
               fieldPath: "metadata.namespace"
         - name: "KUBE_AZ"
           value: "z1"
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
         - name: "MAX_APP_DISK_IN_MB"
           value: {{if ne (typeOf .Values.env.MAX_APP_DISK_IN_MB) "<nil>"}}{{if has (kindOf .Values.env.MAX_APP_DISK_IN_MB) (list "map" "slice")}}{{.Values.env.MAX_APP_DISK_IN_MB | toJson | quote}}{{else}}{{.Values.env.MAX_APP_DISK_IN_MB | quote}}{{end}}{{else}}{{fail "env.MAX_APP_DISK_IN_MB has not been set"}}{{end}}
         - name: "MAX_HEALTH_CHECK_TIMEOUT"
           value: {{if ne (typeOf .Values.env.MAX_HEALTH_CHECK_TIMEOUT) "<nil>"}}{{if has (kindOf .Values.env.MAX_HEALTH_CHECK_TIMEOUT) (list "map" "slice")}}{{.Values.env.MAX_HEALTH_CHECK_TIMEOUT | toJson | quote}}{{else}}{{.Values.env.MAX_HEALTH_CHECK_TIMEOUT | quote}}{{end}}{{else}}{{fail "env.MAX_HEALTH_CHECK_TIMEOUT has not been set"}}{{end}}
-
-        {{- if .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_CERT }}
-        - name: "METRON_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.METRON_KEY }}
-        - name: "METRON_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "metron-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -349,7 +352,7 @@ spec:
           value: {{if ne (typeOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_DIEGO_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
         - name: "USE_STAGER_PRIVILEGED_CONTAINERS"
           value: {{if ne (typeOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_STAGER_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-worker:4389f7956882b167e79debfb7dd04ed90128629d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-worker:bf04ab1177edf2ab481fca2ea320489c10ba7abb"
         lifecycle:
           preStop:
             exec:

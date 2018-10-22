@@ -94,19 +94,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.INTERNAL_CA_KEY }}
-        - name: "INTERNAL_CA_KEY"
+        {{- if not .Values.secrets.INTERNAL_CA_CERT_KEY }}
+        - name: "INTERNAL_CA_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "internal-ca-key"
+              key: "internal-ca-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.INTERNAL_CA_KEY }}
-        - name: "INTERNAL_CA_KEY"
+        {{- if .Values.secrets.INTERNAL_CA_CERT_KEY }}
+        - name: "INTERNAL_CA_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "internal-ca-key"
+              key: "internal-ca-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -126,19 +126,19 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.JWT_SIGNING_KEY }}
-        - name: "JWT_SIGNING_KEY"
+        {{- if not .Values.secrets.JWT_SIGNING_CERT_KEY }}
+        - name: "JWT_SIGNING_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "jwt-signing-key"
+              key: "jwt-signing-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.JWT_SIGNING_KEY }}
-        - name: "JWT_SIGNING_KEY"
+        {{- if .Values.secrets.JWT_SIGNING_CERT_KEY }}
+        - name: "JWT_SIGNING_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "jwt-signing-key"
+              key: "jwt-signing-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -151,14 +151,6 @@ spec:
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -167,12 +159,12 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.SAML_SERVICEPROVIDER_CERT }}
-        - name: "SAML_SERVICEPROVIDER_CERT"
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "saml-serviceprovider-cert"
-              name: "secrets"
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT }}
@@ -183,20 +175,28 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.SAML_SERVICEPROVIDER_KEY }}
-        - name: "SAML_SERVICEPROVIDER_KEY"
+        {{- if .Values.secrets.SAML_SERVICEPROVIDER_CERT }}
+        - name: "SAML_SERVICEPROVIDER_CERT"
           valueFrom:
             secretKeyRef:
-              key: "saml-serviceprovider-key"
+              key: "saml-serviceprovider-cert"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.SAML_SERVICEPROVIDER_KEY }}
-        - name: "SAML_SERVICEPROVIDER_KEY"
+        {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
+        - name: "SAML_SERVICEPROVIDER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "saml-serviceprovider-key"
+              key: "saml-serviceprovider-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
+        - name: "SAML_SERVICEPROVIDER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "saml-serviceprovider-cert-key"
+              name: "secrets"
         {{- end }}
 
         - name: "SCF_LOG_HOST"
@@ -205,14 +205,20 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.UAADB_PASSWORD }}
-        - name: "UAADB_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "uaadb-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
+        - name: "SMTP_AUTH"
+          value: {{if ne (typeOf .Values.env.SMTP_AUTH) "<nil>"}}{{if has (kindOf .Values.env.SMTP_AUTH) (list "map" "slice")}}{{.Values.env.SMTP_AUTH | toJson | quote}}{{else}}{{.Values.env.SMTP_AUTH | quote}}{{end}}{{else}}""{{end}}
+        - name: "SMTP_FROM_ADDRESS"
+          value: {{if ne (typeOf .Values.env.SMTP_FROM_ADDRESS) "<nil>"}}{{if has (kindOf .Values.env.SMTP_FROM_ADDRESS) (list "map" "slice")}}{{.Values.env.SMTP_FROM_ADDRESS | toJson | quote}}{{else}}{{.Values.env.SMTP_FROM_ADDRESS | quote}}{{end}}{{else}}""{{end}}
+        - name: "SMTP_HOST"
+          value: {{if ne (typeOf .Values.env.SMTP_HOST) "<nil>"}}{{if has (kindOf .Values.env.SMTP_HOST) (list "map" "slice")}}{{.Values.env.SMTP_HOST | toJson | quote}}{{else}}{{.Values.env.SMTP_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "SMTP_PASSWORD"
+          value: {{if ne (typeOf .Values.env.SMTP_PASSWORD) "<nil>"}}{{if has (kindOf .Values.env.SMTP_PASSWORD) (list "map" "slice")}}{{.Values.env.SMTP_PASSWORD | toJson | quote}}{{else}}{{.Values.env.SMTP_PASSWORD | quote}}{{end}}{{else}}""{{end}}
+        - name: "SMTP_PORT"
+          value: {{if ne (typeOf .Values.env.SMTP_PORT) "<nil>"}}{{if has (kindOf .Values.env.SMTP_PORT) (list "map" "slice")}}{{.Values.env.SMTP_PORT | toJson | quote}}{{else}}{{.Values.env.SMTP_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "SMTP_STARTTLS"
+          value: {{if ne (typeOf .Values.env.SMTP_STARTTLS) "<nil>"}}{{if has (kindOf .Values.env.SMTP_STARTTLS) (list "map" "slice")}}{{.Values.env.SMTP_STARTTLS | toJson | quote}}{{else}}{{.Values.env.SMTP_STARTTLS | quote}}{{end}}{{else}}""{{end}}
+        - name: "SMTP_USER"
+          value: {{if ne (typeOf .Values.env.SMTP_USER) "<nil>"}}{{if has (kindOf .Values.env.SMTP_USER) (list "map" "slice")}}{{.Values.env.SMTP_USER | toJson | quote}}{{else}}{{.Values.env.SMTP_USER | quote}}{{end}}{{else}}""{{end}}
 
         {{- if .Values.secrets.UAADB_PASSWORD }}
         - name: "UAADB_PASSWORD"
@@ -220,6 +226,14 @@ spec:
             secretKeyRef:
               key: "uaadb-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAADB_PASSWORD }}
+        - name: "UAADB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "uaadb-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "UAA_ADMIN_CLIENT_SECRET"
@@ -244,23 +258,23 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.UAA_SERVER_KEY }}
-        - name: "UAA_SERVER_KEY"
+        {{- if not .Values.secrets.UAA_SERVER_CERT_KEY }}
+        - name: "UAA_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "uaa-server-key"
+              key: "uaa-server-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_SERVER_KEY }}
-        - name: "UAA_SERVER_KEY"
+        {{- if .Values.secrets.UAA_SERVER_CERT_KEY }}
+        - name: "UAA_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "uaa-server-key"
+              key: "uaa-server-cert-key"
               name: "secrets"
         {{- end }}
 
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:4821c95d06f9dc1fcfe887cf5a65b9ea6f018e4e"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:f52cd5c2a4c2a2c2767bee4e5ee4a498e10a1351"
         lifecycle:
           preStop:
             exec:
@@ -346,23 +360,40 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "uaa"
+    name: "uaa-uaa-set"
   spec:
+    clusterIP: "None"
     ports:
     - name: "uaa"
       port: 8080
       protocol: "TCP"
-      targetPort: "uaa"
+      targetPort: 0
     - name: "uaa-ssl"
       port: 2793
       protocol: "TCP"
-      targetPort: "uaa-ssl"
+      targetPort: 0
     selector:
       skiff-role-name: "uaa"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "uaa-public"
+    name: "uaa-uaa"
+  spec:
+    ports:
+    - name: "uaa"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 8080
+    - name: "uaa-ssl"
+      port: 2793
+      protocol: "TCP"
+      targetPort: 8443
+    selector:
+      skiff-role-name: "uaa"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "uaa-uaa-public"
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -372,7 +403,7 @@ items:
     - name: "uaa-ssl"
       port: 2793
       protocol: "TCP"
-      targetPort: "uaa-ssl"
+      targetPort: 8443
     selector:
       skiff-role-name: "uaa"
 

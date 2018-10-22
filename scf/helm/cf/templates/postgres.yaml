@@ -130,7 +130,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-postgres:d68835d6eba40e7dc22c9301dc3ccbca65c5025b"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-postgres:05dcf98fee6441905b8d14c67cd93e3714c3bf13"
         lifecycle:
           preStop:
             exec:
@@ -217,6 +217,31 @@ items:
       port: 5524
       protocol: "TCP"
       targetPort: 0
+    selector:
+      skiff-role-name: "postgres"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "postgres-postgres-set"
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "postgres"
+      port: 5524
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      skiff-role-name: "postgres"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "postgres-postgres"
+  spec:
+    ports:
+    - name: "postgres"
+      port: 5524
+      protocol: "TCP"
+      targetPort: 5524
     selector:
       skiff-role-name: "postgres"
 kind: "List"
