@@ -6,11 +6,11 @@ DOCKERDIR="$BASEDIR/docker"
 TAG=${1?"latest"}
 
 main(){
-    echo "Creating Eirini docker image..."
+    echo "Creating Eirini docker images..."
     build_opi
     create_eirinifs
     create_docker_images
-    echo "Eirini docker image created"
+    echo "All images created successfully"
 }
 
 build_opi(){
@@ -29,19 +29,21 @@ create_eirinifs(){
 }
 
 create_docker_images() {
-  echo "Creating OPI docker image..."
-    pushd $DOCKERDIR/opi
-    docker build . -t "eirini/opi:$TAG"
-    verify_exit_code $? "Failed to create opi docker image"
-  popd
-  echo "OPI docker image created!"
+  create_image "$DOCKERDIR"/opi eirini/opi
+  create_image "$DOCKERDIR"/registry eirini/registry
+  create_image "$DOCKERDIR"/opi/init eirini/opi-init
+}
 
-    echo "Creating Registry docker image..."
-  pushd $DOCKERDIR/registry
-  docker build . -t "eirini/registry:$TAG"
-    verify_exit_code $? "Failed to create registry docker image"
-  popd
-    echo "Registry docker image created!"
+create_image() {
+  local path="$1"
+  local image_name="$2"
+
+  echo "Creating $image_name docker image..."
+  pushd "$path" || exit
+    docker build . -t "${image_name}:$TAG"
+    verify_exit_code $? "Failed to create $image_name docker image"
+  popd || exit
+  echo "$image_name docker image created!"
 }
 
 verify_exit_code() {
