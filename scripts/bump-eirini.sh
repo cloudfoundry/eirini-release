@@ -23,7 +23,7 @@ sync-repo() {
 bump-submodule() {
   pushd "$SUBMODULE_PATH" || exit
     git fetch origin "$TARGET_BRANCH"
-    git checkout "$TARGET_BRANCH"
+    git checkout origin/"$TARGET_BRANCH"
   popd || exit
 }
 
