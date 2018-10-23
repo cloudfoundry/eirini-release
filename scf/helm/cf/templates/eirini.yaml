@@ -129,7 +129,7 @@ spec:
         paths:
           - path: /
             backend:
-              serviceName: eirini
+              serviceName: eirini-opi
               servicePort: 8080
 {{- end }}
 
