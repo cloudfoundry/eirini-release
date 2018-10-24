@@ -80,9 +80,10 @@ data:
       cf_username: "admin"
       cc_certs_secret_name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
       cf_password: {{ .Values.secrets.CLUSTER_ADMIN_PASSWORD }}
-      external_eirini_address: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
+      external_eirini_address: {{ if .Values.opi.use_registry_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
       eirini_address: "http://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
       stager_image_tag: {{ .Values.opi.image_tag }}
+      use_ingress: {{ .Values.opi.use_app_ingress }}
       skip_ssl_validation: true
       insecure_skip_verify: true
 
@@ -93,23 +94,23 @@ kind: Service
 metadata:
   name: "eirini-opi"
 spec:
-{{- if not .Values.opi.use_ingress }}
+{{- if not .Values.opi.use_registry_ingress }}
   externalIPs: {{ .Values.kube.external_ips | toJson }}
 {{- end }}
   ports:
     - port: 8085
       protocol: TCP
       name: opi
-    - port: {{ if .Values.opi.use_ingress }}8080{{ else }}5800{{ end }}
+    - port: {{ if .Values.opi.use_registry_ingress }}8080{{ else }}5800{{ end }}
       protocol: TCP
-      targetPort: {{ if .Values.opi.use_ingress }}8080{{ else }}8081{{ end }}
+      targetPort: {{ if .Values.opi.use_registry_ingress }}8080{{ else }}8081{{ end }}
       name: registry
   selector:
     name: "eirini"
 
 
 # Ingress
-{{- if .Values.opi.use_ingress }}
+{{- if .Values.opi.use_registry_ingress }}
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -171,7 +172,7 @@ spec:
       - name: create-certs
         env:
         - name: REGISTRY
-          value: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}"{{ else }}"{{ index .Values.kube.external_ips 0 }}"{{ end }}
+          value: {{ if .Values.opi.use_registry_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}"{{ else }}"{{ index .Values.kube.external_ips 0 }}"{{ end }}
         image: eirini/certs-generate
         imagePullPolicy: Always
 
@@ -195,7 +196,7 @@ spec:
       - name: copy-certs
         env:
         - name: REGISTRY
-          value: {{ if .Values.opi.use_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
+          value: {{ if .Values.opi.use_registry_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
         image: eirini/certs-copy
         volumeMounts:
         - name: host-docker

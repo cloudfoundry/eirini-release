@@ -45,8 +45,10 @@ If you want to deploy to `minikube` you will need to do some additional steps be
 
      # if this property is set to true it will expose the
      # registry via ingress, default is to NodePort.
-     use_ingress: false
+     use_registry_ingress: false
 
+     # set to false if you don't want Eirini to create ingress rules for apps
+     use_app_ingress: true
 
    secrets:
      NATS_PASSWORD: changeme

@@ -1052,6 +1052,8 @@ env:
 opi:
   # This tag will be used for all opi images. Use latest by default
   image_tag: "latest"
+  # Set to false if you don't want to create ingress rules for apps
+  use_app_ingress: true
 
 # The sizing section contains configuration to change each individual instance
 # group. Due to limitations on the allowable names, any dashes ("-") in the
