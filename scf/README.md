@@ -1,6 +1,6 @@
 # SCF + Eirini
 
-You are basically two `helm install's` away from deploying `SCF` with `Eirini`. But before you can execute helm you have to do some basic setup. The instructions below will guide you through the necessary steps and redirect you to the official [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF) whenever needed. 
+You are basically two `helm install's` away from deploying `SCF` with `Eirini`. But before you can execute helm you have to do some basic setup. The instructions below will guide you through the necessary steps and redirect you to the official [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF) whenever needed.
 
 ## Prereqs:
 
@@ -10,7 +10,7 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 
 ### Minikube [not recommended!]
 
-Please note, that we could not fully test the SCF installation on `minikube` yet and that the experience on `minikube` is really slow! 
+Please note, that we could not fully test the SCF installation on `minikube` yet and that the experience on `minikube` is really slow!
 
 If you want to deploy to `minikube` you will need to do some additional steps before you start:
 
@@ -18,41 +18,41 @@ If you want to deploy to `minikube` you will need to do some additional steps be
 1. Install Tiller with a serviceaccount:
 
    ```bash
-   $ helm init
-   $ kubectl create serviceaccount --namespace kube-system tiller
-   $ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-   $ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+   helm init
+   kubectl create serviceaccount --namespace kube-system tiller
+   kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+   kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
    ```
 
 ## Deploy
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. For additional information you can take a look at [Cloud Specifics](#cloud-specifics)
 1. Configure your deployment as described in the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment)
-   
+
    Add eirini-specific values to the `scf-config-values.yml` file:
 
-   ```yaml
-   env:
-	   # To disable diego and use eirini/opi staging, uncomment the following parameter:
-	   # ENABLE_OPI_STAGING: true
+    ```yaml
+    env:
+      # To disable diego and use eirini/opi staging, uncomment the following parameter:
+      # ENABLE_OPI_STAGING: true
 
-   opi:
-     # The ingress sub-domain or IP
-     ingress_endpoint: <ingress-endpoint>
+    opi:
+      # The ingress sub-domain or IP
+      ingress_endpoint: <ingress-endpoint>
 
-     # The namespace eirini/opi schedules the apps to.
-     namespace: <kubernetes-namespace>
+      # The namespace eirini/opi schedules the apps to.
+      namespace: <kubernetes-namespace>
 
-     # if this property is set to true it will expose the
-     # registry via ingress, default is to NodePort.
-     use_registry_ingress: false
+      # if this property is set to true it will expose the
+      # registry via ingress, default is to NodePort.
+      use_registry_ingress: false
 
-     # set to false if you don't want Eirini to create ingress rules for apps
-     use_app_ingress: true
+      # set to false if you don't want Eirini to create ingress rules for apps
+      use_app_ingress: true
 
-   secrets:
-     NATS_PASSWORD: changeme
-	```
+    secrets:
+      NATS_PASSWORD: changeme
+    ```
 
 1. Deploy SCF by following the steps in [this](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm) section. The remainder of that document is optional.
 
@@ -60,13 +60,14 @@ If you want to deploy to `minikube` you will need to do some additional steps be
 
 ### Cloud Specifics
 
-
 #### IBMCloud Container Service (Kubernetes)
 
-- As storage class, you should deploy a `hostpath` provisioner to your cluster. You can for example follow the documentation in this [repository](https://github.com/MaZderMind/hostpath-provisioner#dynamic-provisioning-of-kubernetes-hostpath-volumes). The reason for this is that the `database` jobs in SCF are not working with the existing storage classes.
+As storage class, you should deploy a `hostpath` provisioner to your cluster. You can for example follow the documentation in this [repository](https://github.com/MaZderMind/hostpath-provisioner#dynamic-provisioning-of-kubernetes-hostpath-volumes). The reason for this is that the `database` jobs in SCF are not working with the existing storage classes.
+
 You can execute the following commands:
-```
-$ kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/rbac.yaml
-$ kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/deployment.yaml
-$ kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/storageclass.yaml
+
+```console
+kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/rbac.yaml
+kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/deployment.yaml
+kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/storageclass.yaml
 ```
