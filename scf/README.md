@@ -8,22 +8,6 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 - Install [helm](https://helm.sh/)
 - We recommend to deploy this release on a single-worker Kube cluster.
 
-### Minikube [not recommended!]
-
-Please note, that we could not fully test the SCF installation on `minikube` yet and that the experience on `minikube` is really slow!
-
-If you want to deploy to `minikube` you will need to do some additional steps before you start:
-
-1. Start minikube with RBAC enabled and enough resources: `minikube start --extra-config=apiserver.Authorization.Mode=RBAC --cpus 4 --disk-size 100g --memory 8192`
-1. Install Tiller with a serviceaccount:
-
-   ```bash
-   helm init
-   kubectl create serviceaccount --namespace kube-system tiller
-   kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-   kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
-   ```
-
 ## Deploy
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. For additional information you can take a look at [Cloud Specifics](#cloud-specifics)
@@ -72,7 +56,9 @@ kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisio
 kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/storageclass.yaml
 ```
 
-#### [Gardener](https://gardener.cloud)
+#### Community Tested
+
+##### [Gardener](https://gardener.cloud)
 
 - This has been tested with a single node Gardener-provisioned Kubernetes cluster deployed to Google Cloud.
 - In addition to the configuration provided in the [Deploy](#deploy) section, amend `scf-config-values.yml` with the following values:
