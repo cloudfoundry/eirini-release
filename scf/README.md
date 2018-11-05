@@ -6,7 +6,6 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 
 - Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
 - Install [helm](https://helm.sh/)
-- We recommend to deploy this release on a single-worker Kube cluster.
 
 ## Deploy
 
