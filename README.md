@@ -113,3 +113,7 @@ cf tail dora
 1. Add and commit the changes (`git commit -am 'Add some amazing new feature'`)
 1. Push to the branch (`git push origin amazing-new-feature`)
 1. Create a PR against this repository
+
+## Helpful Resources
+* [Eirini Continuous Integration Pipelines](https://flintstone.ci.cf-app.com/teams/eirini/pipelines/ci)
+* [scf-builder Pipeline](https://flintstone.ci.cf-app.com/teams/eirini/pipelines/scf-builder)
