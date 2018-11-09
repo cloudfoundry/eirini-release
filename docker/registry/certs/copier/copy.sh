@@ -1,22 +1,31 @@
 #!/bin/bash
 
+readonly SCF_NAMESPACE="scf"
+readonly REGISTRY_CERTS_DIR="/workspace/docker/certs.d/$REGISTRY/"
+
 get-cert(){
     kubectl get secret private-registry-cert \
+      --namespace "${SCF_NAMESPACE}" \
       --output go-template \
       --template '{{(index .data "tls.crt")}}'
 }
 
 copy-cert() {
-    local cert_dir="/workspace/docker/certs.d/$REGISTRY/"
-    mkdir --parents "$cert_dir"
-    get-cert | base64 -d > "$cert_dir/ca.crt"
+    mkdir --parents "$REGISTRY_CERTS_DIR"
+    get-cert | base64 -d > "$REGISTRY_CERTS_DIR/ca.crt"
 
     echo "Sucessfully copied certs"
 }
 
-if get-cert; then
-    copy-cert
-else
-    echo "Cert not found"
-    exit 1
-fi
+main(){
+  while true; do
+    if get-cert; then
+        copy-cert
+    else
+        echo "Nothing to do"
+    fi   
+    sleep 30
+  done
+}
+
+main

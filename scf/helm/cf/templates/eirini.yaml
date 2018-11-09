@@ -178,15 +178,20 @@ spec:
 
 # copy-certs
 ---
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: DaemonSet
 metadata:
   name: cert-copier
 spec:
+  selector:
+    matchLabels:
+      name: "cert-copier"
   template:
+    metadata:
+      labels:
+        name: "cert-copier"
     spec:
       serviceAccountName: "opi"
-      restartPolicy: OnFailure
       volumes:
       - name: host-docker
         hostPath:
@@ -197,11 +202,10 @@ spec:
         env:
         - name: REGISTRY
           value: {{ if .Values.opi.use_registry_ingress }}"we-love-pandas.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"{{ index .Values.kube.external_ips 0 }}:5800"{{ end }}
-        image: eirini/certs-copy
+        image: eirini/certs-copy:multinode
         volumeMounts:
         - name: host-docker
           mountPath: /workspace/docker
-
 
 ---
 apiVersion: batch/v1
