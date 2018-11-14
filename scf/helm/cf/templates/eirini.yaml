@@ -62,7 +62,7 @@ spec:
         - name: config-volume
           mountPath: /workspace/jobs/opi/config
         - name: cf-secrets
-          mountPath: /workspace/jobs/opi/config
+          mountPath: /workspace/jobs/opi/secrets
         ports:
         - containerPort: 8085
       - name: registry
@@ -99,9 +99,9 @@ data:
       use_ingress: {{ .Values.opi.use_app_ingress }}
       metrics_source_address: "http://heapster.kube-system.svc.cluster.local/apis/metrics/v1alpha1"
       loggregator_address: "doppler-doppler-set.{{ .Release.Namespace }}.svc.cluster.local:8082"
-      loggergator_cert_path: "/workspace/jobs/opi/config/doppler.crt"
-      loggregator_key_path: "/workspace/jobs/opi/config/doppler.key"
-      loggregator_ca_path: "/workspace/jobs/opi/config/doppler.ca"
+      loggergator_cert_path: "/workspace/jobs/opi/secrets/doppler.crt"
+      loggregator_key_path: "/workspace/jobs/opi/secrets/doppler.key"
+      loggregator_ca_path: "/workspace/jobs/opi/secrets/doppler.ca"
       skip_ssl_validation: true
       insecure_skip_verify: true
 

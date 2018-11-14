@@ -112,14 +112,6 @@ spec:
         - name: "APP_TOKEN_UPLOAD_GRACE_PERIOD"
           value: {{if ne (typeOf .Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD) "<nil>"}}{{if has (kindOf .Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD) (list "map" "slice")}}{{.Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD | toJson | quote}}{{else}}{{.Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD | quote}}{{end}}{{else}}{{fail "env.APP_TOKEN_UPLOAD_GRACE_PERIOD has not been set"}}{{end}}
 
-        {{- if not .Values.secrets.BLOBSTORE_PASSWORD }}
-        - name: "BLOBSTORE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "blobstore-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.BLOBSTORE_PASSWORD }}
         - name: "BLOBSTORE_PASSWORD"
           valueFrom:
@@ -128,16 +120,16 @@ spec:
               name: "secrets"
         {{- end }}
 
-        - name: "BROKER_CLIENT_TIMEOUT_SECONDS"
-          value: {{if ne (typeOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) "<nil>"}}{{if has (kindOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) (list "map" "slice")}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | toJson | quote}}{{else}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if not .Values.secrets.BULK_API_PASSWORD }}
-        - name: "BULK_API_PASSWORD"
+        {{- if not .Values.secrets.BLOBSTORE_PASSWORD }}
+        - name: "BLOBSTORE_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "bulk-api-password"
+              key: "blobstore-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
+
+        - name: "BROKER_CLIENT_TIMEOUT_SECONDS"
+          value: {{if ne (typeOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) "<nil>"}}{{if has (kindOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) (list "map" "slice")}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | toJson | quote}}{{else}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | quote}}{{end}}{{else}}""{{end}}
 
         {{- if .Values.secrets.BULK_API_PASSWORD }}
         - name: "BULK_API_PASSWORD"
@@ -145,6 +137,14 @@ spec:
             secretKeyRef:
               key: "bulk-api-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.BULK_API_PASSWORD }}
+        - name: "BULK_API_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "bulk-api-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "CATS_SUITES"
@@ -220,12 +220,20 @@ spec:
           value: {{if ne (typeOf .Values.env.DROPLET_MAX_STAGED_STORED) "<nil>"}}{{if has (kindOf .Values.env.DROPLET_MAX_STAGED_STORED) (list "map" "slice")}}{{.Values.env.DROPLET_MAX_STAGED_STORED | toJson | quote}}{{else}}{{.Values.env.DROPLET_MAX_STAGED_STORED | quote}}{{end}}{{else}}{{fail "env.DROPLET_MAX_STAGED_STORED has not been set"}}{{end}}
         - name: "ENABLE_OPI_STAGING"
           value: {{if ne (typeOf .Values.env.ENABLE_OPI_STAGING) "<nil>"}}{{if has (kindOf .Values.env.ENABLE_OPI_STAGING) (list "map" "slice")}}{{.Values.env.ENABLE_OPI_STAGING | toJson | quote}}{{else}}{{.Values.env.ENABLE_OPI_STAGING | quote}}{{end}}{{else}}""{{end}}
+
         - name: "ENABLE_SECURITY_EVENT_LOGGING"
           value: {{if ne (typeOf .Values.env.ENABLE_SECURITY_EVENT_LOGGING) "<nil>"}}{{if has (kindOf .Values.env.ENABLE_SECURITY_EVENT_LOGGING) (list "map" "slice")}}{{.Values.env.ENABLE_SECURITY_EVENT_LOGGING | toJson | quote}}{{else}}{{.Values.env.ENABLE_SECURITY_EVENT_LOGGING | quote}}{{end}}{{else}}""{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
           value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
         - name: "INSECURE_DOCKER_REGISTRIES"
           value: {{if ne (typeOf .Values.env.INSECURE_DOCKER_REGISTRIES) "<nil>"}}{{if has (kindOf .Values.env.INSECURE_DOCKER_REGISTRIES) (list "map" "slice")}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | toJson | quote}}{{else}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | quote}}{{end}}{{else}}""{{end}}
+        {{- if not .Values.secrets.INTERNAL_API_PASSWORD }}
+        - name: "INTERNAL_API_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-api-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
 
         {{- if .Values.secrets.INTERNAL_API_PASSWORD }}
         - name: "INTERNAL_API_PASSWORD"
@@ -233,14 +241,6 @@ spec:
             secretKeyRef:
               key: "internal-api-password"
               name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.INTERNAL_API_PASSWORD }}
-        - name: "INTERNAL_API_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "internal-api-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
@@ -286,20 +286,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
         - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
         {{- end }}
 
         - name: "LOG_LEVEL"
@@ -360,20 +360,20 @@ spec:
         - name: "NGINX_MAX_REQUEST_BODY_SIZE"
           value: {{if ne (typeOf .Values.env.NGINX_MAX_REQUEST_BODY_SIZE) "<nil>"}}{{if has (kindOf .Values.env.NGINX_MAX_REQUEST_BODY_SIZE) (list "map" "slice")}}{{.Values.env.NGINX_MAX_REQUEST_BODY_SIZE | toJson | quote}}{{else}}{{.Values.env.NGINX_MAX_REQUEST_BODY_SIZE | quote}}{{end}}{{else}}{{fail "env.NGINX_MAX_REQUEST_BODY_SIZE has not been set"}}{{end}}
 
-        {{- if not .Values.secrets.ROUTER_SERVICES_SECRET }}
-        - name: "ROUTER_SERVICES_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "router-services-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.ROUTER_SERVICES_SECRET }}
         - name: "ROUTER_SERVICES_SECRET"
           valueFrom:
             secretKeyRef:
               key: "router-services-secret"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.ROUTER_SERVICES_SECRET }}
+        - name: "ROUTER_SERVICES_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "router-services-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "SCF_LOG_HOST"
@@ -485,7 +485,7 @@ spec:
           value: {{if ne (typeOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_DIEGO_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
         - name: "USE_STAGER_PRIVILEGED_CONTAINERS"
           value: {{if ne (typeOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_STAGER_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api:a1d2f81d4ba61df0585c200d71a9ea5045eb4073"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api:45832df7ddacfefa546609e35f344ef6c6221fe0"
         lifecycle:
           preStop:
             exec:
