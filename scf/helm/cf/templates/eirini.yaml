@@ -244,3 +244,99 @@ spec:
         - "--"
         args:
         - "kubectl get secret secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }} --namespace={{ .Release.Namespace }} --export -o yaml | grep -v -E 'eirini-registry|uaa' |kubectl apply --namespace={{ .Values.opi.namespace }} -f -"
+
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: loggregator-fluentd
+spec:
+  selector:
+    matchLabels:
+      name: loggregator-fluentd
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: loggregator-fluentd
+    spec:
+      serviceAccountName: "opi"
+      containers:
+      - name: loggregator-fluentd
+        image: eirini/loggregator-fluentd
+        imagePullPolicy: Always
+        env:
+        - name: FLUENT_UID
+          value: "0"
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: vardata
+          mountPath: /var/data
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: varvcapstore
+          mountPath: /var/vcap/store
+          readOnly: true
+        - name: varvcapdata
+          mountPath: /var/vcap/data
+          readOnly: true
+        - name: loggregator-tls-certs
+          mountPath: /fluentd/certs
+          readOnly: true
+      - name: loggregator-agent
+        image: loggregator/agent
+        imagePullPolicy: Always
+        env:
+        - name: AGENT_METRIC_SOURCE_ID
+          value: scf/daemonset/loggregator-fluentd
+        - name: ROUTER_ADDR
+          value: doppler-doppler.scf.svc.cluster.local:8082
+        - name: ROUTER_ADDR_WITH_AZ
+          value: doppler-doppler.scf.svc.cluster.local:8082
+        - name: AGENT_PPROF_PORT
+          value: "6062"
+        - name: AGENT_HEALTH_ENDPOINT_PORT
+          value: "6063"
+        ports:
+        - name: health
+          containerPort: 6063
+        volumeMounts:
+        - name: loggregator-tls-certs
+          mountPath: /srv/certs
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: vardata
+        hostPath:
+          path: /var/data
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: varvcapstore
+        hostPath:
+          path: /var/vcap/store/
+      - name: varvcapdata
+        hostPath:
+          path: /var/vcap/data/
+      - name: loggregator-tls-certs
+        secret:
+          secretName: secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}
+          items:
+            - key: loggregator-agent-cert
+              path: agent.crt
+            - key: loggregator-agent-cert-key
+              path: agent.key
+            - key: internal-ca-cert
+              path: ca.crt

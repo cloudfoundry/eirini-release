@@ -44,7 +44,7 @@ metadata:
     skiff-role-name: "diego-brain"
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_brain.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_brain.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_brain.count }} {{- end }}
   serviceName: "diego-brain-set"
   template:
     metadata:
@@ -323,7 +323,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-brain:1ee91914f96a07c63fbd67bdb7e9af7b0e060634"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-brain:98dc582ed61f06645e51fe10bc099c541a306574"
         lifecycle:
           preStop:
             exec:
