@@ -44,7 +44,7 @@ metadata:
     skiff-role-name: "diego-api"
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
+  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
   serviceName: "diego-api-set"
   template:
     metadata:
@@ -313,7 +313,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:749525f71d9ceedab0a058acf28119e1f785ff08"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:ee6f4a7d2809f0ae3638e8265c5d19403ae32e2e"
         lifecycle:
           preStop:
             exec:
