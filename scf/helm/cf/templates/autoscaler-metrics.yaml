@@ -299,7 +299,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-metrics:55fbd963b9f1f45375e9a6a353e5974e373c7c26"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-metrics:792083378abb1e1314d93ec56abc67ab201bcd8a"
         lifecycle:
           preStop:
             exec:
