@@ -12,7 +12,7 @@ main() {
 }
 
 generate-openssl-conf() {
-    if [[ $REGISTRY =~ [0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4} ]]; then
+    if [[ $REGISTRY =~ ^[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}$ ]]; then
         echo "Generating ip based CA"
         gen-openssl-conf-ip
     else
@@ -64,7 +64,7 @@ create-certs() {
 }
 
 create-secret() {
-    kubectl delete secret registry-cert || true
+    kubectl delete secret private-registry-cert || true
 
     kubectl create secret generic private-registry-cert \
         --from-file=$CERTS_DIR/tls.crt \
