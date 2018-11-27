@@ -1,3 +1,5 @@
+{{- if .Values.opi.use_bits_service_registry }}
+
 # ConfigMap
 ---
 apiVersion: v1
@@ -108,3 +110,5 @@ spec:
       name: bits
   selector:
     name: "bits"
+
+{{- end }}

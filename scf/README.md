@@ -33,8 +33,16 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
       # set to false if you don't want Eirini to create ingress rules for apps
       use_app_ingress: true
 
+      # use Bits-Service as image registry
+      use_bits_service_registry: true
+
     secrets:
       NATS_PASSWORD: changeme
+
+      # when using Bits-Service as image registry:
+      BITS_SERVICE_SECRET: changeme
+      BITS_SERVICE_SIGNING_USER_PASSWORD: changeme
+      BLOBSTORE_PASSWORD: changeme
     ```
 
 1. Deploy SCF by following the steps in [this](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm) section. The remainder of that document is optional.
