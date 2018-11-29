@@ -15,6 +15,8 @@ data:
     cert_file: /workspace/jobs/bits-service/certs/tls.crt
     key_file: /workspace/jobs/bits-service/certs/tls.key
     port: 6666
+    enable_http: true
+    http_port: 8888
     secret:  {{ .Values.secrets.BITS_SERVICE_SECRET }}
     skip_cert_verify: true
     max_body_size: 2M
@@ -102,13 +104,39 @@ kind: Service
 metadata:
   name: "bits"
 spec:
+{{- if not .Values.opi.use_registry_ingress }}
   externalIPs: {{ .Values.kube.external_ips | toJson }}
+{{- end }}
   ports:
-    - port: 6666
+    - port: {{ if .Values.opi.use_registry_ingress }}8888{{ else }}6666{{ end }}
       protocol: TCP
-      targetPort: 6666
+      targetPort: {{ if .Values.opi.use_registry_ingress }}8888{{ else }}6666{{ end }}
       name: bits
   selector:
     name: "bits"
 
+# Ingress
+{{- if .Values.opi.use_registry_ingress }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bits-registry
+  labels:
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  tls:
+    - hosts:
+      - "registry.{{ .Values.opi.ingress_endpoint }}"
+      secretName: private-registry-cert
+  rules:
+    - host: "registry.{{ .Values.opi.ingress_endpoint }}"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: bits
+              servicePort: 8888
+{{- end }}
 {{- end }}
