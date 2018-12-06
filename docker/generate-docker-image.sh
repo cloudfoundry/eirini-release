@@ -30,7 +30,6 @@ create_eirinifs(){
 
 create_docker_images() {
   create_image "$DOCKERDIR"/opi eirini/opi
-  create_image "$DOCKERDIR"/registry eirini/registry
   create_image "$DOCKERDIR"/opi/init eirini/opi-init
 }
 
