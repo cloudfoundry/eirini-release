@@ -1059,9 +1059,6 @@ opi:
   # Change this to force kubernetes pulling the latest image (alternatively delete the corresponding pod)
   version: "0.0.0"
 
-  # This enables/disables the Bits-Service as image registry
-  use_bits_service_registry: false
-
 # The sizing section contains configuration to change each individual instance
 # group. Due to limitations on the allowable names, any dashes ("-") in the
 # instance group names are replaced with underscores ("_").

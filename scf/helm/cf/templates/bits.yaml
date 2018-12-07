@@ -1,5 +1,3 @@
-{{- if .Values.opi.use_bits_service_registry }}
-
 # ConfigMap
 ---
 apiVersion: v1
@@ -138,5 +136,4 @@ spec:
             backend:
               serviceName: bits
               servicePort: 8888
-{{- end }}
 {{- end }}

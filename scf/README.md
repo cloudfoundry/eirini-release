@@ -33,9 +33,6 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
       # set to false if you don't want Eirini to create ingress rules for apps
       use_app_ingress: true
 
-      # use Bits-Service as image registry
-      use_bits_service_registry: true
-
     secrets:
       NATS_PASSWORD: changeme
 
