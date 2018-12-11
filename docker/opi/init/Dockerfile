@@ -1,11 +1,10 @@
-FROM library/python:3.6-jessie
+FROM alpine:latest
 
-RUN apt-get update && \
-    apt-get install --yes \
-        wget \
-        curl
-RUN wget --quiet --output-document /usr/bin/goml https://github.com/JulzDiverse/goml/releases/download/v0.4.0/goml-linux-amd64 && chmod +x /usr/bin/goml
+RUN apk add --no-cache bash curl jq
+
+RUN curl --fail --silent --show-error --location --output /usr/bin/goml https://github.com/JulzDiverse/goml/releases/download/v0.4.0/goml-linux-amd64 && chmod +x /usr/bin/goml
+
 COPY init.sh /
 RUN chmod +x /init.sh
 
-ENTRYPOINT /init.sh
+ENTRYPOINT [ "/bin/bash", "-c", "/init.sh" ]

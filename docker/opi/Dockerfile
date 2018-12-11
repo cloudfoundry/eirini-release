@@ -1,6 +1,4 @@
-FROM ubuntu:latest
-
-RUN apt-get update && apt-get install vim curl -y
+FROM alpine:latest
 
 COPY opi /workspace/jobs/opi/bin/
 

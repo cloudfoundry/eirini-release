@@ -12,14 +12,8 @@ k8s_api() {
         "https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/${api_ver}/namespaces/$(cat "${svcacct}/namespace")/${1#/}"
 }
 
-json_get() {
-  local filter="$1"
-
-  python -c "import sys, json; print(json.load(sys.stdin)${filter})"
-}
-
 main() {
-  api_ip="$(k8s_api "api/v1" "/services/cc-uploader-cc-uploader" | json_get [\'spec\'][\'clusterIP\'])"
+  api_ip="$(k8s_api "api/v1" "/services/cc-uploader-cc-uploader" | jq --raw-output '.spec.clusterIP')"
   cp /configs/opi.yml /output/opi.yml
   goml set -f /output/opi.yml -p opi.cc_uploader_ip -v "$api_ip"
 }

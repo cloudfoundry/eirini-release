@@ -160,7 +160,7 @@ spec:
         env:
         - name: REGISTRY
           value: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io"{{ end }}
-        image: eirini/certs-generate
+        image: eirini/certs-generate:{{ .Values.opi.image_tag }}
         imagePullPolicy: Always
 
 # copy-certs
@@ -189,7 +189,7 @@ spec:
         env:
         - name: REGISTRY
           value: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"{{ end }}
-        image: eirini/certs-copy:multinode
+        image: eirini/certs-copy:{{ .Values.opi.image_tag }}
         volumeMounts:
         - name: host-docker
           mountPath: /workspace/docker

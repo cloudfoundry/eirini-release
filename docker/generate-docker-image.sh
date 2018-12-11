@@ -8,7 +8,6 @@ TAG=${1?"latest"}
 main(){
     echo "Creating Eirini docker images..."
     build_opi
-    create_eirinifs
     create_docker_images
     echo "All images created successfully"
 }
@@ -20,17 +19,11 @@ build_opi(){
   cp $DOCKERDIR/opi/opi $DOCKERDIR/registry/opi
 }
 
-create_eirinifs(){
-  echo "package main" > $EIRINIDIR/launcher/buildpackapplifecycle/launcher/package.go
-    $EIRINIDIR/launcher/bin/build-eirinifs.sh && \
-    cp $EIRINIDIR/launcher/image/eirinifs.tar $DOCKERDIR/registry/
-
-    verify_exit_code $? "Failed to create eirinifs.tar"
-}
-
 create_docker_images() {
   create_image "$DOCKERDIR"/opi eirini/opi
   create_image "$DOCKERDIR"/opi/init eirini/opi-init
+  create_image "$DOCKERDIR"/registry/certs/copier eirini/certs-copy
+  create_image "$DOCKERDIR"/registry/certs/generator eirini/certs-generate
 }
 
 create_image() {
