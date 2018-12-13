@@ -206,13 +206,16 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: smuggle
-        image: dtzar/helm-kubectl
-        command:
-        - "/bin/bash"
-        - "-c"
-        - "--"
-        args:
-        - "kubectl get secret secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }} --namespace={{ .Release.Namespace }} --export -o yaml | grep -v -E 'eirini-registry|uaa' |kubectl apply --namespace={{ .Values.opi.namespace }} -f -"
+        image: eirini/secret-smuggler:{{ .Values.opi.image_tag }}
+        env:
+        - name: SECRET_NAME
+          value: secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}
+        - name: UAA_NAMESPACE
+          value: uaa
+        - name: SCF_NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: OPI_NAMESPACE
+          value: {{ .Values.opi.namespace }}
 
 ---
 apiVersion: extensions/v1beta1
