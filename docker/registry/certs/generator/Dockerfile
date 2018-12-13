@@ -1,9 +1,5 @@
-#FROM debian:jessie
 FROM alpine:latest
 
-#RUN apt-get update && export TERM=xterm && \
-#    apt-get install -y openssl curl \
-#    && rm -rf /var/lib/apt/lists/*
 RUN apk add --no-cache curl bash openssl
 
 # This should download the latest stable version of kubectl
