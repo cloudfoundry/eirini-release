@@ -10,14 +10,26 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 ## Deploy
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. For additional information you can take a look at [Cloud Specifics](#cloud-specifics)
-1. Configure your deployment as described in the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment)
-
-   Add eirini-specific values to the `scf-config-values.yml` file:
-
+1. Download and unzip the latest [release](https://github.com/cloudfoundry-incubator/eirini-release/releases)
+1. Create a `scf-config.yaml` file using the following template:
     ```yaml
     env:
-      # To disable diego and use eirini/opi staging, uncomment the following parameter:
-      # ENABLE_OPI_STAGING: true
+      DOMAIN: <cf-domain-address>
+      ENABLE_OPI_STAGING: false
+      UAA_HOST: <cf-uaa-address>
+      UAA_PORT: <cf-uaa-port>
+      # To disable diego and use eirini/opi staging, set the following parameter to `true`:
+      ENABLE_OPI_STAGING: false
+
+    kube:
+      auth: rbac
+      #List all the kube node ips
+      external_ips:
+      - <kube-node-ip>
+      storage_class:
+      #depends on your specific storage class
+        persistent: hostpath
+        shared: hostpath
 
     opi:
       # The ingress sub-domain or IP
@@ -35,15 +47,23 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
 
     secrets:
       NATS_PASSWORD: changeme
+      CLUSTER_ADMIN_PASSWORD: changeme
+      UAA_ADMIN_CLIENT_SECRET: changeme
 
       # when using Bits-Service as image registry:
       BITS_SERVICE_SECRET: changeme
-      BITS_SERVICE_SIGNING_USER_PASSWORD: changeme
+      BITS_SERVICE_SIGNING_USER_PASSWORD: ehangeme
       BLOBSTORE_PASSWORD: changeme
     ```
+   More information on the SCF deployment configurations can be found in the [SCF configurations docs](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#configuring-the-deployment)
 
-1. Deploy SCF by following the steps in [this](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm) section. The remainder of that document is optional.
-
+1. To deploy use the following commands as explained in the [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm). In the commads `uaa` and `cf` are the helm charts you unzipped from the `eirini-scf-release`:
+    ```bash
+    $ helm install uaa --namespace uaa --values scf-config.yaml --name uaa
+    $ SECRET=$(kubectl get pods --namespace uaa -o jsonpath='{.items[?(.metadata.name=="uaa-0")].spec.containers[?(.name=="uaa")].env[?(.name=="INTERNAL_CA_CERT")].valueFrom.secretKeyRef.name}')
+    $ CA_CERT="$(kubectl get secret $SECRET --namespace uaa -o jsonpath="{.data['internal-ca-cert']}" | base64 --decode -)"
+    $ helm install cf --namespace scf --name scf --values scf-config-values.yaml --set "secrets.UAA_CA_CERT=${CA_CERT}"
+    ```
 1. Enjoy Eirini ;)
 
 ### Cloud Specifics
