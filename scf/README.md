@@ -15,7 +15,6 @@ You are basically two `helm install's` away from deploying `SCF` with `Eirini`. 
     ```yaml
     env:
       DOMAIN: <cf-domain-address>
-      ENABLE_OPI_STAGING: false
       UAA_HOST: <cf-uaa-address>
       UAA_PORT: <cf-uaa-port>
       # To disable diego and use eirini/opi staging, set the following parameter to `true`:
