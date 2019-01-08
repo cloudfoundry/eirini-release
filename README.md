@@ -115,5 +115,5 @@ cf tail dora
 1. Create a PR against this repository
 
 ## Helpful Resources
-* [Eirini Continuous Integration Pipelines](https://flintstone.ci.cf-app.com/teams/eirini/pipelines/ci)
-* [scf-builder Pipeline](https://flintstone.ci.cf-app.com/teams/eirini/pipelines/scf-builder)
+* [Eirini Continuous Integration Pipelines](https://ci.flintstone.cf.cloud.ibm.com/teams/eirini/pipelines/ci)
+* [scf-builder Pipeline](https://ci.flintstone.cf.cloud.ibm.com/teams/eirini/pipelines/scf-builder)
