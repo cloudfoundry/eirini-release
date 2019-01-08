@@ -1,22 +1,22 @@
-# eirini-release
+# Eirini Release
 
-This is a `helm` release for [eirini](https://code.cloudfoundry.org/eirini).
+This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eirini).
 
-- This is an **experimental** release and is still considered _work in progress_.
+**NOTE**: This is an **_experimental_** release and is still considered _work in progress_.
 
-## Deploy Eirini
+## Deploy Eirini with Containerized Cloud Foundry (SCF)
 
 If you want to deploy a full containerized CF (`SCF`) with `Eirini` you should follow the [SCF + Eirini documentation](./scf/README.md)
 
+## Deploy Standalone Eirini
+
 If you want to deploy _only_ Eirini on a Kube cluster, you can follow the instruction below:
 
-### Prereqs
+### Prerequisites
 
 Beside a Kubernetes cluster you should have:
 
-- [helm](https://github.com/kubernetes/helm/blob/master/docs/install.md)
-
-#### Deploy
+### Deploy
 
 1. Copy the Kubernetes config file to `helm/eirini/configs/` directory as `kube.yaml` (name is important)
 
@@ -69,7 +69,7 @@ Beside a Kubernetes cluster you should have:
 
 That's it :)
 
-#### Enable logging
+### Enable logging
 
 To enable logging with `log-cache` you need to deploy oratos on your kubernetes cluster. To do this follow the instructions on the `eirini` branch on [this repo](https://github.com/gdankov/oratos-deployment/tree/eirini). To get the logs of your app use the [log-cache cli](https://github.com/cloudfoundry/log-cache-cli#stand-alone-cli) with the following format
 
