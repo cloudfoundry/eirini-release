@@ -83,8 +83,8 @@ data:
       kube_endpoint: {{ .Values.opi.ingress_endpoint }}
       nats_password: {{ .Values.secrets.NATS_PASSWORD }}
       nats_ip: "nats-nats.scf.svc.cluster.local"
-      api_endpoint: "http://api-cloud-controller-ng.{{ .Release.Namespace }}.svc.cluster.local:9022"
-      cc_internal_api: "https://api-cloud-controller-ng.{{ .Release.Namespace }}.svc.cluster.local:9023"
+      api_endpoint: "http://api.{{ .Release.Namespace }}.svc.cluster.local:9022"
+      cc_internal_api: "https://api.{{ .Release.Namespace }}.svc.cluster.local:9023"
       cf_username: "admin"
       cc_certs_secret_name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
       cf_password: {{ .Values.secrets.CLUSTER_ADMIN_PASSWORD }}
