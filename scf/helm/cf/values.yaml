@@ -17,8 +17,8 @@ kube:
 
   registry:
     hostname: "docker.io"
-    username: "eiriniuser"
-    password: "P8frjuS5G88jWC%fcg&R%ZR2"
+    username: ""
+    password: ""
   organization: "eirinicf"
   auth: "rbac"
 config:
