@@ -45,16 +45,31 @@ kind: "StatefulSet"
 metadata:
   name: "nfs-broker"
   labels:
+    app.kubernetes.io/component: "nfs-broker"
     skiff-role-name: "nfs-broker"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "OrderedReady"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.nfs_broker.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.nfs_broker.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "nfs-broker"
   serviceName: "nfs-broker-set"
   template:
     metadata:
       name: "nfs-broker"
       labels:
+        app.kubernetes.io/component: "nfs-broker"
         skiff-role-name: "nfs-broker"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -64,7 +79,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
                   - "nfs-broker"
@@ -75,6 +90,8 @@ spec:
         {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
@@ -201,7 +218,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-nfs-broker:2d43ef9f77a58c06369216f4204cd68bd987226d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-nfs-broker:e59842a7b875ce6eb694792a21779cbedcc523ff"
         lifecycle:
           preStop:
             exec:
@@ -259,6 +276,14 @@ items:
   kind: "Service"
   metadata:
     name: "nfs-broker-set"
+    labels:
+      app.kubernetes.io/component: "nfs-broker-set"
+      skiff-role-name: "nfs-broker-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -267,11 +292,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "nfs-broker"
+      app.kubernetes.io/component: "nfs-broker"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "nfs-broker-nfsbroker-set"
+    labels:
+      app.kubernetes.io/component: "nfs-broker-nfsbroker-set"
+      skiff-role-name: "nfs-broker-nfsbroker-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -280,11 +313,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "nfs-broker"
+      app.kubernetes.io/component: "nfs-broker"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "nfs-broker-nfsbroker"
+    labels:
+      app.kubernetes.io/component: "nfs-broker-nfsbroker"
+      skiff-role-name: "nfs-broker-nfsbroker"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "nfsbroker"
@@ -292,5 +333,5 @@ items:
       protocol: "TCP"
       targetPort: 8999
     selector:
-      skiff-role-name: "nfs-broker"
+      app.kubernetes.io/component: "nfs-broker"
 kind: "List"

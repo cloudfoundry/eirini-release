@@ -45,16 +45,31 @@ kind: "StatefulSet"
 metadata:
   name: "cc-uploader"
   labels:
+    app.kubernetes.io/component: "cc-uploader"
     skiff-role-name: "cc-uploader"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cc_uploader.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.cc_uploader.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "cc-uploader"
   serviceName: "cc-uploader-set"
   template:
     metadata:
       name: "cc-uploader"
       labels:
+        app.kubernetes.io/component: "cc-uploader"
         skiff-role-name: "cc-uploader"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -64,7 +79,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
                   - "cc-uploader"
@@ -75,6 +90,9 @@ spec:
         {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
+
         {{- if not .Values.secrets.BBS_CLIENT_CRT }}
         - name: "BBS_CLIENT_CRT"
           valueFrom:
@@ -126,20 +144,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.CC_SERVER_CRT_KEY }}
-        - name: "CC_SERVER_CRT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "cc-server-crt-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.CC_SERVER_CRT_KEY }}
         - name: "CC_SERVER_CRT_KEY"
           valueFrom:
             secretKeyRef:
               key: "cc-server-crt-key"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.CC_SERVER_CRT_KEY }}
+        - name: "CC_SERVER_CRT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "cc-server-crt-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.CC_UPLOADER_CRT }}
@@ -218,20 +236,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
         - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
         {{- end }}
 
         - name: "LOG_LEVEL"
@@ -297,7 +315,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-uploader:0f65dd95e0c9aebc3c09c41e88f5bd92a0eeeea5"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-uploader:7b119be3b2d8aa8d3133becae692a7188605cf85"
         lifecycle:
           preStop:
             exec:
@@ -336,6 +354,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.cc_uploader.capabilities }}
           privileged: true
           {{- end }}
@@ -366,6 +386,14 @@ items:
   kind: "Service"
   metadata:
     name: "cc-uploader-set"
+    labels:
+      app.kubernetes.io/component: "cc-uploader-set"
+      skiff-role-name: "cc-uploader-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -378,11 +406,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "cc-uploader"
+      app.kubernetes.io/component: "cc-uploader"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "cc-uploader-cc-uploader-set"
+    labels:
+      app.kubernetes.io/component: "cc-uploader-cc-uploader-set"
+      skiff-role-name: "cc-uploader-cc-uploader-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -395,11 +431,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "cc-uploader"
+      app.kubernetes.io/component: "cc-uploader"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "cc-uploader-cc-uploader"
+    labels:
+      app.kubernetes.io/component: "cc-uploader-cc-uploader"
+      skiff-role-name: "cc-uploader-cc-uploader"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "cc-up-listen"
@@ -411,5 +455,5 @@ items:
       protocol: "TCP"
       targetPort: 17018
     selector:
-      skiff-role-name: "cc-uploader"
+      app.kubernetes.io/component: "cc-uploader"
 kind: "List"

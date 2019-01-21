@@ -1,5 +1,5 @@
 ---
-# The diego-access instance group contains the following jobs:
+# The diego-ssh instance group contains the following jobs:
 #
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
@@ -7,10 +7,10 @@
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
 # Also: ssh_proxy, loggregator_agent, file_server
-{{- if gt (int .Values.sizing.diego_access.count) 0 }}
+{{- if gt (int .Values.sizing.diego_ssh.count) 0 }}
 
-{{- if gt (int .Values.sizing.diego_access.count) 3 }}
-_maxReplicas: {{ fail "diego_access cannot have more than 3 instances" }}
+{{- if gt (int .Values.sizing.diego_ssh.count) 3 }}
+_maxReplicas: {{ fail "diego_ssh cannot have more than 3 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -36,18 +36,33 @@ _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "
 apiVersion: "apps/v1beta1"
 kind: "StatefulSet"
 metadata:
-  name: "diego-access"
+  name: "diego-ssh"
   labels:
-    skiff-role-name: "diego-access"
+    app.kubernetes.io/component: "diego-ssh"
+    skiff-role-name: "diego-ssh"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_access.count }} {{- end }}
-  serviceName: "diego-access-set"
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_ssh.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_ssh.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "diego-ssh"
+  serviceName: "diego-ssh-set"
   template:
     metadata:
-      name: "diego-access"
+      name: "diego-ssh"
       labels:
-        skiff-role-name: "diego-access"
+        app.kubernetes.io/component: "diego-ssh"
+        skiff-role-name: "diego-ssh"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -57,14 +72,14 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
-                  - "diego-access"
+                  - "diego-ssh"
               topologyKey: "beta.kubernetes.io/os"
             weight: 100
-        {{- if .Values.sizing.diego_access.affinity.nodeAffinity }}
-        nodeAffinity: {{ toJson .Values.sizing.diego_access.affinity.nodeAffinity }}
+        {{- if .Values.sizing.diego_ssh.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.diego_ssh.affinity.nodeAffinity }}
         {{- end }}
       containers:
       - env:
@@ -83,6 +98,9 @@ spec:
               key: "app-ssh-key"
               name: "secrets"
         {{- end }}
+
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
 
         {{- if not .Values.secrets.BBS_CLIENT_CRT }}
         - name: "BBS_CLIENT_CRT"
@@ -194,20 +212,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
-        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-client-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
         - name: "LOGGREGATOR_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "loggregator-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
+        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-client-cert-key"
+              name: "secrets"
         {{- end }}
 
         - name: "LOG_LEVEL"
@@ -261,14 +279,14 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-access:752cc7a709fde0665a7ca4fad0085755051a6ee7"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-ssh:14723fccbd3eed6bf6a44158f97c84d589145478"
         lifecycle:
           preStop:
             exec:
               command:
               - "/opt/fissile/pre-stop.sh"
         livenessProbe: ~
-        name: "diego-access"
+        name: "diego-ssh"
         ports:
         - containerPort: 2222
           name: "diego-ssh"
@@ -283,32 +301,34 @@ spec:
             - "curl --silent --fail --head http://${HOSTNAME}:8080/v1/static/file_server/bin/file-server"
         resources:
           requests:
-            {{- if and .Values.config.memory.requests .Values.sizing.diego_access.memory.request }}
-            memory: "{{ int .Values.sizing.diego_access.memory.request }}Mi"
+            {{- if and .Values.config.memory.requests .Values.sizing.diego_ssh.memory.request }}
+            memory: "{{ int .Values.sizing.diego_ssh.memory.request }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.requests .Values.sizing.diego_access.cpu.request }}
-            cpu: "{{ int .Values.sizing.diego_access.cpu.request }}m"
+            {{- if and .Values.config.cpu.requests .Values.sizing.diego_ssh.cpu.request }}
+            cpu: "{{ int .Values.sizing.diego_ssh.cpu.request }}m"
             {{- end }}
 
           limits:
-            {{- if and .Values.config.memory.limits .Values.sizing.diego_access.memory.limit }}
-            memory: "{{ int .Values.sizing.diego_access.memory.limit }}Mi"
+            {{- if and .Values.config.memory.limits .Values.sizing.diego_ssh.memory.limit }}
+            memory: "{{ int .Values.sizing.diego_ssh.memory.limit }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.limits .Values.sizing.diego_access.cpu.limit }}
-            cpu: "{{ int .Values.sizing.diego_access.cpu.limit }}m"
+            {{- if and .Values.config.cpu.limits .Values.sizing.diego_ssh.cpu.limit }}
+            cpu: "{{ int .Values.sizing.diego_ssh.cpu.limit }}m"
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.diego_access.capabilities }}
+          allowPrivilegeEscalation: false
+
+          {{- if has "ALL" .Values.sizing.diego_ssh.capabilities }}
           privileged: true
           {{- end }}
 
-          {{- if not (has "ALL" .Values.sizing.diego_access.capabilities) }}
+          {{- if not (has "ALL" .Values.sizing.diego_ssh.capabilities) }}
           capabilities:
             add:
-            {{- range .Values.sizing.diego_access.capabilities }}
+            {{- range .Values.sizing.diego_ssh.capabilities }}
             - {{ . | upper }}
             {{- end }}
           {{- end }}
@@ -326,13 +346,21 @@ spec:
   {{- end }}
 {{- end }}
 ---
-{{- if gt (int .Values.sizing.diego_access.count) 0 }}
+{{- if gt (int .Values.sizing.diego_ssh.count) 0 }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "diego-access-set"
+    name: "diego-ssh-set"
+    labels:
+      app.kubernetes.io/component: "diego-ssh-set"
+      skiff-role-name: "diego-ssh-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -345,11 +373,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-access"
+      app.kubernetes.io/component: "diego-ssh"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "diego-access-ssh-proxy-set"
+    name: "diego-ssh-ssh-proxy-set"
+    labels:
+      app.kubernetes.io/component: "diego-ssh-ssh-proxy-set"
+      skiff-role-name: "diego-ssh-ssh-proxy-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -358,11 +394,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-access"
+      app.kubernetes.io/component: "diego-ssh"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "diego-access-ssh-proxy"
+    name: "diego-ssh-ssh-proxy"
+    labels:
+      app.kubernetes.io/component: "diego-ssh-ssh-proxy"
+      skiff-role-name: "diego-ssh-ssh-proxy"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "diego-ssh"
@@ -370,11 +414,19 @@ items:
       protocol: "TCP"
       targetPort: 2222
     selector:
-      skiff-role-name: "diego-access"
+      app.kubernetes.io/component: "diego-ssh"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "diego-access-ssh-proxy-public"
+    name: "diego-ssh-ssh-proxy-public"
+    labels:
+      app.kubernetes.io/component: "diego-ssh-ssh-proxy-public"
+      skiff-role-name: "diego-ssh-ssh-proxy-public"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -386,7 +438,7 @@ items:
       protocol: "TCP"
       targetPort: 2222
     selector:
-      skiff-role-name: "diego-access"
+      app.kubernetes.io/component: "diego-ssh"
 
     {{- if .Values.services.loadbalanced }}
     type: "LoadBalancer"
@@ -395,7 +447,15 @@ items:
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "diego-access-file-server-set"
+    name: "diego-access-set"
+    labels:
+      app.kubernetes.io/component: "diego-access-set"
+      skiff-role-name: "diego-access-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -404,11 +464,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-access"
+      app.kubernetes.io/component: "diego-ssh"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
-    name: "diego-access-file-server"
+    name: "diego-access"
+    labels:
+      app.kubernetes.io/component: "diego-access"
+      skiff-role-name: "diego-access"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "diego-files"
@@ -416,6 +484,6 @@ items:
       protocol: "TCP"
       targetPort: 8080
     selector:
-      skiff-role-name: "diego-access"
+      app.kubernetes.io/component: "diego-ssh"
 kind: "List"
 {{- end }}

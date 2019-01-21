@@ -41,16 +41,31 @@ kind: "StatefulSet"
 metadata:
   name: "diego-api"
   labels:
+    app.kubernetes.io/component: "diego-api"
     skiff-role-name: "diego-api"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "diego-api"
   serviceName: "diego-api-set"
   template:
     metadata:
       name: "diego-api"
       labels:
+        app.kubernetes.io/component: "diego-api"
         skiff-role-name: "diego-api"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -60,7 +75,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
                   - "diego-api"
@@ -71,6 +86,8 @@ spec:
         {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "BBS_ACTIVE_KEY_PASSPHRASE"
           valueFrom:
             secretKeyRef:
@@ -93,14 +110,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.BBS_AUCTIONEER_CERT_KEY }}
-        - name: "BBS_AUCTIONEER_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "bbs-auctioneer-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.BBS_AUCTIONEER_CERT_KEY }}
         - name: "BBS_AUCTIONEER_CERT_KEY"
           valueFrom:
@@ -109,11 +118,11 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.BBS_REP_CERT }}
-        - name: "BBS_REP_CERT"
+        {{- if .Values.secrets.BBS_AUCTIONEER_CERT_KEY }}
+        - name: "BBS_AUCTIONEER_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "bbs-rep-cert"
+              key: "bbs-auctioneer-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -123,6 +132,14 @@ spec:
             secretKeyRef:
               key: "bbs-rep-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_REP_CERT }}
+        - name: "BBS_REP_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-rep-cert"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.BBS_REP_CERT_KEY }}
@@ -141,20 +158,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.BBS_SERVER_CRT }}
-        - name: "BBS_SERVER_CRT"
-          valueFrom:
-            secretKeyRef:
-              key: "bbs-server-crt"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.BBS_SERVER_CRT }}
         - name: "BBS_SERVER_CRT"
           valueFrom:
             secretKeyRef:
               key: "bbs-server-crt"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_SERVER_CRT }}
+        - name: "BBS_SERVER_CRT"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-server-crt"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.BBS_SERVER_CRT_KEY }}
@@ -313,7 +330,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:dfd616c5d5de94b4376b7c48844263ec20b94dbe"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:c3c1f97fd2b1e0283ed308fd80dbf0869ed1844f"
         lifecycle:
           preStop:
             exec:
@@ -354,6 +371,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.diego_api.capabilities }}
           privileged: true
           {{- end }}
@@ -386,6 +405,14 @@ items:
   kind: "Service"
   metadata:
     name: "diego-api-set"
+    labels:
+      app.kubernetes.io/component: "diego-api-set"
+      skiff-role-name: "diego-api-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -398,12 +425,20 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-api"
+      app.kubernetes.io/component: "diego-api"
       skiff-role-active: "true"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "diego-api-bbs-set"
+    labels:
+      app.kubernetes.io/component: "diego-api-bbs-set"
+      skiff-role-name: "diego-api-bbs-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -416,12 +451,20 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-api"
+      app.kubernetes.io/component: "diego-api"
       skiff-role-active: "true"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "diego-api-bbs"
+    labels:
+      app.kubernetes.io/component: "diego-api-bbs"
+      skiff-role-name: "diego-api-bbs"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "cell-bbs-api"
@@ -433,7 +476,7 @@ items:
       protocol: "TCP"
       targetPort: 17017
     selector:
-      skiff-role-name: "diego-api"
+      app.kubernetes.io/component: "diego-api"
       skiff-role-active: "true"
 kind: "List"
 {{- end }}

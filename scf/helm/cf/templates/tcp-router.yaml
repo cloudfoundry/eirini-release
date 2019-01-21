@@ -47,16 +47,31 @@ kind: "StatefulSet"
 metadata:
   name: "tcp-router"
   labels:
+    app.kubernetes.io/component: "tcp-router"
     skiff-role-name: "tcp-router"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.tcp_router.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.tcp_router.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "tcp-router"
   serviceName: "tcp-router-set"
   template:
     metadata:
       name: "tcp-router"
       labels:
+        app.kubernetes.io/component: "tcp-router"
         skiff-role-name: "tcp-router"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -66,7 +81,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
                   - "tcp-router"
@@ -77,6 +92,8 @@ spec:
         {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
@@ -190,7 +207,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-tcp-router:9156028a70a948ed9eabe079b1aee233fc532733"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-tcp-router:47ce8d6ea0478d541970ef4c27c81aaa29a9b005"
         lifecycle:
           preStop:
             exec:
@@ -242,6 +259,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.tcp_router.capabilities }}
           privileged: true
           {{- end }}
@@ -272,6 +291,14 @@ items:
   kind: "Service"
   metadata:
     name: "tcp-router-set"
+    labels:
+      app.kubernetes.io/component: "tcp-router-set"
+      skiff-role-name: "tcp-router-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -286,11 +313,19 @@ items:
       targetPort: 0
     {{- end }}
     selector:
-      skiff-role-name: "tcp-router"
+      app.kubernetes.io/component: "tcp-router"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "tcp-router-tcp-router-set"
+    labels:
+      app.kubernetes.io/component: "tcp-router-tcp-router-set"
+      skiff-role-name: "tcp-router-tcp-router-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -305,11 +340,19 @@ items:
       targetPort: 0
     {{- end }}
     selector:
-      skiff-role-name: "tcp-router"
+      app.kubernetes.io/component: "tcp-router"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "tcp-router-tcp-router"
+    labels:
+      app.kubernetes.io/component: "tcp-router-tcp-router"
+      skiff-role-name: "tcp-router-tcp-router"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "healthcheck"
@@ -323,11 +366,19 @@ items:
       targetPort: "tcp-route-{{ $port }}"
     {{- end }}
     selector:
-      skiff-role-name: "tcp-router"
+      app.kubernetes.io/component: "tcp-router"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "tcp-router-tcp-router-public"
+    labels:
+      app.kubernetes.io/component: "tcp-router-tcp-router-public"
+      skiff-role-name: "tcp-router-tcp-router-public"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -341,7 +392,7 @@ items:
       targetPort: "tcp-route-{{ $port }}"
     {{- end }}
     selector:
-      skiff-role-name: "tcp-router"
+      app.kubernetes.io/component: "tcp-router"
 
     {{- if .Values.services.loadbalanced }}
     type: "LoadBalancer"

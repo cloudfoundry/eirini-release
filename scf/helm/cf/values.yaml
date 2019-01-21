@@ -17,8 +17,8 @@ kube:
 
   registry:
     hostname: "docker.io"
-    username: ""
-    password: ""
+    username: "eiriniuser"
+    password: "P8frjuS5G88jWC%fcg&R%ZR2"
   organization: "eirinicf"
   auth: "rbac"
 config:
@@ -40,6 +40,16 @@ config:
 
     # Flag to activate cpu limits
     limits: false
+
+opi:
+  # This tag will be used for all opi images. Use latest by default
+  image_tag: "latest"
+
+  # Set to false if you don't want to create ingress rules for apps
+  use_app_ingress: true
+
+  # Change this to force kubernetes pulling the latest image (alternatively delete the corresponding pod)
+  version: "0.0.0"
 
 services:
   loadbalanced: false
@@ -223,20 +233,6 @@ secrets:
   # The password for the cluster administrator.
   CLUSTER_ADMIN_PASSWORD: ~
 
-  # PEM-encoded consul client certificate
-  # This value uses a generated default.
-  CONSUL_CLIENT_CERT: ~
-
-  # PEM-encoded consul client key
-  CONSUL_CLIENT_CERT_KEY: ~
-
-  # PEM-encoded server certificate
-  # This value uses a generated default.
-  CONSUL_SERVER_CERT: ~
-
-  # PEM-encoded server key
-  CONSUL_SERVER_CERT_KEY: ~
-
   # PEM-encoded server certificate
   # This value uses a generated default.
   CREDHUB_SERVER_CERT: ~
@@ -257,13 +253,6 @@ secrets:
 
   # PEM-encoded key.
   DOPPLER_CERT_KEY: ~
-
-  # PEM-encoded certificate
-  # This value uses a generated default.
-  EIRINI_REGISTRY_CERT: ~
-
-  # PEM-encoded key
-  EIRINI_REGISTRY_CERT_KEY: ~
 
   # Basic auth password for access to the Cloud Controller's internal API.
   # This value uses a generated default.
@@ -513,6 +502,9 @@ env:
   # Extra token expiry time while uploading big apps, in seconds.
   APP_TOKEN_UPLOAD_GRACE_PERIOD: "1200"
 
+  # The TTL of credential cache for the Autoscaler custom metrics, in seconds
+  AUTOSCALER_API_SERVER_CACHE_TTL: "600"
+
   # Idle connection timeout for the Autoscaler API Server database, in seconds.
   AUTOSCALER_API_SERVER_DB_CONFIG_IDLE_TIMEOUT: "100"
 
@@ -655,6 +647,54 @@ env:
   # cloudfoundry: polling or streaming.
   AUTOSCALER_METRICS_COLLECTOR_COLLECT_METHOD: "streaming"
 
+  # The duration defines how many days of appmetrics data does the Autoscaler
+  # Operator kept for each pruning.
+  AUTOSCALER_OPERATOR_APP_METRICS_DB_CUTOFF_DAYS: "30"
+
+  # The duration between two pruning opertions for appmetrics database in the
+  # Autoscaler Operator.
+  AUTOSCALER_OPERATOR_APP_METRICS_DB_REFRESH_INTERVAL: "24h"
+
+  # The interval of synchronizing applications information between AutoScaler
+  # policy database and Cloudfoundry.
+  AUTOSCALER_OPERATOR_APP_SYNC_INTERVAL: "24h"
+
+  # Whether to enable the Autoscaler Operator's db lock. If there are more than
+  # one operators, the value should be true
+  AUTOSCALER_OPERATOR_ENABLE_DB_LOCK: "true"
+
+  # The duration defines how many days of instance metrics data does the
+  # Autoscaler Operator kept for each pruning.
+  AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_CUTOFF_DAYS: "30"
+
+  # The duration between two pruning opertions for instance metrics database in
+  # the Autoscaler Operator.
+  AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_REFRESH_INTERVAL: "24h"
+
+  # The interval for each Autoscaler Operator instance to retry to get database
+  # lock.
+  AUTOSCALER_OPERATOR_LOCK_RETRY_INTERVAL: "10s"
+
+  # The maximum duration of a Autoscaler Operator instance could hold the
+  # database lock.
+  AUTOSCALER_OPERATOR_LOCK_TTL: "15s"
+
+  # The duration defines how many days of the scaling history data does the
+  # Autoscaler Operator kept for each pruning.
+  AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_CUTOFF_DAYS: "30"
+
+  # The duration between two pruning opertions for scalingengine database in the
+  # Autoscaler Operator.
+  AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_FRESH_INTERVAL: "24h"
+
+  # The interval of synchronizing the Autoscaler Scaling Engine active schedules
+  # with Autoscaler Scheduler.
+  AUTOSCALER_OPERATOR_SCALING_ENGINE_SYNC_INTERVAL: "600s"
+
+  # The interval of synchronizing the Autoscaler Scheduler schedules with policy
+  # database.
+  AUTOSCALER_OPERATOR_SCHEDULER_SYNC_INTERVAL: "600s"
+
   # The maximum age of a connection that can be reused for the Autoscaler policy
   # database.
   AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME: "60s"
@@ -664,42 +704,6 @@ env:
 
   # The maximum number of connections to the Autoscaler policy database.
   AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
-
-  # The duration defines how many days of appmetrics data does the Autoscaler
-  # Pruner kept for each pruning.
-  AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS: "30"
-
-  # The duration between two pruning opertions for appmetrics database in the
-  # Autoscaler Pruner.
-  AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL: "24h"
-
-  # Whether to enable the Autoscaler Pruner's db lock. If there are more than
-  # one pruners, the value should be true
-  AUTOSCALER_PRUNER_ENABLE_DB_LOCK: "true"
-
-  # The duration defines how many days of instance metrics data does the
-  # Autoscaler Pruner kept for each pruning.
-  AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS: "30"
-
-  # The duration between two pruning opertions for instance metrics database in
-  # the Autoscaler Pruner.
-  AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL: "24h"
-
-  # The interval for each Autoscaler Pruner instance to retry to get database
-  # lock.
-  AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL: "10s"
-
-  # The maximum duration of a Autoscaler Pruner instance could hold the database
-  # lock.
-  AUTOSCALER_PRUNER_LOCK_TTL: "15s"
-
-  # The duration defines how many days of the scaling history data does the
-  # Autoscaler Pruner kept for each pruning.
-  AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS: "30"
-
-  # The duration between two pruning opertions for scalingengine database in the
-  # Autoscaler Pruner.
-  AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL: "24h"
 
   # The maximum age of a connection that can be reused for the Autoscaler
   # Scaling Engine database.
@@ -718,10 +722,6 @@ env:
   # The lock number of the Autoscaler Scaling Engine to do synchronization for
   # multiple scaling requests.
   AUTOSCALER_SCALING_ENGINE_LOCK_SIZE: "32"
-
-  # The duration defines how long does the Autoscaler Scaling Engine to
-  # synchronize its schedules with the Autoscaler Scheduler database.
-  AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL: "600s"
 
   # The maximum age of a connection that can be reused for the Autoscaler
   # Scheduler database.
@@ -760,6 +760,12 @@ env:
 
   # Whether Autoscaler is provided as a cloudfoundry service, default is false.
   AUTOSCALER_SERVICE_OFFERING_ENABLED: "false"
+
+  # The name of the metadata label to query on worker nodes to get AZ
+  # information. When set, the cells will query their worker node for AZ
+  # information and inject the result into cloudfoundry via the KUBE_AZ
+  # parameter. When left to the default no custom AZ processing is done.
+  AZ_LABEL_NAME: ""
 
   # List of allow / deny rules for the blobstore internal server. Will be
   # followed by 'deny all'. Each entry must be follow by a semicolon.
@@ -813,7 +819,7 @@ env:
   DEFAULT_APP_SSH_ACCESS: "true"
 
   # The default stack to use if no custom stack is specified by an app.
-  DEFAULT_STACK: "cflinuxfs2"
+  DEFAULT_STACK: "opensuse42"
 
   # The container disk capacity the cell should manage. If this capacity is
   # larger than the actual disk quota of the cell component, over-provisioning
@@ -844,19 +850,7 @@ env:
   # rollback to this amount of versions.
   DROPLET_MAX_STAGED_STORED: "5"
 
-  # Full Kuberneted config file for the Eirini backend, in JSON format.
-  EIRINI_KUBE_CONFIG: "{\"clusters\":[{\"cluster\":{\"server\":\"http://192.168.77.77:8080\"},\"name\":\"kubernetes\"}],\"contexts\":[{\"context\":{\"cluster\":\"kubernetes\"},\"name\":\"local\"}],\"current-context\":\"local\",\"kind\":\"Config\",\"preferences\":{},\"users\":[]}"
-
-  # Kubernetes endpoint used when creating an Ingress
-  EIRINI_KUBE_ENDPOINT: "192.168.77.77"
-
-  # Kubernetes namespace used to create applications
-  EIRINI_KUBE_NAMESPACE: "eirini"
-
-  # Eirini's registry address, as it's accessed by Kubernetes
-  EIRINI_REGISTRY_ADDRESS: "192.168.77.77:5800"
-
-  # Enable if you want apps to be staged in Eirini
+  # Stage apps in Eirini <3
   ENABLE_OPI_STAGING: "false"
 
   # By default, Cloud Foundry does not enable Cloud Controller request logging.
@@ -1048,17 +1042,6 @@ env:
   # Whether or not to use privileged containers for staging tasks.
   USE_STAGER_PRIVILEGED_CONTAINERS: "false"
 
-# Custom OPI specific configurations
-opi:
-  # This tag will be used for all opi images. Use latest by default
-  image_tag: "latest"
-
-  # Set to false if you don't want to create ingress rules for apps
-  use_app_ingress: true
-
-  # Change this to force kubernetes pulling the latest image (alternatively delete the corresponding pod)
-  version: "0.0.0"
-
 # The sizing section contains configuration to change each individual instance
 # group. Due to limitations on the allowable names, any dashes ("-") in the
 # instance group names are replaced with underscores ("_").
@@ -1087,10 +1070,10 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 78
+      request: 128
       limit: ~
 
-  # The api instance group contains the following jobs:
+  # The api-group instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
@@ -1111,14 +1094,14 @@ sizing:
   # Also: loggregator_agent, statsd_injector, go-buildpack, binary-buildpack,
   # nodejs-buildpack, ruby-buildpack, php-buildpack, python-buildpack,
   # staticfile-buildpack, java-buildpack, dotnet-core-buildpack
-  api:
+  api_group:
     # Node affinity rules can be specified here
     affinity: {}
 
     # Additional privileges can be specified here
     capabilities: []
 
-    # The api instance group can scale between 1 and 65535 instances.
+    # The api-group instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1129,7 +1112,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 2421
+      request: 3800
       limit: ~
 
   # The autoscaler-actors instance group contains the following jobs:
@@ -1139,7 +1122,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: scalingengine, scheduler, pruner
+  # Also: scalingengine, scheduler, operator
   autoscaler_actors:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1158,7 +1141,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 1024
+      request: 2350
       limit: ~
 
   # The autoscaler-api instance group contains the following jobs:
@@ -1216,7 +1199,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 1024
+      request: 128
       limit: ~
 
   # The autoscaler-postgres instance group contains the following jobs:
@@ -1280,7 +1263,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 420
+      request: 500
       limit: ~
 
   # The cc-clock instance group contains the following jobs:
@@ -1313,7 +1296,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 789
+      request: 750
       limit: ~
 
   # The cc-uploader instance group contains the following jobs:
@@ -1342,7 +1325,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 129
+      request: 128
       limit: ~
 
   # The cc-worker instance group contains the following jobs:
@@ -1374,7 +1357,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 753
+      request: 750
       limit: ~
 
   # The cf-usb instance group contains the following jobs:
@@ -1405,35 +1388,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 117
-      limit: ~
-
-  # The consul instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # Also: consul_agent
-  consul:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
-
-    # The consul instance group can scale between 0 and 1 instances.
-    # The instance count must be an odd number (not divisible by 2).
-    # For high availability it needs at least 1 instances.
-    count: 0
-
-    # Unit [millicore]
-    cpu:
-      request: 1000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 256
+      request: 128
       limit: ~
 
   # The credhub-user instance group contains the following jobs:
@@ -1462,36 +1417,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 256
-      limit: ~
-
-  # The diego-access instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # Also: ssh_proxy, loggregator_agent, file_server
-  diego_access:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
-
-    # The diego-access instance group can scale between 0 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: 1
-
-    # Unit [millicore]
-    cpu:
       request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 123
       limit: ~
 
   # The diego-api instance group contains the following jobs:
@@ -1523,7 +1449,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 310
+      request: 128
       limit: ~
 
   # The diego-brain instance group contains the following jobs:
@@ -1555,13 +1481,16 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 99
+      request: 128
       limit: ~
 
   # The diego-cell instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
+  #
+  # - get-kubectl: This job exists only to ensure the presence of the kubectl
+  #   binary in the role referencing it.
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
@@ -1591,7 +1520,36 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 4677
+      request: 2800
+      limit: ~
+
+  # The diego-ssh instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
+  #
+  # Also: ssh_proxy, loggregator_agent, file_server
+  diego_ssh:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The diego-ssh instance group can scale between 0 and 3 instances.
+    # For high availability it needs at least 2 instances.
+    count: 1
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 128
       limit: ~
 
   # The doppler instance group contains the following jobs:
@@ -1618,35 +1576,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 390
-      limit: ~
-
-  # The eirini instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # - patch-properties: Dummy BOSH job used to host parameters that are used in
-  #   SCF patches for upstream bugs
-  #
-  # Also: opi, cflinuxfs2-rootfs-setup, registry
-  eirini:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The eirini instance group cannot be scaled.
-    count: 1
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 256
+      request: 410
       limit: ~
 
   # The locket instance group contains the following jobs:
@@ -1709,7 +1639,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 250
+      request: 128
       limit: ~
 
   # The mysql instance group contains the following jobs:
@@ -1742,7 +1672,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 2950
+      request: 2500
       limit: ~
 
   # The nats instance group contains the following jobs:
@@ -1772,7 +1702,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 60
+      request: 128
       limit: ~
 
   # The nfs-broker instance group contains the following jobs:
@@ -1798,7 +1728,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 63
+      request: 128
       limit: ~
 
   # The post-deployment-setup instance group contains the following jobs:
@@ -1830,38 +1760,6 @@ sizing:
     # Unit [MiB]
     memory:
       request: 256
-      limit: ~
-
-  # The postgres instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - postgres: The Postgres server provides a single instance Postgres database
-  #   that can be used with the Cloud Controller or the UAA. It does not provide
-  #   highly-available configuration.
-  postgres:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
-
-    # The postgres instance group can scale between 1 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: 1
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    disk_sizes:
-      postgres_data: 20
-
-    # Unit [MiB]
-    memory:
-      request: 3072
       limit: ~
 
   # The router instance group contains the following jobs:
@@ -1925,7 +1823,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 114
+      request: 128
       limit: ~
 
   # The secret-generation instance group contains the following jobs:
@@ -1975,7 +1873,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 69
+      request: 128
       limit: ~
 
   # The tcp-router instance group contains the following jobs:
@@ -2006,7 +1904,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 99
+      request: 128
       limit: ~
 
     ports:

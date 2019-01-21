@@ -38,19 +38,38 @@ kind: "StatefulSet"
 metadata:
   name: "autoscaler-postgres"
   labels:
+    app.kubernetes.io/component: "autoscaler-postgres"
     skiff-role-name: "autoscaler-postgres"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_postgres.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_postgres.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "autoscaler-postgres"
   serviceName: "autoscaler-postgres-set"
   template:
     metadata:
       name: "autoscaler-postgres"
       labels:
+        app.kubernetes.io/component: "autoscaler-postgres"
         skiff-role-name: "autoscaler-postgres"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
+      affinity:
+        {{- if .Values.sizing.autoscaler_postgres.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.autoscaler_postgres.affinity.nodeAffinity }}
+        {{- end }}
       containers:
       - env:
         - name: "AUTOSCALER_DATABASE_MAX_CONNECTIONS"
@@ -72,6 +91,8 @@ spec:
               name: "secrets"
         {{- end }}
 
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
@@ -122,7 +143,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-postgres:4f16de5906f59395debf5c830652f914ca7a4502"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-postgres:426ec8eee6223256cae622fa3432a92fa8e7f6d5"
         lifecycle:
           preStop:
             exec:
@@ -158,6 +179,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.autoscaler_postgres.capabilities }}
           privileged: true
           {{- end }}
@@ -204,6 +227,14 @@ items:
   kind: "Service"
   metadata:
     name: "autoscaler-postgres-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-postgres-set"
+      skiff-role-name: "autoscaler-postgres-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -212,11 +243,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-postgres"
+      app.kubernetes.io/component: "autoscaler-postgres"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-postgres-postgres-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-postgres-postgres-set"
+      skiff-role-name: "autoscaler-postgres-postgres-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -225,11 +264,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-postgres"
+      app.kubernetes.io/component: "autoscaler-postgres"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-postgres-postgres"
+    labels:
+      app.kubernetes.io/component: "autoscaler-postgres-postgres"
+      skiff-role-name: "autoscaler-postgres-postgres"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "postgres"
@@ -237,6 +284,6 @@ items:
       protocol: "TCP"
       targetPort: 5432
     selector:
-      skiff-role-name: "autoscaler-postgres"
+      app.kubernetes.io/component: "autoscaler-postgres"
 kind: "List"
 {{- end }}

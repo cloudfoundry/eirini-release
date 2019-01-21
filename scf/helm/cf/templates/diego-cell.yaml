@@ -1,8 +1,71 @@
 ---
+{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
+apiVersion: "v1"
+kind: "ServiceAccount"
+metadata:
+  name: "node-reader"
+  labels:
+    app.kubernetes.io/component: "node-reader"
+    skiff-role-name: "node-reader"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+{{- end }}
+---
+{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
+apiVersion: "rbac.authorization.k8s.io/v1beta1"
+kind: "RoleBinding"
+metadata:
+  name: "node-reader-configgin-role-binding"
+  labels:
+    app.kubernetes.io/component: "node-reader-configgin-role-binding"
+    skiff-role-name: "node-reader-configgin-role-binding"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+subjects:
+- kind: "ServiceAccount"
+  name: "node-reader"
+roleRef:
+  kind: "Role"
+  name: "configgin-role"
+  apiGroup: "rbac.authorization.k8s.io"
+{{- end }}
+---
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") .Values.kube.psp.privileged }}
+apiVersion: "rbac.authorization.k8s.io/v1"
+kind: "ClusterRoleBinding"
+metadata:
+  name: "{{ .Release.Namespace }}-node-reader-binding-psp"
+  labels:
+    app.kubernetes.io/component: "{{ .Release.Namespace }}-node-reader-binding-psp"
+    skiff-role-name: "{{ .Release.Namespace }}-node-reader-binding-psp"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+subjects:
+- kind: "ServiceAccount"
+  name: "node-reader"
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: "ClusterRole"
+  name: "{{ .Release.Namespace }}-psp-role-privileged"
+  apiGroup: "rbac.authorization.k8s.io"
+{{- end }}
+---
 # The diego-cell instance group contains the following jobs:
 #
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
+#
+# - get-kubectl: This job exists only to ensure the presence of the kubectl
+#   binary in the role referencing it.
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
@@ -44,16 +107,31 @@ kind: "StatefulSet"
 metadata:
   name: "diego-cell"
   labels:
+    app.kubernetes.io/component: "diego-cell"
     skiff-role-name: "diego-cell"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_cell.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_cell.count) 0) -}} 3 {{- else -}} {{ .Values.sizing.diego_cell.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "diego-cell"
   serviceName: "diego-cell-set"
   template:
     metadata:
       name: "diego-cell"
       labels:
+        app.kubernetes.io/component: "diego-cell"
         skiff-role-name: "diego-cell"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -63,7 +141,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
                   - "diego-cell"
@@ -72,7 +150,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
                   - "router"
@@ -83,6 +161,9 @@ spec:
         {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
+
         {{- if not .Values.secrets.BBS_CLIENT_CRT }}
         - name: "BBS_CLIENT_CRT"
           valueFrom:
@@ -199,20 +280,20 @@ spec:
         - name: "KUBE_SIZING_NATS_COUNT"
           value: {{ .Values.sizing.nats.count | quote }}
 
-        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
-        - name: "LOGGREGATOR_AGENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
         - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
               key: "loggregator-agent-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
@@ -398,7 +479,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:b455824a8a3dee1090be7c19613311d6f0cf38c7"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:c23e88656194800ac521b11e33dd7624d80074b1"
         lifecycle:
           preStop:
             exec:
@@ -455,7 +536,7 @@ spec:
       - name: "registry-credentials"
       restartPolicy: "Always"
       {{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
-      serviceAccountName: "default-privileged"
+      serviceAccountName: "node-reader"
       {{- end }}
       terminationGracePeriodSeconds: 600
       volumes:
@@ -491,6 +572,14 @@ items:
   kind: "Service"
   metadata:
     name: "diego-cell-set"
+    labels:
+      app.kubernetes.io/component: "diego-cell-set"
+      skiff-role-name: "diego-cell-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -507,11 +596,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-cell"
+      app.kubernetes.io/component: "diego-cell"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "diego-cell-rep-set"
+    labels:
+      app.kubernetes.io/component: "diego-cell-rep-set"
+      skiff-role-name: "diego-cell-rep-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -520,11 +617,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-cell"
+      app.kubernetes.io/component: "diego-cell"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "diego-cell-rep"
+    labels:
+      app.kubernetes.io/component: "diego-cell-rep"
+      skiff-role-name: "diego-cell-rep"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "rep-server"
@@ -532,11 +637,19 @@ items:
       protocol: "TCP"
       targetPort: 1801
     selector:
-      skiff-role-name: "diego-cell"
+      app.kubernetes.io/component: "diego-cell"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "diego-cell-nfsv3driver-set"
+    labels:
+      app.kubernetes.io/component: "diego-cell-nfsv3driver-set"
+      skiff-role-name: "diego-cell-nfsv3driver-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -549,11 +662,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "diego-cell"
+      app.kubernetes.io/component: "diego-cell"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "diego-cell-nfsv3driver"
+    labels:
+      app.kubernetes.io/component: "diego-cell-nfsv3driver"
+      skiff-role-name: "diego-cell-nfsv3driver"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "nfs-driver"
@@ -565,6 +686,6 @@ items:
       protocol: "TCP"
       targetPort: 7590
     selector:
-      skiff-role-name: "diego-cell"
+      app.kubernetes.io/component: "diego-cell"
 kind: "List"
 {{- end }}

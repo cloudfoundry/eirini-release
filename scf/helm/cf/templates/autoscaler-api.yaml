@@ -38,21 +38,42 @@ kind: "StatefulSet"
 metadata:
   name: "autoscaler-api"
   labels:
+    app.kubernetes.io/component: "autoscaler-api"
     skiff-role-name: "autoscaler-api"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_api.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_api.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "autoscaler-api"
   serviceName: "autoscaler-api-set"
   template:
     metadata:
       name: "autoscaler-api"
       labels:
+        app.kubernetes.io/component: "autoscaler-api"
         skiff-role-name: "autoscaler-api"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
+      affinity:
+        {{- if .Values.sizing.autoscaler_api.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.autoscaler_api.affinity.nodeAffinity }}
+        {{- end }}
       containers:
       - env:
+        - name: "AUTOSCALER_API_SERVER_CACHE_TTL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_CACHE_TTL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_CACHE_TTL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_CACHE_TTL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_CACHE_TTL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_API_SERVER_DB_CONFIG_IDLE_TIMEOUT"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_DB_CONFIG_IDLE_TIMEOUT) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_DB_CONFIG_IDLE_TIMEOUT) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_DB_CONFIG_IDLE_TIMEOUT | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_DB_CONFIG_IDLE_TIMEOUT | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_API_SERVER_DB_CONFIG_MAX_CONNECTIONS"
@@ -68,20 +89,20 @@ spec:
         - name: "AUTOSCALER_API_SERVER_INFO_SUPPORT_URL"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_API_SERVER_INFO_SUPPORT_URL | quote}}{{end}}{{else}}""{{end}}
 
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asactors-client-cert"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
         - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-asactors-client-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asactors-client-cert"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
@@ -116,20 +137,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASAPI_CLIENT_CERT_KEY }}
-        - name: "AUTOSCALER_ASAPI_CLIENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asapi-client-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.AUTOSCALER_ASAPI_CLIENT_CERT_KEY }}
         - name: "AUTOSCALER_ASAPI_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-asapi-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_ASAPI_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asapi-client-cert-key"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT }}
@@ -164,20 +185,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT }}
-        - name: "AUTOSCALER_ASAPI_SERVER_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asapi-server-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT }}
         - name: "AUTOSCALER_ASAPI_SERVER_CERT"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-asapi-server-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT }}
+        - name: "AUTOSCALER_ASAPI_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asapi-server-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT_KEY }}
@@ -274,6 +295,8 @@ spec:
 
         - name: "AUTOSCALER_SERVICE_OFFERING_ENABLED"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SERVICE_OFFERING_ENABLED | quote}}{{end}}{{else}}""{{end}}
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
@@ -344,7 +367,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-api:f7eebb2732de37582921e3b1c925425cc3cd2b27"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-api:f866626e8cff9ebc7351959832ee7c2b64eef77e"
         lifecycle:
           preStop:
             exec:
@@ -389,6 +412,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.autoscaler_api.capabilities }}
           privileged: true
           {{- end }}
@@ -421,6 +446,14 @@ items:
   kind: "Service"
   metadata:
     name: "autoscaler-api-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-api-set"
+      skiff-role-name: "autoscaler-api-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -441,11 +474,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-api"
+      app.kubernetes.io/component: "autoscaler-api"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-api-apiserver-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-api-apiserver-set"
+      skiff-role-name: "autoscaler-api-apiserver-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -458,11 +499,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-api"
+      app.kubernetes.io/component: "autoscaler-api"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-api-apiserver"
+    labels:
+      app.kubernetes.io/component: "autoscaler-api-apiserver"
+      skiff-role-name: "autoscaler-api-apiserver"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "api"
@@ -474,11 +523,19 @@ items:
       protocol: "TCP"
       targetPort: 7106
     selector:
-      skiff-role-name: "autoscaler-api"
+      app.kubernetes.io/component: "autoscaler-api"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-api-apiserver-public"
+    labels:
+      app.kubernetes.io/component: "autoscaler-api-apiserver-public"
+      skiff-role-name: "autoscaler-api-apiserver-public"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -490,7 +547,7 @@ items:
       protocol: "TCP"
       targetPort: 7106
     selector:
-      skiff-role-name: "autoscaler-api"
+      app.kubernetes.io/component: "autoscaler-api"
 
     {{- if .Values.services.loadbalanced }}
     type: "LoadBalancer"
@@ -500,6 +557,14 @@ items:
   kind: "Service"
   metadata:
     name: "autoscaler-api-servicebroker-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-api-servicebroker-set"
+      skiff-role-name: "autoscaler-api-servicebroker-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -512,11 +577,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-api"
+      app.kubernetes.io/component: "autoscaler-api"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-api-servicebroker"
+    labels:
+      app.kubernetes.io/component: "autoscaler-api-servicebroker"
+      skiff-role-name: "autoscaler-api-servicebroker"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "broker"
@@ -528,11 +601,19 @@ items:
       protocol: "TCP"
       targetPort: 7101
     selector:
-      skiff-role-name: "autoscaler-api"
+      app.kubernetes.io/component: "autoscaler-api"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-api-servicebroker-public"
+    labels:
+      app.kubernetes.io/component: "autoscaler-api-servicebroker-public"
+      skiff-role-name: "autoscaler-api-servicebroker-public"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -544,7 +625,7 @@ items:
       protocol: "TCP"
       targetPort: 7101
     selector:
-      skiff-role-name: "autoscaler-api"
+      app.kubernetes.io/component: "autoscaler-api"
 
     {{- if .Values.services.loadbalanced }}
     type: "LoadBalancer"

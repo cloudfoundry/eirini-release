@@ -38,21 +38,42 @@ kind: "StatefulSet"
 metadata:
   name: "credhub-user"
   labels:
+    app.kubernetes.io/component: "credhub-user"
     skiff-role-name: "credhub-user"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.credhub_user.count) 0) -}} 1 {{- else -}} {{ .Values.sizing.credhub_user.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "credhub-user"
   serviceName: "credhub-user-set"
   template:
     metadata:
       name: "credhub-user"
       labels:
+        app.kubernetes.io/component: "credhub-user"
         skiff-role-name: "credhub-user"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
+      affinity:
+        {{- if .Values.sizing.credhub_user.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.credhub_user.affinity.nodeAffinity }}
+        {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "CREDHUB_ENCRYPT_KEY"
@@ -141,20 +162,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
-        - name: "MYSQL_CREDHUB_USER_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-credhub-user-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
         - name: "MYSQL_CREDHUB_USER_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "mysql-credhub-user-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
+        - name: "MYSQL_CREDHUB_USER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-credhub-user-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.NATS_PASSWORD }}
@@ -188,7 +209,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:e5e4f76334b0ab21e65952b214fc25fa6149fb7e"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:edfe1437b05cf654c5cebb13c378d002cf5017ca"
         lifecycle:
           preStop:
             exec:
@@ -196,7 +217,10 @@ spec:
               - "/opt/fissile/pre-stop.sh"
         livenessProbe: ~
         name: "credhub-user"
-        ports: ~
+        ports:
+        - containerPort: 8844
+          name: "api"
+          protocol: "TCP"
         readinessProbe:
           exec:
             command:
@@ -221,6 +245,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.credhub_user.capabilities }}
           privileged: true
           {{- end }}
@@ -244,4 +270,72 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
+{{- end }}
+---
+{{- if gt (int .Values.sizing.credhub_user.count) 0 }}
+apiVersion: "v1"
+items:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "credhub-user-set"
+    labels:
+      app.kubernetes.io/component: "credhub-user-set"
+      skiff-role-name: "credhub-user-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "api"
+      port: 8844
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "credhub-user"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "credhub-user-credhub-set"
+    labels:
+      app.kubernetes.io/component: "credhub-user-credhub-set"
+      skiff-role-name: "credhub-user-credhub-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "api"
+      port: 8844
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "credhub-user"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "credhub-user-credhub"
+    labels:
+      app.kubernetes.io/component: "credhub-user-credhub"
+      skiff-role-name: "credhub-user-credhub"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+  spec:
+    ports:
+    - name: "api"
+      port: 8844
+      protocol: "TCP"
+      targetPort: 8844
+    selector:
+      app.kubernetes.io/component: "credhub-user"
+kind: "List"
 {{- end }}

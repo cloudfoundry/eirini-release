@@ -51,16 +51,31 @@ kind: "StatefulSet"
 metadata:
   name: "router"
   labels:
+    app.kubernetes.io/component: "router"
     skiff-role-name: "router"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.router.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.router.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "router"
   serviceName: "router-set"
   template:
     metadata:
       name: "router"
       labels:
+        app.kubernetes.io/component: "router"
         skiff-role-name: "router"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
@@ -70,7 +85,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: "skiff-role-name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
                   - "router"
@@ -81,6 +96,8 @@ spec:
         {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "FORCE_FORWARDED_PROTO_AS_HTTPS"
@@ -115,20 +132,20 @@ spec:
         - name: "KUBE_SIZING_NATS_COUNT"
           value: {{ .Values.sizing.nats.count | quote }}
 
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
-        - name: "LOGGREGATOR_AGENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
         - name: "LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
               key: "loggregator-agent-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
+        - name: "LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
@@ -150,20 +167,20 @@ spec:
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "monit-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.NATS_PASSWORD }}
@@ -189,20 +206,20 @@ spec:
         - name: "ROUTER_FORWARDED_CLIENT_CERT"
           value: {{if ne (typeOf .Values.env.ROUTER_FORWARDED_CLIENT_CERT) "<nil>"}}{{if has (kindOf .Values.env.ROUTER_FORWARDED_CLIENT_CERT) (list "map" "slice")}}{{.Values.env.ROUTER_FORWARDED_CLIENT_CERT | toJson | quote}}{{else}}{{.Values.env.ROUTER_FORWARDED_CLIENT_CERT | quote}}{{end}}{{else}}""{{end}}
 
-        {{- if .Values.secrets.ROUTER_SERVICES_SECRET }}
-        - name: "ROUTER_SERVICES_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "router-services-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.ROUTER_SERVICES_SECRET }}
         - name: "ROUTER_SERVICES_SECRET"
           valueFrom:
             secretKeyRef:
               key: "router-services-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.ROUTER_SERVICES_SECRET }}
+        - name: "ROUTER_SERVICES_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "router-services-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.ROUTER_SSL_CERT }}
@@ -290,7 +307,7 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:fdeca39b6c5eebe09eed5b1cc913feb7bb3c2e47"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:e4d4ec4a62a7d24548e4de80313ffeb996185069"
         lifecycle:
           preStop:
             exec:
@@ -333,6 +350,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
+
           {{- if has "ALL" .Values.sizing.router.capabilities }}
           privileged: true
           {{- end }}
@@ -366,6 +385,14 @@ items:
   kind: "Service"
   metadata:
     name: "router-set"
+    labels:
+      app.kubernetes.io/component: "router-set"
+      skiff-role-name: "router-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -382,11 +409,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "router"
+      app.kubernetes.io/component: "router"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "router-gorouter-set"
+    labels:
+      app.kubernetes.io/component: "router-gorouter-set"
+      skiff-role-name: "router-gorouter-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -403,11 +438,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "router"
+      app.kubernetes.io/component: "router"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "router-gorouter"
+    labels:
+      app.kubernetes.io/component: "router-gorouter"
+      skiff-role-name: "router-gorouter"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "router"
@@ -423,11 +466,19 @@ items:
       protocol: "TCP"
       targetPort: 443
     selector:
-      skiff-role-name: "router"
+      app.kubernetes.io/component: "router"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "router-gorouter-public"
+    labels:
+      app.kubernetes.io/component: "router-gorouter-public"
+      skiff-role-name: "router-gorouter-public"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -447,7 +498,7 @@ items:
       protocol: "TCP"
       targetPort: 443
     selector:
-      skiff-role-name: "router"
+      app.kubernetes.io/component: "router"
 
     {{- if .Values.services.loadbalanced }}
     type: "LoadBalancer"

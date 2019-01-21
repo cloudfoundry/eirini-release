@@ -41,21 +41,42 @@ kind: "StatefulSet"
 metadata:
   name: "blobstore"
   labels:
+    app.kubernetes.io/component: "blobstore"
     skiff-role-name: "blobstore"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ .Values.sizing.blobstore.count }}
+  selector:
+    matchLabels:
+      skiff-role-name: "blobstore"
   serviceName: "blobstore-set"
   template:
     metadata:
       name: "blobstore"
       labels:
+        app.kubernetes.io/component: "blobstore"
         skiff-role-name: "blobstore"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
+      affinity:
+        {{- if .Values.sizing.blobstore.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.blobstore.affinity.nodeAffinity }}
+        {{- end }}
       containers:
       - env:
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "BLOBSTORE_ACCESS_RULES"
           value: {{if ne (typeOf .Values.env.BLOBSTORE_ACCESS_RULES) "<nil>"}}{{if has (kindOf .Values.env.BLOBSTORE_ACCESS_RULES) (list "map" "slice")}}{{.Values.env.BLOBSTORE_ACCESS_RULES | toJson | quote}}{{else}}{{.Values.env.BLOBSTORE_ACCESS_RULES | quote}}{{end}}{{else}}{{fail "env.BLOBSTORE_ACCESS_RULES has not been set"}}{{end}}
         - name: "BLOBSTORE_MAX_UPLOAD_SIZE"
@@ -77,14 +98,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.BLOBSTORE_SECURE_LINK }}
-        - name: "BLOBSTORE_SECURE_LINK"
-          valueFrom:
-            secretKeyRef:
-              key: "blobstore-secure-link"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.BLOBSTORE_SECURE_LINK }}
         - name: "BLOBSTORE_SECURE_LINK"
           valueFrom:
@@ -93,11 +106,11 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.BLOBSTORE_TLS_CERT }}
-        - name: "BLOBSTORE_TLS_CERT"
+        {{- if not .Values.secrets.BLOBSTORE_SECURE_LINK }}
+        - name: "BLOBSTORE_SECURE_LINK"
           valueFrom:
             secretKeyRef:
-              key: "blobstore-tls-cert"
+              key: "blobstore-secure-link"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -107,6 +120,14 @@ spec:
             secretKeyRef:
               key: "blobstore-tls-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.BLOBSTORE_TLS_CERT }}
+        - name: "BLOBSTORE_TLS_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "blobstore-tls-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.BLOBSTORE_TLS_CERT_KEY }}
@@ -191,20 +212,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "monit-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.NATS_PASSWORD }}
@@ -229,7 +250,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-blobstore:446a405c2b71ae70bdda0eaf553ec7ff403f76de"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-blobstore:5fa33ada69c21cb82215b6015635ce63d5be7fc2"
         lifecycle:
           preStop:
             exec:
@@ -268,6 +289,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.blobstore.capabilities }}
           privileged: true
           {{- end }}
@@ -312,6 +335,14 @@ items:
   kind: "Service"
   metadata:
     name: "blobstore-set"
+    labels:
+      app.kubernetes.io/component: "blobstore-set"
+      skiff-role-name: "blobstore-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -324,11 +355,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "blobstore"
+      app.kubernetes.io/component: "blobstore"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "blobstore-blobstore-set"
+    labels:
+      app.kubernetes.io/component: "blobstore-blobstore-set"
+      skiff-role-name: "blobstore-blobstore-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -341,11 +380,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "blobstore"
+      app.kubernetes.io/component: "blobstore"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "blobstore-blobstore"
+    labels:
+      app.kubernetes.io/component: "blobstore-blobstore"
+      skiff-role-name: "blobstore-blobstore"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "blobstore-ext"
@@ -357,5 +404,5 @@ items:
       protocol: "TCP"
       targetPort: 4443
     selector:
-      skiff-role-name: "blobstore"
+      app.kubernetes.io/component: "blobstore"
 kind: "List"

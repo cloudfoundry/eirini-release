@@ -6,7 +6,7 @@
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# Also: scalingengine, scheduler, pruner
+# Also: scalingengine, scheduler, operator
 {{- if gt (int .Values.sizing.autoscaler_actors.count) 0 }}
 
 {{- if gt (int .Values.sizing.autoscaler_actors.count) 3 }}
@@ -38,19 +38,38 @@ kind: "StatefulSet"
 metadata:
   name: "autoscaler-actors"
   labels:
+    app.kubernetes.io/component: "autoscaler-actors"
     skiff-role-name: "autoscaler-actors"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_actors.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_actors.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "autoscaler-actors"
   serviceName: "autoscaler-actors-set"
   template:
     metadata:
       name: "autoscaler-actors"
       labels:
+        app.kubernetes.io/component: "autoscaler-actors"
         skiff-role-name: "autoscaler-actors"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
+      affinity:
+        {{- if .Values.sizing.autoscaler_actors.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.autoscaler_actors.affinity.nodeAffinity }}
+        {{- end }}
       containers:
       - env:
         - name: "AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
@@ -76,14 +95,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
-        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asactors-client-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
         - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
           valueFrom:
@@ -92,11 +103,11 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_ASACTORS_SERVER_CERT }}
-        - name: "AUTOSCALER_ASACTORS_SERVER_CERT"
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_ASACTORS_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "autoscaler-asactors-server-cert"
+              key: "autoscaler-asactors-client-cert-key"
               name: "secrets"
         {{- end }}
 
@@ -106,6 +117,14 @@ spec:
             secretKeyRef:
               key: "autoscaler-asactors-server-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_ASACTORS_SERVER_CERT }}
+        - name: "AUTOSCALER_ASACTORS_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asactors-server-cert"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASACTORS_SERVER_CERT_KEY }}
@@ -157,30 +176,36 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_LOCK_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_APP_METRICS_DB_CUTOFF_DAYS"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_APP_METRICS_DB_REFRESH_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_REFRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_REFRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_REFRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_APP_METRICS_DB_REFRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_APP_SYNC_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_APP_SYNC_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_APP_SYNC_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_APP_SYNC_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_APP_SYNC_INTERVAL | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_ENABLE_DB_LOCK"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_ENABLE_DB_LOCK) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_ENABLE_DB_LOCK) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_ENABLE_DB_LOCK | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_ENABLE_DB_LOCK | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_CUTOFF_DAYS"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_REFRESH_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_REFRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_REFRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_REFRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_INSTANCE_METRICS_DB_REFRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_LOCK_RETRY_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_LOCK_RETRY_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_LOCK_RETRY_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_LOCK_RETRY_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_LOCK_RETRY_INTERVAL | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_LOCK_TTL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_LOCK_TTL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_LOCK_TTL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_LOCK_TTL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_LOCK_TTL | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_CUTOFF_DAYS"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_FRESH_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_FRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_FRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_FRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_DB_FRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_SCALING_ENGINE_SYNC_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_SYNC_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_SYNC_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_SYNC_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_SCALING_ENGINE_SYNC_INTERVAL | quote}}{{end}}{{else}}""{{end}}
+        - name: "AUTOSCALER_OPERATOR_SCHEDULER_SYNC_INTERVAL"
+          value: {{if ne (typeOf .Values.env.AUTOSCALER_OPERATOR_SCHEDULER_SYNC_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_OPERATOR_SCHEDULER_SYNC_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_OPERATOR_SCHEDULER_SYNC_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_OPERATOR_SCHEDULER_SYNC_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_POLICY_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_APP_METRICS_DB_REFRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_ENABLE_DB_LOCK"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_ENABLE_DB_LOCK) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_ENABLE_DB_LOCK) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_ENABLE_DB_LOCK | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_ENABLE_DB_LOCK | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_INSTANCE_METRICS_DB_REFRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_RETRY_INTERVAL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_LOCK_TTL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_LOCK_TTL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_LOCK_TTL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_TTL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_LOCK_TTL | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_CUTOFF_DAYS | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_PRUNER_SCALING_ENGINE_DB_FRESH_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
@@ -191,8 +216,6 @@ spec:
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_HEALTH_EMIT_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCALING_ENGINE_LOCK_SIZE"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_LOCK_SIZE | quote}}{{end}}{{else}}""{{end}}
-        - name: "AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL"
-          value: {{if ne (typeOf .Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCALING_ENGINE_SYNCHRONIZER_ACTIVE_SCHEDULE_SYNC_INTERVAL | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_CONNECTION_MAX_LIFETIME | quote}}{{end}}{{else}}""{{end}}
         - name: "AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_IDLE_CONNECTIONS"
@@ -222,6 +245,8 @@ spec:
               name: "secrets"
         {{- end }}
 
+        - name: "AZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
@@ -281,7 +306,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-actors:8f68d925f6d2b431784b3649b99b923060dcfe37"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-actors:b5104bf90f3243aada9b2c2949a20ec04cb62cfd"
         lifecycle:
           preStop:
             exec:
@@ -320,6 +345,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.autoscaler_actors.capabilities }}
           privileged: true
           {{- end }}
@@ -352,6 +379,14 @@ items:
   kind: "Service"
   metadata:
     name: "autoscaler-actors-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-actors-set"
+      skiff-role-name: "autoscaler-actors-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -364,11 +399,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-actors"
+      app.kubernetes.io/component: "autoscaler-actors"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-actors-scalingengine-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-actors-scalingengine-set"
+      skiff-role-name: "autoscaler-actors-scalingengine-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -377,11 +420,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-actors"
+      app.kubernetes.io/component: "autoscaler-actors"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-actors-scalingengine"
+    labels:
+      app.kubernetes.io/component: "autoscaler-actors-scalingengine"
+      skiff-role-name: "autoscaler-actors-scalingengine"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "scaling-engine"
@@ -389,11 +440,19 @@ items:
       protocol: "TCP"
       targetPort: 7104
     selector:
-      skiff-role-name: "autoscaler-actors"
+      app.kubernetes.io/component: "autoscaler-actors"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-actors-scheduler-set"
+    labels:
+      app.kubernetes.io/component: "autoscaler-actors-scheduler-set"
+      skiff-role-name: "autoscaler-actors-scheduler-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -402,11 +461,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "autoscaler-actors"
+      app.kubernetes.io/component: "autoscaler-actors"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "autoscaler-actors-scheduler"
+    labels:
+      app.kubernetes.io/component: "autoscaler-actors-scheduler"
+      skiff-role-name: "autoscaler-actors-scheduler"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "scheduler"
@@ -414,6 +481,6 @@ items:
       protocol: "TCP"
       targetPort: 7102
     selector:
-      skiff-role-name: "autoscaler-actors"
+      app.kubernetes.io/component: "autoscaler-actors"
 kind: "List"
 {{- end }}
