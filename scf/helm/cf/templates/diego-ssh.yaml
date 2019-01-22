@@ -47,7 +47,7 @@ metadata:
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_ssh.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_ssh.count }} {{- end }}
+  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_ssh.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-ssh"
