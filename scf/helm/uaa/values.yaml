@@ -184,7 +184,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 1900
+      request: 1400
       limit: ~
 
   # The secret-generation instance group contains the following jobs:
@@ -246,5 +246,5 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 2205
+      request: 2100
       limit: ~

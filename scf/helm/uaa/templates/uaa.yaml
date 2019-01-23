@@ -55,19 +55,38 @@ kind: "StatefulSet"
 metadata:
   name: "uaa"
   labels:
+    app.kubernetes.io/component: "uaa"
     skiff-role-name: "uaa"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
   podManagementPolicy: "OrderedReady"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.uaa.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.uaa.count }} {{- end }}
+  selector:
+    matchLabels:
+      skiff-role-name: "uaa"
   serviceName: "uaa-set"
   template:
     metadata:
       name: "uaa"
       labels:
+        app.kubernetes.io/component: "uaa"
         skiff-role-name: "uaa"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
+      affinity:
+        {{- if .Values.sizing.uaa.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.uaa.affinity.nodeAffinity }}
+        {{- end }}
       containers:
       - env:
         - name: "AEK_PASSWORD"
@@ -274,7 +293,7 @@ spec:
               name: "secrets"
         {{- end }}
 
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:f52cd5c2a4c2a2c2767bee4e5ee4a498e10a1351"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:156c262f6d788dccc2e88912d584fe419ba34bb1"
         lifecycle:
           preStop:
             exec:
@@ -314,6 +333,8 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: false
+
           {{- if has "ALL" .Values.sizing.uaa.capabilities }}
           privileged: true
           {{- end }}
@@ -344,6 +365,14 @@ items:
   kind: "Service"
   metadata:
     name: "uaa-set"
+    labels:
+      app.kubernetes.io/component: "uaa-set"
+      skiff-role-name: "uaa-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -356,11 +385,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "uaa"
+      app.kubernetes.io/component: "uaa"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "uaa-uaa-set"
+    labels:
+      app.kubernetes.io/component: "uaa-uaa-set"
+      skiff-role-name: "uaa-uaa-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     clusterIP: "None"
     ports:
@@ -373,11 +410,19 @@ items:
       protocol: "TCP"
       targetPort: 0
     selector:
-      skiff-role-name: "uaa"
+      app.kubernetes.io/component: "uaa"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "uaa-uaa"
+    labels:
+      app.kubernetes.io/component: "uaa-uaa"
+      skiff-role-name: "uaa-uaa"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     ports:
     - name: "uaa"
@@ -389,11 +434,19 @@ items:
       protocol: "TCP"
       targetPort: 8443
     selector:
-      skiff-role-name: "uaa"
+      app.kubernetes.io/component: "uaa"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
     name: "uaa-uaa-public"
+    labels:
+      app.kubernetes.io/component: "uaa-uaa-public"
+      skiff-role-name: "uaa-uaa-public"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
@@ -405,7 +458,7 @@ items:
       protocol: "TCP"
       targetPort: 8443
     selector:
-      skiff-role-name: "uaa"
+      app.kubernetes.io/component: "uaa"
 
     {{- if .Values.services.loadbalanced }}
     type: "LoadBalancer"
