@@ -502,7 +502,7 @@ spec:
           value: {{if ne (typeOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_DIEGO_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
         - name: "USE_STAGER_PRIVILEGED_CONTAINERS"
           value: {{if ne (typeOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_STAGER_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:3f154733542f825d25d4a7f17bdb5e845f64a716"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:7d354f14a959667bf113005a78231201e1c850de"
         lifecycle:
           preStop:
             exec:

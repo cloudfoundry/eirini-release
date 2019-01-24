@@ -365,7 +365,7 @@ spec:
           value: {{if ne (typeOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_DIEGO_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_DIEGO_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
         - name: "USE_STAGER_PRIVILEGED_CONTAINERS"
           value: {{if ne (typeOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) "<nil>"}}{{if has (kindOf .Values.env.USE_STAGER_PRIVILEGED_CONTAINERS) (list "map" "slice")}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | toJson | quote}}{{else}}{{.Values.env.USE_STAGER_PRIVILEGED_CONTAINERS | quote}}{{end}}{{else}}{{fail "env.USE_STAGER_PRIVILEGED_CONTAINERS has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:f03ee3c630ecafb7a8ef0509d9a75b9ea1082924"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:c66d1a5ba6b25a429913e8bee07b183f71d58574"
         lifecycle:
           preStop:
             exec:
