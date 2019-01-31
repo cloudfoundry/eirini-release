@@ -87,7 +87,7 @@ data:
       cf_username: "admin"
       cc_certs_secret_name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
       cf_password: {{ .Values.secrets.CLUSTER_ADMIN_PASSWORD }}
-      external_eirini_address: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"{{ end }}
+      registry_address: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"{{ end }}
       eirini_address: "http://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
       stager_image_tag: {{ .Values.opi.image_tag }}
       metrics_source_address: "http://heapster.kube-system.svc.cluster.local/apis/metrics/v1alpha1"
