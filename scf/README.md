@@ -48,9 +48,9 @@ You are basically two `helm installs` away from deploying `SCF` with `Eirini`. B
       namespace: <kubernetes-namespace>
 
       # if you clone the eirini-release repo you need to explicitly specify the image tag.
-      # when downloading the release tarball, `image_tag` is already set to `latest`, in
-      # which case you can drop the following property.
-      image_tag: latest
+      # when downloading the release tarball, `image_tag` is already set to the release version
+      # (see https://hub.docker.com/r/eirini/opi/tags), in which case you can drop the following property.
+      image_tag: <some-tag>
 
     secrets:
       NATS_PASSWORD: changeme
