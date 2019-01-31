@@ -80,7 +80,6 @@ data:
     opi:
       kube_config: ""
       kube_namespace: {{ .Values.opi.namespace }}
-      kube_endpoint: {{ .Values.opi.ingress_endpoint }}
       nats_password: {{ .Values.secrets.NATS_PASSWORD }}
       nats_ip: "nats-nats.scf.svc.cluster.local"
       api_endpoint: "http://api.{{ .Release.Namespace }}.svc.cluster.local:9022"
@@ -91,7 +90,6 @@ data:
       external_eirini_address: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"{{ end }}
       eirini_address: "http://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
       stager_image_tag: {{ .Values.opi.image_tag }}
-      use_ingress: {{ .Values.opi.use_app_ingress }}
       metrics_source_address: "http://heapster.kube-system.svc.cluster.local/apis/metrics/v1alpha1"
       loggregator_address: "doppler-doppler-set.{{ .Release.Namespace }}.svc.cluster.local:8082"
       loggergator_cert_path: "/workspace/jobs/opi/secrets/doppler.crt"
@@ -100,8 +98,6 @@ data:
       cc_cert_path: "/workspace/jobs/opi/secrets/cc.crt"
       cc_key_path: "/workspace/jobs/opi/secrets/cc.key"
       cc_ca_path: "/workspace/jobs/opi/secrets/cc.ca"
-      skip_ssl_validation: true
-      insecure_skip_verify: true
 
 # Service
 ---
