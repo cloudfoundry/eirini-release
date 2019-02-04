@@ -78,7 +78,6 @@ metadata:
 data:
   opi.yaml: |
     opi:
-      kube_config: ""
       kube_namespace: {{ .Values.opi.namespace }}
       nats_password: {{ .Values.secrets.NATS_PASSWORD }}
       nats_ip: "nats-nats.scf.svc.cluster.local"
