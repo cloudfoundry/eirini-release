@@ -1,4 +1,4 @@
 apiVersion: 2.14.5+cf2.7.0.3.gbc13ddc
 description: A Helm chart for SUSE UAA
-name: uaa-opensuse
+name: uaa
 version: 2.14.5

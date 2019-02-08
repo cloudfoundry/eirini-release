@@ -1,0 +1,19 @@
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: create-certs
+spec:
+  template:
+    metadata:
+      name: create-certs
+    spec:
+      serviceAccountName: "opi"
+      restartPolicy: OnFailure
+      containers:
+      - name: create-certs
+        env:
+        - name: REGISTRY
+          value: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io"{{ end }}
+        image: eirini/certs-generate:{{ .Values.opi.image_tag }}
+        imagePullPolicy: Always

@@ -41,16 +41,6 @@ config:
     # Flag to activate cpu limits
     limits: false
 
-opi:
-  # This tag will be used for all opi images. Use latest by default
-  image_tag: "latest"
-
-  # Set to false if you don't want to create ingress rules for apps
-  use_app_ingress: true
-
-  # Change this to force kubernetes pulling the latest image (alternatively delete the corresponding pod)
-  version: "0.0.0"
-
 services:
   loadbalanced: false
 secrets:

@@ -1,0 +1,69 @@
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: "eirini"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "eirini"
+  template:
+    metadata:
+      labels:
+        name: "eirini"
+        deployment_version: {{ .Values.opi.version }}
+    spec:
+      dnsPolicy: "ClusterFirst"
+      serviceAccountName: "opi"
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: "eirini"
+            items:
+            - key: opi.yaml
+              path: opi.yml
+        - name: config-volume
+          emptyDir: {}
+        - name: cf-secrets
+          secret:
+            secretName: secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}
+            items:
+            - key: doppler-cert
+              path: doppler.crt
+            - key: doppler-cert-key
+              path: doppler.key
+            - key: internal-ca-cert
+              path: doppler.ca
+            - key: cc-server-crt
+              path: cc.crt
+            - key: cc-server-crt-key
+              path: cc.key
+            - key: internal-ca-cert
+              path: cc.ca
+      initContainers:
+      - name: configure-opi-yaml
+        image: eirini/opi-init:{{ .Values.opi.image_tag }}
+        env:
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}"
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /configs
+        - name: config-volume
+          mountPath: /output
+          readOnly: false
+      containers:
+      - name: opi
+        image: eirini/opi:{{ .Values.opi.image_tag }}
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-volume
+          mountPath: /workspace/jobs/opi/config
+        - name: cf-secrets
+          mountPath: /workspace/jobs/opi/secrets
+        ports:
+        - containerPort: 8085

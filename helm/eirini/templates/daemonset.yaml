@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cert-copier
+spec:
+  selector:
+    matchLabels:
+      name: "cert-copier"
+  template:
+    metadata:
+      labels:
+        name: "cert-copier"
+    spec:
+      serviceAccountName: "opi"
+      volumes:
+      - name: host-docker
+        hostPath:
+          path: /etc/docker
+          type: Directory
+      containers:
+      - name: copy-certs
+        env:
+        - name: REGISTRY
+          value: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"{{ end }}
+        image: eirini/certs-copy:{{ .Values.opi.image_tag }}
+        volumeMounts:
+        - name: host-docker
+          mountPath: /workspace/docker
