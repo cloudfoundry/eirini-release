@@ -2,9 +2,9 @@ apiVersion: v1
 entries:
   cf-opensuse:
   - apiVersion: 2.14.5+cf2.7.0.3.gbc13ddc
-    created: 2019-02-08T17:13:28.754695005+01:00
+    created: 2019-02-08T17:25:00.18202066+01:00
     description: A Helm chart for SUSE Cloud Foundry
-    digest: 0470572cc1c3a2efe1edde1842cc1b29b054f680f10a82df8d0ec86c47c261d0
+    digest: d10691946016d86c7da91b811e53a14e81d9cb94e49a133996fcd53f41e6f93d
     name: cf-opensuse
     urls:
     - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.3.0/eirini-scf-release-test.tgz
@@ -12,11 +12,11 @@ entries:
   eirini:
   - apiVersion: v1
     appVersion: 0.3.0
-    created: 2019-02-08T17:13:28.750781741+01:00
+    created: 2019-02-08T17:25:00.175155726+01:00
     description: A Helm chart for CloudFoundry/Eirini
     digest: e3fb561c9179a30bf6ed9ea2590f5143c3d47415f965dc680a33afec41b5aeed
     name: eirini
     urls:
     - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.3.0/eirini-release-test.tgz
     version: 0.1.0
-generated: 2019-02-08T17:13:28.74975181+01:00
+generated: 2019-02-08T17:25:00.172213258+01:00
