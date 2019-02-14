@@ -2,14 +2,14 @@
 
 This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eirini).
 
-**NOTE**: This is an **_experimental_** **helm** release and is still considered _work in progress_.
+**NOTE**: This is an **_experimental_** release and is still considered _work in progress_.
 
-## Prerequisites:
+## Prerequisites
 
 - Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
 - Install [helm](https://helm.sh/)
 
-## Helm Install
+## Installation
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. For additional information you can take a look at [Storage Class](#storage-class)
 1. Create a `values.yaml` based on [this](https://github.com/cloudfoundry-incubator/eirini-release/blob/master/values.yaml) template.
