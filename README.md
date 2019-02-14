@@ -22,7 +22,7 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 1. Install UAA:
 
     ```command
-    $ helm install eirini/uaa --namespace scf --name scf --values <your-values.yaml>
+    $ helm install eirini/uaa --namespace uaa --name uaa --values <your-values.yaml>
     ```
 
 1. Export the UAA ca certificate using the following commands: 
