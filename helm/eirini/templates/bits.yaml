@@ -10,7 +10,7 @@ data:
       level: debug
     private_endpoint: "https://bits.{{ .Release.Namespace }}.svc.cluster.local"
     {{- if .Values.services.loadbalanced }}
-    public_endpoint: https://registry.{{ index .Values.env.DOMAIN }}
+    public_endpoint: https://registry.{{ index .Values.env.DOMAIN }}:6666
     {{- else }}
     public_endpoint: https://bits.{{ index .Values.kube.external_ips 0 }}.nip.io
     {{- end }}
