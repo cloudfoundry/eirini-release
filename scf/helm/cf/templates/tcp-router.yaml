@@ -379,6 +379,8 @@ items:
       app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
       app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
       helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: tcp.{{ index .Values.env.DOMAIN }}
   spec:
     {{- if not .Values.services.loadbalanced }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
