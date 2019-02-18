@@ -341,7 +341,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-brain:1c285234ab188a7953b7d9531d00cb433b1c469f"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-brain:4a1a2e51eaf1600a50d73bcb754313610dc67a27"
         lifecycle:
           preStop:
             exec:
