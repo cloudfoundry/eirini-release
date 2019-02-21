@@ -35,7 +35,7 @@ Before you submit a Pull request, you must make sure that your contribution meet
 
 You can check all that by executing the following script:
 
-`$ ./scripts/check-everything.sh`
+`./src/code.cloudfoundry.org/eirini/scripts/check-everything.sh`
 
 Thanks,<br/>
 The Eirini team :heart:
