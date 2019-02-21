@@ -9,7 +9,11 @@ data:
     logging:
       level: debug
     private_endpoint: "https://bits.{{ .Release.Namespace }}.svc.cluster.local"
-    public_endpoint: "https://bits.{{ index .Values.kube.external_ips 0 }}.nip.io"
+    {{- if .Values.services.loadbalanced }}
+    public_endpoint: https://registry.{{ index .Values.env.DOMAIN }}:6666
+    {{- else }}
+    public_endpoint: https://bits.{{ index .Values.kube.external_ips 0 }}.nip.io
+    {{- end }}
     cert_file: /workspace/jobs/bits-service/certs/tls.crt
     key_file: /workspace/jobs/bits-service/certs/tls.key
     port: 6666
@@ -30,7 +34,11 @@ data:
       webdav_config: &webdav_config
         directory_key: cc-buildpacks
         private_endpoint: https://blobstore-blobstore.{{ .Release.Namespace }}.svc.cluster.local:4443
+        {{- if .Values.services.loadbalanced }}
+        public_endpoint: https://blobstore.{{ index .Values.env.DOMAIN }}
+        {{- else }}
         public_endpoint: https://blobstore.{{ index .Values.kube.external_ips 0 }}.nip.io
+        {{- end }}
         username: blobstore_user
         password: {{ .Values.secrets.BLOBSTORE_PASSWORD  }}
         # TODO: provide proper cert file here
@@ -102,7 +110,7 @@ kind: Service
 metadata:
   name: "bits"
 spec:
-{{- if not .Values.opi.use_registry_ingress }}
+{{- if and (not .Values.opi.use_registry_ingress) (not .Values.services.loadbalanced) }}
   externalIPs: {{ .Values.kube.external_ips | toJson }}
 {{- end }}
   ports:
@@ -112,6 +120,10 @@ spec:
       name: bits
   selector:
     name: "bits"
+
+  {{- if .Values.services.loadbalanced }}
+  type: "LoadBalancer"
+  {{- end }}
 
 # Ingress
 {{- if .Values.opi.use_registry_ingress }}

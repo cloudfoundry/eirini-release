@@ -11,7 +11,13 @@ data:
       nats_ip: "nats-nats.scf.svc.cluster.local"
       cc_internal_api: "https://api.{{ .Release.Namespace }}.svc.cluster.local:9023"
       cc_certs_secret_name: "secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}"
-      registry_address: {{ if .Values.opi.use_registry_ingress }}"registry.{{ .Values.opi.ingress_endpoint }}:443"{{ else }}"registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"{{ end }}
+      {{- if .Values.opi.use_registry_ingress }}
+      registry_address: "registry.{{ .Values.opi.ingress_endpoint }}:443"
+      {{- else if .Values.services.loadbalanced }}
+      registry_address: "registry.{{ index .Values.env.DOMAIN }}:6666"
+      {{- else }}
+      registry_address: "registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"
+      {{- end }}
       eirini_address: "http://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
       stager_image_tag: {{ .Values.opi.image_tag }}
       metrics_source_address: "http://heapster.kube-system.svc.cluster.local/apis/metrics/v1alpha1"
@@ -22,4 +28,3 @@ data:
       cc_cert_path: "/workspace/jobs/opi/secrets/cc.crt"
       cc_key_path: "/workspace/jobs/opi/secrets/cc.key"
       cc_ca_path: "/workspace/jobs/opi/secrets/cc.ca"
-
