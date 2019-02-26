@@ -9,10 +9,12 @@ data:
     logging:
       level: debug
     private_endpoint: "https://bits.{{ .Release.Namespace }}.svc.cluster.local"
-    {{- if .Values.services.loadbalanced }}
-    public_endpoint: https://registry.{{ index .Values.env.DOMAIN }}:6666
+    {{- if .Values.opi.use_registry_ingress }}
+    public_endpoint: "https://registry.{{ .Values.opi.ingress_endpoint }}:443"
+    {{- else if .Values.services.loadbalanced }}
+    public_endpoint: "https://registry.{{ index .Values.env.DOMAIN }}:6666"
     {{- else }}
-    public_endpoint: https://bits.{{ index .Values.kube.external_ips 0 }}.nip.io
+    public_endpoint: "https://bits.{{ index .Values.kube.external_ips 0 }}.nip.io"
     {{- end }}
     cert_file: /workspace/jobs/bits-service/certs/tls.crt
     key_file: /workspace/jobs/bits-service/certs/tls.key
@@ -33,11 +35,11 @@ data:
       blobstore_type: webdav
       webdav_config: &webdav_config
         directory_key: cc-buildpacks
-        private_endpoint: https://blobstore-blobstore.{{ .Release.Namespace }}.svc.cluster.local:4443
+        private_endpoint: "https://blobstore-blobstore.{{ .Release.Namespace }}.svc.cluster.local:4443"
         {{- if .Values.services.loadbalanced }}
-        public_endpoint: https://blobstore.{{ index .Values.env.DOMAIN }}
+        public_endpoint: "https://blobstore.{{ index .Values.env.DOMAIN }}"
         {{- else }}
-        public_endpoint: https://blobstore.{{ index .Values.kube.external_ips 0 }}.nip.io
+        public_endpoint: "https://blobstore.{{ index .Values.kube.external_ips 0 }}.nip.io"
         {{- end }}
         username: blobstore_user
         password: {{ .Values.secrets.BLOBSTORE_PASSWORD  }}
