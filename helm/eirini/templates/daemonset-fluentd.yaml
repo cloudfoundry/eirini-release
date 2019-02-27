@@ -52,9 +52,9 @@ spec:
         - name: AGENT_METRIC_SOURCE_ID
           value: scf/daemonset/loggregator-fluentd
         - name: ROUTER_ADDR
-          value: doppler-doppler.scf.svc.cluster.local:8082
+          value: doppler-doppler.{{ .Release.Namespace }}.svc.cluster.local:8082
         - name: ROUTER_ADDR_WITH_AZ
-          value: doppler-doppler.scf.svc.cluster.local:8082
+          value: doppler-doppler.{{ .Release.Namespace }}.svc.cluster.local:8082
         - name: AGENT_PPROF_PORT
           value: "6062"
         - name: AGENT_HEALTH_ENDPOINT_PORT

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-readonly SCF_NAMESPACE="scf"
 readonly REGISTRY_CERTS_DIR="/workspace/docker/certs.d/$REGISTRY/"
 
 get-cert(){
@@ -23,7 +22,7 @@ main(){
         copy-cert
     else
         echo "Nothing to do"
-    fi   
+    fi
     sleep 30
   done
 }

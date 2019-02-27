@@ -29,6 +29,8 @@ spec:
           {{- else }}
           value: "registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"
           {{- end }}
+        - name: SCF_NAMESPACE
+          value: {{ .Release.Namespace }}
         image: eirini/certs-copy:{{ .Values.opi.image_tag }}
         volumeMounts:
         - name: host-docker
