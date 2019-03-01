@@ -31,3 +31,5 @@ eirini:
   kube:
     external_ips:
     - Should Match:kube.external_ips[0]
+services:
+  loadbalanced: false
