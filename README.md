@@ -65,19 +65,12 @@ In a production settings ideally there should be existing storage classes that w
 
 ### IBMCloud Kubernetes Service (IKS)
 
-In IBM Kubernetes Service, existing storage classes sometimes fail when used with the `database` jobs in SCF. The issue exhibits itself when starting the `switchboard` process for the `mysql` job in `uaa` or `scf` deployments in the following form:
-
-```
-failed to delete arp entry: OUTPUT=SIOCDARP(priv): Operation not permitted
-exit status 255
-ERROR=exit status 1
-```
-
-When facing the problem, you can either try deleting the persistent volume claims and redeploying SCF + Eirini or you can fall back to creating a `hostpath` storage class provisioner and use `hostpath` instead.
+In IBM Kubernetes Service, it is recommended to use storage block storage class. See more how to enable it in [IBM Cloud documentation](https://console.bluemix.net/docs/containers/cs_storage_block.html#block_storage)
 
 Additional details about deploying Eirini can be found in the `contrib` folder.
 
 # Resources
+
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
 * [Eirini Continuous Integration Pipeline](https://ci.flintstone.cf.cloud.ibm.com/teams/eirini/pipelines/ci)
 
