@@ -15,33 +15,33 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 1. Create a `values.yaml` based on [this](https://github.com/cloudfoundry-incubator/eirini-release/blob/master/values.yaml) template.
 1. Make the Eirini helm repository available to helm:
 
-    ```command 
-    $ helm repo add eirini https://cloudfoundry-incubator.github.io/eirini-release
+    ```bash
+    helm repo add eirini https://cloudfoundry-incubator.github.io/eirini-release
     ```
 
 1. Install UAA:
 
-    ```command
-    $ helm install eirini/uaa --namespace uaa --name uaa --values <your-values.yaml>
+    ```bash
+    helm install eirini/uaa --namespace uaa --name uaa --values <your-values.yaml>
     ```
 
 1. Export the UAA ca certificate using the following commands:
 
-    ```command
-    $ SECRET=$(kubectl get pods --namespace uaa -o jsonpath='{.items[?(.metadata.name=="uaa-0")].spec.containers[?(.name=="uaa")].env[?(.name=="INTERNAL_CA_CERT")].valueFrom.secretKeyRef.name}')
-    $ CA_CERT="$(kubectl get secret $SECRET --namespace uaa -o jsonpath="{.data['internal-ca-cert']}" | base64 --decode -)"
+    ```bash
+    SECRET=$(kubectl get pods --namespace uaa -o jsonpath='{.items[?(.metadata.name=="uaa-0")].spec.containers[?(.name=="uaa")].env[?(.name=="INTERNAL_CA_CERT")].valueFrom.secretKeyRef.name}')
+    CA_CERT="$(kubectl get secret $SECRET --namespace uaa -o jsonpath="{.data['internal-ca-cert']}" | base64 --decode -)"
     ```
 
 1. Install CF:
 
-    ```command 
-    $ helm install eirini/cf --namespace scf --name scf --values <your-values.yaml> --set "secrets.UAA_CA_CERT=${CA_CERT}"
+    ```bash
+    helm install eirini/cf --namespace scf --name scf --set "secrets.UAA_CA_CERT=${CA_CERT}" --values <your-values.yaml>
     ```
 
 1. Use the following command to verify that every CF control plane pod is `running` and `ready`:
 
-    ```command
-    $ watch kubectl get pods -n scf
+    ```bash
+    watch kubectl get pods -n scf
     ```
 
 ## Notes
@@ -54,7 +54,7 @@ As storage class, you can deploy a `hostpath` provisioner to your cluster. You c
 
 You can execute the following commands to have the `hostpath` provisioner installed in your Kube cluster:
 
-```console
+```bash
 kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/rbac.yaml
 kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/deployment.yaml
 kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/storageclass.yaml
