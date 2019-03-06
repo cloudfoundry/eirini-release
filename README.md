@@ -9,6 +9,8 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 * Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
 * Install [helm](https://helm.sh/)
 
+**Note**: Eirini is currently being tested with HELM > 2.11.0, Kubernetes 1.10, and Docker as the container runtime (containerd is not supported just yet).
+
 ## Installation
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. For additional information you can take a look at [Storage Class](#storage-class)
