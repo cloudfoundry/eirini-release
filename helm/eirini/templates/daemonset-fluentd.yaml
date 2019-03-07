@@ -17,7 +17,7 @@ spec:
       serviceAccountName: "opi"
       containers:
       - name: loggregator-fluentd
-        image: eirini/loggregator-fluentd
+        image: eirini/loggregator-fluentd:0.1.0
         imagePullPolicy: Always
         env:
         - name: FLUENT_UID
