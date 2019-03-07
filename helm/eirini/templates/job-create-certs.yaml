@@ -17,7 +17,7 @@ spec:
           {{- if .Values.opi.use_registry_ingress }}
           value: "registry.{{ .Values.opi.ingress_endpoint }}"
           {{- else if .Values.services.loadbalanced }}
-          value: "registry.{{ index .Values.env.DOMAIN }}"
+          value: "registry.{{ .Values.env.DOMAIN }}"
           {{- else }}
           value: "registry.{{ index .Values.kube.external_ips 0 }}.nip.io"
           {{- end }}

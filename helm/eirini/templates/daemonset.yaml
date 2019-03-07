@@ -25,7 +25,7 @@ spec:
           {{- if .Values.opi.use_registry_ingress }}
           value: "registry.{{ .Values.opi.ingress_endpoint }}:443"
           {{- else if .Values.services.loadbalanced }}
-          value: "registry.{{ index .Values.env.DOMAIN }}:6666"
+          value: "registry.{{ .Values.env.DOMAIN }}:6666"
           {{- else }}
           value: "registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"
           {{- end }}
