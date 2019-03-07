@@ -99,7 +99,7 @@ spec:
             secretName: private-registry-cert
       containers:
       - name: bits
-        image: flintstonecf/bits-service:2.25.0-dev.6
+        image: flintstonecf/bits-service:2.25.0-dev.7
         imagePullPolicy: Always
         restartPolicy: OnFailure
         ports:
