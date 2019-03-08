@@ -72,6 +72,13 @@ In IBM Kubernetes Service, it is recommended to use storage block storage class.
 
 Additional details about deploying Eirini can be found in the `contrib` folder.
 
+### Certificates
+
+Eirini generates certificates for all your internal services to work. However,
+Containerd requires trusted certificate. You can manually change the certificate
+that is used by modifying `private-registry-cert` secret in your `scf`
+namespace and restarting bits pod.
+
 ## Resources
 
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
