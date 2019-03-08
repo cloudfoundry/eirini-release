@@ -36,7 +36,13 @@ data:
       maximum_size: 512M
       minimum_size: 64K
 
-    {{- if and (hasKey .Values "bits") (hasKey .Values.bits "blobstore_config") }}
+    {{ $hasBitsBlobstore := false }}
+    {{- if .Values.bits }}
+      {{- if.Values.bits.blobstore_config }}
+        {{ $hasBitsBlobstore = true }}
+      {{- end }}
+    {{- end }}
+    {{- if $hasBitsBlobstore }}
     buildpacks: {{ .Values.bits.blobstore_config.buildpacks | toJson }}
     droplets: {{ .Values.bits.blobstore_config.droplets | toJson }}
     packages: {{ .Values.bits.blobstore_config.packages | toJson }}
