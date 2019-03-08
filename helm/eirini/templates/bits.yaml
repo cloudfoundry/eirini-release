@@ -36,6 +36,12 @@ data:
       maximum_size: 512M
       minimum_size: 64K
 
+    {{- if and (hasKey .Values "bits") (hasKey .Values.bits "blobstore_config") }}
+    buildpacks: {{ .Values.bits.blobstore_config.buildpacks | toJson }}
+    droplets: {{ .Values.bits.blobstore_config.droplets | toJson }}
+    packages: {{ .Values.bits.blobstore_config.packages | toJson }}
+    app_stash: {{ .Values.bits.blobstore_config.app_stash | toJson }}
+    {{- else }}
     buildpacks:
       blobstore_type: webdav
       webdav_config: &webdav_config
@@ -67,6 +73,7 @@ data:
       webdav_config:
         <<: *webdav_config
         directory_key: cc-resources
+    {{- end }}
 
     enable_registry: true
 
