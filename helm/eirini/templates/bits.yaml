@@ -36,10 +36,10 @@ data:
       maximum_size: 512M
       minimum_size: 64K
 
-    {{ $hasBitsBlobstore := false }}
+    {{- $hasBitsBlobstore := false }}
     {{- if .Values.bits }}
       {{- if.Values.bits.blobstore_config }}
-        {{ $hasBitsBlobstore = true }}
+        {{- $hasBitsBlobstore = true }}
       {{- end }}
     {{- end }}
     {{- if $hasBitsBlobstore }}
