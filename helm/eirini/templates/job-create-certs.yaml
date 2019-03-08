@@ -1,4 +1,4 @@
----
+{{- if not ( and ( and .Values.opi.use_registry_ingress ( hasKey .Values.opi "ingress_secret" ) )  .Values.opi.ingress_secret ) }}
 kind: Job
 apiVersion: batch/v1
 metadata:
@@ -23,3 +23,4 @@ spec:
           {{- end }}
         image: eirini/certs-generate:{{ .Values.opi.image_tag }}
         imagePullPolicy: Always
+{{end}}

@@ -89,7 +89,7 @@ spec:
               path: bits-service.yml
         - name: bits-cert
           secret:
-            secretName: private-registry-cert
+            secretName: {{- if and (and .Values.opi.use_registry_ingress (hasKey .Values.opi "ingress_secret")) .Values.opi.ingress_secret }} {{.Values.opi.ingress_secret}}{{else}} private-registry-cert{{end}}
       containers:
       - name: bits
         image: flintstonecf/bits-service:latest
@@ -139,7 +139,8 @@ spec:
   tls:
     - hosts:
       - "registry.{{ .Values.opi.ingress_endpoint }}"
-      secretName: private-registry-cert
+      secretName: {{- if and (hasKey .Values.opi "ingress_secret") .Values.opi.ingress_secret }} {{.Values.opi.ingress_secret}}{{else}} private-registry-cert{{end}}
+
   rules:
     - host: "registry.{{ .Values.opi.ingress_endpoint }}"
       http:

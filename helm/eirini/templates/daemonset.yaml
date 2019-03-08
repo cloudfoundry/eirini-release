@@ -1,4 +1,4 @@
----
+{{- if not ( and ( and .Values.opi.use_registry_ingress ( hasKey .Values.opi "ingress_secret" ) )  .Values.opi.ingress_secret ) }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -33,3 +33,4 @@ spec:
         volumeMounts:
         - name: host-docker
           mountPath: /workspace/docker
+{{end}}
