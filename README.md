@@ -79,6 +79,12 @@ Containerd requires trusted certificate. You can manually change the certificate
 that is used by modifying `private-registry-cert` secret in your `scf`
 namespace and restarting bits pod.
 
+#### IBMCloud Kubernetes Service (IKS)
+
+IKS provides ingress with signed certificate. The certificate is stored in a secret in `default` namespace and has the same name as your cluster. 
+
+It is recommended to deploy Eirini with ingress and use that certificate in IKS.
+
 ## Resources
 
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
