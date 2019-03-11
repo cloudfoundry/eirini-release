@@ -19,7 +19,7 @@ data:
       registry_address: "registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"
       {{- end }}
       eirini_address: "http://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
-      stager_image_tag: {{ .Values.opi.image_tag }}
+      stager_image: "{{ .Values.opi.stager_image }}:{{ .Values.opi.image_tag }}"
       metrics_source_address: "http://heapster.kube-system.svc.cluster.local/apis/metrics/v1alpha1"
       loggregator_address: "doppler-doppler-set.{{ .Release.Namespace }}.svc.cluster.local:8082"
       loggergator_cert_path: "/workspace/jobs/opi/secrets/doppler.crt"
