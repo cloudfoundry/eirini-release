@@ -22,7 +22,6 @@ build_opi(){
 create_docker_images() {
   create_image "$DOCKERDIR"/opi eirini/opi
   create_image "$DOCKERDIR"/opi/init eirini/opi-init
-  create_image "$DOCKERDIR"/registry/certs/copier eirini/certs-copy
   create_image "$DOCKERDIR"/registry/certs/smuggler eirini/secret-smuggler
 }
 
