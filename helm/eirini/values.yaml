@@ -5,7 +5,7 @@ opi:
 
   namespace: eirini
   version: 0.0.0
-  image_tag: latest
+  stager_image: eirini/recipe:latest
 
 kube:
   external_ips: []
