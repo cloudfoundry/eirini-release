@@ -1,35 +1,38 @@
 env:
-  DOMAIN: <worker-node-ip>.nip.io
+  DOMAIN: &DOMAIN <worker-node-ip>.nip.io
   ENABLE_OPI_STAGING: false
   UAA_HOST: uaa.<worker-node-ip>.nip.io
   UAA_PORT: 2793
 
 kube:
   auth: rbac
-  external_ips:
+  external_ips: &external_ips
   - <worker-node-ip>
   storage_class:
     persistent: <your-storage-class>
     shared: <your-storage-class>
 
-secrets:
+secrets: &secrets
   CLUSTER_ADMIN_PASSWORD: REPLACE
   UAA_ADMIN_CLIENT_SECRET: REPLACE
-  BLOBSTORE_PASSWORD: REPLACE
+  BLOBSTORE_PASSWORD: &BLOBSTORE_PASSWORD "REPLACE"
+
+services: &services
+  loadbalanced: false
 
 eirini:
+  env:
+    DOMAIN: *DOMAIN
+  services: *services
   opi:
     use_registry_ingress: false
     #Enable if use_registry_ingress is set to 'true'
     #ingress_endpoint: kubernetes-cluster-ingress-endpoint
 
   secrets:
+    BLOBSTORE_PASSWORD: *BLOBSTORE_PASSWORD
     BITS_SERVICE_SECRET: REPLACE
     BITS_SERVICE_SIGNING_USER_PASSWORD: REPLACE
-    BLOBSTORE_PASSWORD: Should Match:secrets.BLOBSTORE_PASSWORD
 
   kube:
-    external_ips:
-    - Should Match:kube.external_ips[0]
-services:
-  loadbalanced: false
+    external_ips: *external_ips
