@@ -8,6 +8,7 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 
 * Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
 * Install [helm](https://helm.sh/)
+* To be able to use the [bits service](https://github.com/cloudfoundry-incubator/bits-service) private registry in your Kubernetes cluster, you need to have a signed TLS certificate, with a CA that the docker or containerd daemon on the nodes trust, and a CN that is pointing to the bits service.
 
 **Note**: Eirini is currently being tested with HELM > 2.11.0, Kubernetes 1.10, and Docker as the container runtime (containerd is not supported just yet).
 
@@ -33,6 +34,8 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
     SECRET=$(kubectl get pods --namespace uaa -o jsonpath='{.items[?(.metadata.name=="uaa-0")].spec.containers[?(.name=="uaa")].env[?(.name=="INTERNAL_CA_CERT")].valueFrom.secretKeyRef.name}')
     CA_CERT="$(kubectl get secret $SECRET --namespace uaa -o jsonpath="{.data['internal-ca-cert']}" | base64 --decode -)"
     ```
+
+1. Export the Registry certificate in the `BITS_TLS_KEY` and `BITS_TLS_CRT` environment variables. (see [Certificates](#Certificates))
 
 1. Install CF:
 
@@ -74,14 +77,16 @@ Additional details about deploying Eirini can be found in the `contrib` folder.
 
 ### Certificates
 
-Eirini generates certificates for all your internal services to work. However,
-Containerd requires trusted certificate. You can manually change the certificate
-that is used by modifying `private-registry-cert` secret in your `scf`
-namespace and restarting bits pod.
+Containerd requires trusted certificates in order to pull images from the bits-service registry.
 
 #### IBMCloud Kubernetes Service (IKS)
 
-IKS provides ingress with signed certificate. The certificate is stored in a secret in `default` namespace and has the same name as your cluster. 
+IKS provides ingress with signed certificate. The certificate is stored in a secret in `default` namespace and has the same name as your cluster. You can use the following commands to export the certificates in the required environment variables:
+
+```bash
+BITS_TLS_CRT="$(kubectl get secret "$(kubectl config current-context)" --namespace default -o jsonpath="{.data['tls\.crt']}" | base64 --decode -)"
+BITS_TLS_KEY="$(kubectl get secret "$(kubectl config current-context)" --namespace default -o jsonpath="{.data['tls\.key']}" | base64 --decode -)"
+```
 
 It is recommended to deploy Eirini with ingress and use that certificate in IKS.
 
