@@ -85,6 +85,10 @@ IKS provides ingress with signed certificate. The certificate is stored in a sec
 
 It is recommended to deploy Eirini with ingress and use that certificate in IKS.
 
+### Service Account
+
+When an app is pushed with Eirini, the pods are assigned the default Service Account in `opi.namespace`. By default, when the cluster is deployed with `RBAC` authentication method, that Service Account should not have any read/write permissions to the Kubernetes API. Since `RBAC` is preffered to `ABAC`, we recommend using the former.
+
 ## Resources
 
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
