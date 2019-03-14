@@ -15,9 +15,19 @@ spec:
         name: loggregator-fluentd
     spec:
       serviceAccountName: "opi"
+      initContainers:
+      - name: config-copier
+        image: alpine:latest
+        command: [ "/bin/sh", "-c", "cp /input/fluent.conf /output" ]
+        volumeMounts:
+        - name: fluentd-conf
+          mountPath: /input
+        - name: config-volume
+          mountPath: /output
+          readOnly: false
       containers:
       - name: loggregator-fluentd
-        image: eirini/loggregator-fluentd:0.1.0
+        image: eirini/loggregator-fluentd:0.2.0
         imagePullPolicy: Always
         env:
         - name: FLUENT_UID
@@ -33,15 +43,9 @@ spec:
           mountPath: /var/data
         - name: varlog
           mountPath: /var/log
-        - name: varlibdockercontainers
-          mountPath: /var/lib/docker/containers
-          readOnly: true
-        - name: varvcapstore
-          mountPath: /var/vcap/store
-          readOnly: true
-        - name: varvcapdata
-          mountPath: /var/vcap/data
-          readOnly: true
+        - name: config-volume
+          mountPath: /fluentd/etc/
+          readOnly: false
         - name: loggregator-tls-certs
           mountPath: /fluentd/certs
           readOnly: true
@@ -71,18 +75,17 @@ spec:
       - name: vardata
         hostPath:
           path: /var/data
+      - name: config-volume
+        emptyDir: {}
       - name: varlog
         hostPath:
           path: /var/log
-      - name: varlibdockercontainers
-        hostPath:
-          path: /var/lib/docker/containers
-      - name: varvcapstore
-        hostPath:
-          path: /var/vcap/store/
-      - name: varvcapdata
-        hostPath:
-          path: /var/vcap/data/
+      - name: fluentd-conf
+        configMap:
+          name: fluentd-conf
+          items:
+          - key: fluentd-conf
+            path: fluent.conf
       - name: loggregator-tls-certs
         secret:
           secretName: secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}

@@ -2,6 +2,7 @@ opi:
   # set ingress endoint when 'use_registry_ingress' is set to true
   ingress_endpoint: no-ingress-set
   use_registry_ingress: false
+  use_docker: false
 
   namespace: eirini
   version: 0.0.0

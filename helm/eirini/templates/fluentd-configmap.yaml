@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-conf
+data:
+  fluentd-conf: |
+    <match fluent.**>
+      @type null
+    </match>
+
+    <source>
+      @type tail
+      @id in_tail_container_logs
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
+      tag kubernetes.*
+      {{- if .Values.opi.use_docker }}
+      format json
+      {{- else }}
+      format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+      {{- end }}
+      read_from_head true
+      refresh_interval 1
+      time_format %Y-%m-%dT%H:%M:%S.%N%:z
+    </source>
+
+    <filter kubernetes.**>
+      @type kubernetes_metadata
+    </filter>
+
+    <match **>
+      type loggregator
+      loggregator_target localhost:3458
+      loggregator_cert_file /fluentd/certs/agent.crt
+      loggregator_key_file /fluentd/certs/agent.key
+      loggregator_ca_file /fluentd/certs/ca.crt
+      eirini_namespace {{ .Values.opi.namespace }}
+    </match>
+
+    <match kubernetes.var.log.containers.**{{ .Values.opi.namespace }}**.log>
+      @type stdout
+    </match>
+
+    <match kubernetes.var.log.containers.**.log>
+      @type null
+    </match>
+

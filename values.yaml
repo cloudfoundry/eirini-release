@@ -28,6 +28,9 @@ eirini:
     use_registry_ingress: false
     #Enable if use_registry_ingress is set to 'true'
     #ingress_endpoint: kubernetes-cluster-ingress-endpoint
+    #Enable if your cluster is using docker,
+    #by default eirini will assume containerd
+    use_docker: false
 
   secrets:
     BLOBSTORE_PASSWORD: *BLOBSTORE_PASSWORD
