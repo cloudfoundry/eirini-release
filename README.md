@@ -40,7 +40,7 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 1. Install CF:
 
     ```bash
-    helm install eirini/cf --namespace scf --name scf --set "secrets.UAA_CA_CERT=${CA_CERT}" --values <your-values.yaml>
+    helm install eirini/cf --namespace scf --name scf --values <your-values.yaml> --set "secrets.UAA_CA_CERT=${CA_CERT}" --set "eirini.secrets.BITS_TLS_KEY=${BITS_TLS_KEY}" --set "eirini.secrets.BITS_TLS_CRT=${BITS_TLS_CRT}"
     ```
 
 1. Use the following command to verify that every CF control plane pod is `running` and `ready`:
