@@ -77,11 +77,11 @@ Additional details about deploying Eirini can be found in the `contrib` folder.
 
 ### Certificates
 
-Containerd requires trusted certificates in order to pull images from the bits-service registry.
+Please provide a serving certificate for bits service trusted by containerd/dockerd. In addition to usual globally trusted certificates, dockerd also supports self signed certificates. To know more about them please refer to [docker documentation](https://docs.docker.com/engine/security/certificates/).
 
-#### IBMCloud Kubernetes Service (IKS)
+However, containerd requires the signing authority for the registry certificate to be trusted OS wide. You could do this by getting a [Let's encrypt certificate](https://letsencrypt.org) or in IBMCloud Kubernetes Service, you could follow these instructions:
 
-IKS provides ingress with signed certificate. The certificate is stored in a secret in `default` namespace and has the same name as your cluster. You can use the following commands to export the certificates in the required environment variables:
+IKS provides ingress with a globally trusted certificate. The certificate is stored in a secret in the `default` namespace and has the same name as your cluster. You can use the following commands to export the certificates in the required environment variables:
 
 ```bash
 BITS_TLS_CRT="$(kubectl get secret "$(kubectl config current-context)" --namespace default -o jsonpath="{.data['tls\.crt']}" | base64 --decode -)"
