@@ -2,14 +2,23 @@ apiVersion: v1
 entries:
   cf:
   - apiVersion: 2.14.5+cf2.7.0.3.gbc13ddc
-    created: 2019-02-26T10:45:50.740281182Z
+    created: 2019-03-22T12:34:42.761163816Z
     description: A Helm chart for SUSE Cloud Foundry
-    digest: f3df82ccc429a140873474cecd3021c402041b4c3f7d81ecb06ed62f9306f0b7
+    digest: bcb839ea7dbb7fb8a20f3f9efd1c129a0ff6a32fe33e2bdf4769677509cd5f31
     name: cf
     urls:
-    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.10.0/eirini-cf.tgz
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.11.0/eirini-cf.tgz
     version: 2.14.5
   eirini:
+  - apiVersion: v1
+    appVersion: 0.3.0
+    created: 2019-03-22T12:34:42.795133365Z
+    description: A Helm chart for CloudFoundry/Eirini
+    digest: 64164852f0e5c8ce1a37bfd50a6528e71df9cb1eeeeb8219963e6327013f4455
+    name: eirini
+    urls:
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.11.0/eirini.tgz
+    version: 0.11.0
   - apiVersion: v1
     appVersion: 0.3.0
     created: 2019-02-26T10:45:50.742059369Z
@@ -30,11 +39,11 @@ entries:
     version: 0.9.0
   uaa:
   - apiVersion: 2.14.5+cf2.7.0.3.gbc13ddc
-    created: 2019-02-26T10:45:50.741209829Z
+    created: 2019-03-22T12:34:42.794555378Z
     description: A Helm chart for SUSE UAA
-    digest: ac05abbb5be6a4b3dda6b1ab548a56807f5129fa7f4451afc4c0e6b4762aac5e
+    digest: 466beb091fe5cbe3d1f202661c86ea689c798baec2926369e8bd2b278ed1fcb1
     name: uaa
     urls:
-    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.10.0/eirini-uaa.tgz
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.11.0/eirini-uaa.tgz
     version: 2.14.5
-generated: 2019-02-26T10:45:50.73514932Z
+generated: 2019-03-22T12:34:42.755425241Z
