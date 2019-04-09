@@ -1,2 +1,7 @@
 .DS_Store
 /helm/*/charts/
+
+# ignore side effects of GOPATH
+bin/
+src/
+!src/code.cloudfoundry.org/eirini
