@@ -7,9 +7,10 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 ## Prerequisites
 
 * Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
+* Install [Heapster](https://github.com/kubernetes-retired/heapster/) in the system namespace
 * Install [helm](https://helm.sh/)
 
-**Note**: Eirini is currently being tested with HELM > 2.11.0, Kubernetes 1.10, and Docker as the container runtime (containerd is not supported just yet).
+**Note**: Eirini is currently being tested with HELM > 2.13.1, Kubernetes 1.11, and containerd as the container runtime.
 
 ## Installation
 
