@@ -1,0 +1,41 @@
+---
+# Pod security policy "privileged"
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (not .Values.kube.psp.privileged) }}
+apiVersion: "extensions/v1beta1"
+kind: "PodSecurityPolicy"
+metadata:
+  name: {{ template "fissile.SanitizeName" (printf "%s-psp-privileged" .Release.Namespace) }}
+  labels:
+    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-psp-privileged" .Release.Namespace) }}
+    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-psp-privileged" .Release.Namespace) }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+spec:
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - "*"
+  defaultAllowPrivilegeEscalation: true
+  fsGroup:
+    rule: "RunAsAny"
+  hostPorts:
+  - max: 65535
+    min: 0
+  privileged: true
+  runAsUser:
+    rule: "RunAsAny"
+  seLinux:
+    rule: "RunAsAny"
+  supplementalGroups:
+    rule: "RunAsAny"
+  volumes:
+  - "configMap"
+  - "secret"
+  - "emptyDir"
+  - "downwardAPI"
+  - "projected"
+  - "persistentVolumeClaim"
+  - "nfs"
+{{- end }}

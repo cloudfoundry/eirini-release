@@ -1,0 +1,69 @@
+---
+# Service account "withsysresource" is used by the following instance groups:
+# - cc-uploader
+# - diego-api
+# - diego-brain
+# - diego-ssh
+# - nats
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+apiVersion: "v1"
+kind: "ServiceAccount"
+metadata:
+  name: "withsysresource"
+  labels:
+    app.kubernetes.io/component: "withsysresource"
+    skiff-role-name: "withsysresource"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+{{- end }}
+---
+# Role binding for service account "withsysresource" and role "configgin-role"
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+apiVersion: "rbac.authorization.k8s.io/v1"
+kind: "RoleBinding"
+metadata:
+  name: "withsysresource-configgin-role-binding"
+  labels:
+    app.kubernetes.io/component: "withsysresource-configgin-role-binding"
+    skiff-role-name: "withsysresource-configgin-role-binding"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+subjects:
+- kind: "ServiceAccount"
+  name: "withsysresource"
+roleRef:
+  apiGroup: "rbac.authorization.k8s.io"
+  kind: "Role"
+  name: "configgin-role"
+{{- end }}
+---
+# Cluster role binding for service account "withsysresource" and cluster role
+# "withsysresource"
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+apiVersion: "rbac.authorization.k8s.io/v1"
+kind: "ClusterRoleBinding"
+metadata:
+  name: {{ template "fissile.SanitizeName" (printf "%s-withsysresource-withsysresource-cluster-binding" .Release.Namespace) }}
+  labels:
+    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-withsysresource-withsysresource-cluster-binding" .Release.Namespace) }}
+    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-withsysresource-withsysresource-cluster-binding" .Release.Namespace) }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+subjects:
+- kind: "ServiceAccount"
+  name: "withsysresource"
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: "ClusterRole"
+  apiGroup: "rbac.authorization.k8s.io"
+  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-withsysresource" .Release.Namespace) }}
+{{- end }}

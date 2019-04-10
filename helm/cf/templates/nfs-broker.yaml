@@ -1,4 +1,79 @@
 ---
+apiVersion: "v1"
+items:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "nfs-broker-set"
+    labels:
+      app.kubernetes.io/component: "nfs-broker-set"
+      skiff-role-name: "nfs-broker-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "nfs-broker-set"
+      {{- end }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "nfsbroker"
+      port: 8999
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "nfs-broker"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "nfs-broker-nfsbroker-set"
+    labels:
+      app.kubernetes.io/component: "nfs-broker-nfsbroker-set"
+      skiff-role-name: "nfs-broker-nfsbroker-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "nfs-broker-nfsbroker-set"
+      {{- end }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "nfsbroker"
+      port: 8999
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "nfs-broker"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "nfs-broker-nfsbroker"
+    labels:
+      app.kubernetes.io/component: "nfs-broker-nfsbroker"
+      skiff-role-name: "nfs-broker-nfsbroker"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "nfs-broker-nfsbroker"
+      {{- end }}
+  spec:
+    ports:
+    - name: "nfsbroker"
+      port: 8999
+      protocol: "TCP"
+      targetPort: 8999
+    selector:
+      app.kubernetes.io/component: "nfs-broker"
+kind: "List"
+---
 # The nfs-broker instance group contains the following jobs:
 #
 # - global-properties: Dummy BOSH job used to host global parameters that are
@@ -6,7 +81,7 @@
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# Also: loggregator_agent, nfsbroker
+# Also: nfsbroker
 
 {{- if gt (int .Values.sizing.nfs_broker.count) 3 }}
 _maxReplicas: {{ fail "nfs_broker cannot have more than 3 instances" }}
@@ -52,6 +127,15 @@ metadata:
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
     app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+
+    {{- if .Values.config.use_istio }}
+    app: "nfs-broker"
+    {{- end }}
+
+    {{- if .Values.config.use_istio }}
+    version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    {{- end }}
+
 spec:
   podManagementPolicy: "OrderedReady"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.nfs_broker.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.nfs_broker.count }} {{- end }}
@@ -70,8 +154,20 @@ spec:
         app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
         app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
         helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+
+        {{- if .Values.config.use_istio }}
+        app: "nfs-broker"
+        {{- end }}
+
+        {{- if .Values.config.use_istio }}
+        version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        {{- end }}
+
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- if .Values.config.use_istio }}
+        sidecar.istio.io/inject: "false"
+        {{- end }}
     spec:
       affinity:
         podAntiAffinity:
@@ -119,38 +215,12 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: "metadata.namespace"
-        - name: "KUBE_AZ"
-          value: "z1"
 
-        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT }}
-        - name: "LOGGREGATOR_AGENT_CERT"
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "loggregator-agent-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT }}
-        - name: "LOGGREGATOR_AGENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
+              key: "monit-password"
               name: "secrets"
         {{- end }}
 
@@ -162,12 +232,12 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
+        {{- if not .Values.secrets.MYSQL_PERSI_NFS_PASSWORD }}
+        - name: "MYSQL_PERSI_NFS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
+              key: "mysql-persi-nfs-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if .Values.secrets.MYSQL_PERSI_NFS_PASSWORD }}
@@ -178,24 +248,8 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.MYSQL_PERSI_NFS_PASSWORD }}
-        - name: "MYSQL_PERSI_NFS_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-persi-nfs-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         - name: "PERSI_NFS_ALLOWED_OPTIONS"
           value: {{if ne (typeOf .Values.env.PERSI_NFS_ALLOWED_OPTIONS) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_ALLOWED_OPTIONS) (list "map" "slice")}}{{.Values.env.PERSI_NFS_ALLOWED_OPTIONS | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_ALLOWED_OPTIONS | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if not .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
-        - name: "PERSI_NFS_BROKER_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "persi-nfs-broker-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
         - name: "PERSI_NFS_BROKER_PASSWORD"
@@ -205,8 +259,18 @@ spec:
               name: "secrets"
         {{- end }}
 
+        {{- if not .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
+        - name: "PERSI_NFS_BROKER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "persi-nfs-broker-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
         - name: "PERSI_NFS_DEFAULT_OPTIONS"
           value: {{if ne (typeOf .Values.env.PERSI_NFS_DEFAULT_OPTIONS) "<nil>"}}{{if has (kindOf .Values.env.PERSI_NFS_DEFAULT_OPTIONS) (list "map" "slice")}}{{.Values.env.PERSI_NFS_DEFAULT_OPTIONS | toJson | quote}}{{else}}{{.Values.env.PERSI_NFS_DEFAULT_OPTIONS | quote}}{{end}}{{else}}""{{end}}
+        - name: "PZ_LABEL_NAME"
+          value: {{if ne (typeOf .Values.env.PZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.PZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.PZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.PZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_HOST"
           value: {{if ne (typeOf .Values.env.SCF_LOG_HOST) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_HOST) (list "map" "slice")}}{{.Values.env.SCF_LOG_HOST | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_HOST | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PORT"
@@ -218,7 +282,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-nfs-broker:76d79d6beffe102ea3e2c4d521c7bf3c4924bd1d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-nfs-broker:10db4f4f32312012c72fba0d482055fbfb69f8c7"
         lifecycle:
           preStop:
             exec:
@@ -255,83 +319,26 @@ spec:
 
         securityContext:
           privileged: true
-        volumeMounts: ~
+        volumeMounts:
+        - mountPath: "/opt/fissile/config"
+          name: "deployment-manifest"
+          readOnly: true
       dnsPolicy: "ClusterFirst"
       imagePullSecrets:
       - name: "registry-credentials"
       restartPolicy: "Always"
-      {{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
-      serviceAccountName: "default-privileged"
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "privileged"
       {{- end }}
       terminationGracePeriodSeconds: 600
-      volumes: ~
+      volumes:
+      - name: "deployment-manifest"
+        secret:
+          secretName: "deployment-manifest"
+          items:
+          - key: "deployment-manifest"
+            path: "deployment-manifest.yml"
   {{- if or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 7)) }}
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
----
-apiVersion: "v1"
-items:
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "nfs-broker-set"
-    labels:
-      app.kubernetes.io/component: "nfs-broker-set"
-      skiff-role-name: "nfs-broker-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "nfsbroker"
-      port: 8999
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "nfs-broker"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "nfs-broker-nfsbroker-set"
-    labels:
-      app.kubernetes.io/component: "nfs-broker-nfsbroker-set"
-      skiff-role-name: "nfs-broker-nfsbroker-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "nfsbroker"
-      port: 8999
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "nfs-broker"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "nfs-broker-nfsbroker"
-    labels:
-      app.kubernetes.io/component: "nfs-broker-nfsbroker"
-      skiff-role-name: "nfs-broker-nfsbroker"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    ports:
-    - name: "nfsbroker"
-      port: 8999
-      protocol: "TCP"
-      targetPort: 8999
-    selector:
-      app.kubernetes.io/component: "nfs-broker"
-kind: "List"

@@ -1,6 +1,7 @@
 ---
-{{- if eq (printf "%s" .Values.kube.auth) "rbac" }}
-apiVersion: "rbac.authorization.k8s.io/v1beta1"
+# Role binding for service account "default" and role "configgin-role"
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+apiVersion: "rbac.authorization.k8s.io/v1"
 kind: "RoleBinding"
 metadata:
   name: "default-configgin-role-binding"
@@ -16,19 +17,21 @@ subjects:
 - kind: "ServiceAccount"
   name: "default"
 roleRef:
+  apiGroup: "rbac.authorization.k8s.io"
   kind: "Role"
   name: "configgin-role"
-  apiGroup: "rbac.authorization.k8s.io"
 {{- end }}
 ---
-{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") .Values.kube.psp.nonprivileged }}
+# Cluster role binding for service account "default" and cluster role
+# "nonprivileged"
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "rbac.authorization.k8s.io/v1"
 kind: "ClusterRoleBinding"
 metadata:
-  name: "{{ .Release.Namespace }}-default-binding-psp"
+  name: {{ template "fissile.SanitizeName" (printf "%s-default-nonprivileged-cluster-binding" .Release.Namespace) }}
   labels:
-    app.kubernetes.io/component: "{{ .Release.Namespace }}-default-binding-psp"
-    skiff-role-name: "{{ .Release.Namespace }}-default-binding-psp"
+    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-default-nonprivileged-cluster-binding" .Release.Namespace) }}
+    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-default-nonprivileged-cluster-binding" .Release.Namespace) }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -40,6 +43,6 @@ subjects:
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: "ClusterRole"
-  name: "{{ .Release.Namespace }}-psp-role-nonprivileged"
   apiGroup: "rbac.authorization.k8s.io"
+  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-nonprivileged" .Release.Namespace) }}
 {{- end }}

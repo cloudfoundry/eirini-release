@@ -1,6 +1,20 @@
 ---
 kube:
+  auth: "rbac"
   external_ips: []
+
+  # Whether HostPath volume mounts are available
+  hostpath_available: false
+
+  organization: "eirinicf"
+  psp:
+    nonprivileged: ~
+    privileged: ~
+    withsysresource: ~
+  registry:
+    hostname: "docker.io"
+    username: "eiriniuser"
+    password: "4Gu7%5H50*pzzjp3IffAmv0MnV*&yH"
 
   # Increment this counter to rotate all generated secrets
   secrets_generation_counter: 1
@@ -8,19 +22,6 @@ kube:
   storage_class:
     persistent: "persistent"
     shared: "shared"
-  psp:
-    nonprivileged: ~
-    privileged: ~
-
-  # Whether HostPath volume mounts are available
-  hostpath_available: false
-
-  registry:
-    hostname: "docker.io"
-    username: ""
-    password: ""
-  organization: "eirinicf"
-  auth: "rbac"
 config:
   # Flag to activate high-availability mode
   HA: false
@@ -41,8 +42,14 @@ config:
     # Flag to activate cpu limits
     limits: false
 
+  # Flag to specify whether to add Istio related annotations and labels
+  use_istio: false
+
+bosh:
+  instance_groups: []
 services:
   loadbalanced: false
+  ingress: ~
 secrets:
   # PEM encoded RSA private key used to identify host.
   # This value uses a generated default.
@@ -65,24 +72,6 @@ secrets:
 
   # PEM-encoded server key
   AUCTIONEER_SERVER_CERT_KEY: ~
-
-  # A PEM-encoded TLS certificate for clients to connect to the Autoscaler
-  # Actors. This includes the Autoscaler Scheduler and the Scaling Engine.
-  # This value uses a generated default.
-  AUTOSCALER_ASACTORS_CLIENT_CERT: ~
-
-  # A PEM-encoded TLS key for clients to connect to the Autoscaler Actors. This
-  # includes the Autoscaler Scheduler and the Scaling Engine.
-  AUTOSCALER_ASACTORS_CLIENT_CERT_KEY: ~
-
-  # A PEM-encoded TLS certificate of the Autoscaler Actors https server. This
-  # includes the Autoscaler Scheduler and the Scaling Engine.
-  # This value uses a generated default.
-  AUTOSCALER_ASACTORS_SERVER_CERT: ~
-
-  # A PEM-encoded TLS key of the Autoscaler Actors https server. This includes
-  # the Autoscaler Scheduler and the Scaling Engine.
-  AUTOSCALER_ASACTORS_SERVER_CERT_KEY: ~
 
   # A PEM-encoded TLS certificate for clients to connect to the Autoscaler API.
   # This includes the Autoscaler ApiServer and the Service Broker.
@@ -121,21 +110,61 @@ secrets:
   AUTOSCALER_ASMETRICS_CLIENT_CERT_KEY: ~
 
   # A PEM-encoded TLS certificate of the Autoscaler Metrics https server. This
-  # includes the Autoscaler Metrics Collector and Event Generator.
+  # includes the Autoscaler Metrics Collector.
   # This value uses a generated default.
   AUTOSCALER_ASMETRICS_SERVER_CERT: ~
 
   # A PEM-encoded TLS key of the Autoscaler Metrics https server. This includes
-  # the Autoscaler Metrics Collector and Event Generator.
+  # the Autoscaler Metrics Collector.
   AUTOSCALER_ASMETRICS_SERVER_CERT_KEY: ~
 
   # The password for the Autoscaler postgres database.
   # This value uses a generated default.
   AUTOSCALER_DB_PASSWORD: ~
 
+  # A PEM-encoded TLS certificate for clients to connect to the Autoscaler
+  # Scaling Engine.
+  # This value uses a generated default.
+  AUTOSCALER_SCALING_ENGINE_CLIENT_CERT: ~
+
+  # A PEM-encoded TLS key for clients to connect to the Autoscaler Scaling
+  # Engine.
+  AUTOSCALER_SCALING_ENGINE_CLIENT_CERT_KEY: ~
+
+  # A PEM-encoded TLS certificate of the Autoscaler Scaling Engine https server.
+  # This value uses a generated default.
+  AUTOSCALER_SCALING_ENGINE_SERVER_CERT: ~
+
+  # A PEM-encoded TLS key of the Autoscaler Scaling Engine https server.
+  AUTOSCALER_SCALING_ENGINE_SERVER_CERT_KEY: ~
+
+  # A PEM-encoded TLS certificate for clients to connect to the Autoscaler
+  # Scheduler.
+  # This value uses a generated default.
+  AUTOSCALER_SCHEDULER_CLIENT_CERT: ~
+
+  # A PEM-encoded TLS key for clients to connect to the Autoscaler Scheduler.
+  AUTOSCALER_SCHEDULER_CLIENT_CERT_KEY: ~
+
+  # A PEM-encoded TLS certificate of the Autoscaler Scheduler https server.
+  # This value uses a generated default.
+  AUTOSCALER_SCHEDULER_SERVER_CERT: ~
+
+  # A PEM-encoded TLS key of the Autoscaler Scheduler https server.
+  AUTOSCALER_SCHEDULER_SERVER_CERT_KEY: ~
+
   # The password for the Autoscaler Service Broker.
   # This value uses a generated default.
   AUTOSCALER_SERVICE_BROKER_PASSWORD: ~
+
+  # A PEM-encoded TLS certificate of the Autoscaler API https server. This
+  # includes the Autoscaler ApiServer and the Service Broker.
+  # This value uses a generated default.
+  AUTOSCALER_SERVICE_BROKER_SERVER_CERT: ~
+
+  # A PEM-encoded TLS key of the Autoscaler API https server. This includes the
+  # Autoscaler ApiServer and the Service Broker.
+  AUTOSCALER_SERVICE_BROKER_SERVER_CERT_KEY: ~
 
   # the uaa client secret used by Autoscaler.
   # This value uses a generated default.
@@ -809,7 +838,7 @@ env:
   DEFAULT_APP_SSH_ACCESS: "true"
 
   # The default stack to use if no custom stack is specified by an app.
-  DEFAULT_STACK: "cflinuxfs2"
+  DEFAULT_STACK: "opensuse42"
 
   # The container disk capacity the cell should manage. If this capacity is
   # larger than the actual disk quota of the cell component, over-provisioning
@@ -974,6 +1003,13 @@ env:
   # Example: "cn=Users,dc=corp,dc=test,dc=com"
   PERSI_NFS_DRIVER_LDAP_USER_FQDN: ""
 
+  # The name of the metadata label to query on worker nodes to get placement tag
+  # information, also known as isolation segments. When set, the cells will
+  # query their worker node for placement information and inject the result into
+  # cloudfoundry via the KUBE_PZ parameter. When left to the default no custom
+  # placement processing is done.
+  PZ_LABEL_NAME: ""
+
   # Certficates to add to the rootfs trust store. Multiple certs are possible by
   # concatenating their definitions into one big block of text.
   ROOTFS_TRUSTED_CERTS: ""
@@ -1041,7 +1077,7 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: adapter, loggregator_agent
+  # Also: adapter
   adapter:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1081,15 +1117,12 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: loggregator_agent, statsd_injector, go-buildpack, binary-buildpack,
+  # Also: bpm, statsd_injector, go-buildpack, binary-buildpack,
   # nodejs-buildpack, ruby-buildpack, php-buildpack, python-buildpack,
-  # staticfile-buildpack, java-buildpack, dotnet-core-buildpack
+  # staticfile-buildpack, nginx-buildpack, java-buildpack, dotnet-core-buildpack
   api_group:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The api-group instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
@@ -1105,35 +1138,6 @@ sizing:
       request: 3800
       limit: ~
 
-  # The autoscaler-actors instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # Also: scalingengine, scheduler, operator
-  autoscaler_actors:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
-
-    # The autoscaler-actors instance group can scale between 0 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: 0
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 2350
-      limit: ~
-
   # The autoscaler-api instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
@@ -1141,13 +1145,10 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: apiserver, servicebroker
+  # Also: apiserver, bpm
   autoscaler_api:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The autoscaler-api instance group can scale between 0 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1163,6 +1164,36 @@ sizing:
       request: 256
       limit: ~
 
+  # The autoscaler-eventgenerator instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
+  #
+  # Also: eventgenerator
+  autoscaler_eventgenerator:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The autoscaler-eventgenerator instance group can scale between 0 and 3
+    # instances.
+    # For high availability it needs at least 2 instances.
+    count: 0
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 2350
+      limit: ~
+
   # The autoscaler-metrics instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
@@ -1170,7 +1201,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: metricscollector, eventgenerator
+  # Also: metricscollector
   autoscaler_metrics:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1190,6 +1221,36 @@ sizing:
     # Unit [MiB]
     memory:
       request: 128
+      limit: ~
+
+  # The autoscaler-operator instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
+  #
+  # Also: operator
+  autoscaler_operator:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The autoscaler-operator instance group can scale between 0 and 3
+    # instances.
+    # For high availability it needs at least 2 instances.
+    count: 0
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 2350
       limit: ~
 
   # The autoscaler-postgres instance group contains the following jobs:
@@ -1225,6 +1286,95 @@ sizing:
       request: 1024
       limit: ~
 
+  # The autoscaler-scalingengine instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
+  #
+  # Also: scalingengine
+  autoscaler_scalingengine:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The autoscaler-scalingengine instance group can scale between 0 and 3
+    # instances.
+    # For high availability it needs at least 2 instances.
+    count: 0
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 2350
+      limit: ~
+
+  # The autoscaler-scheduler instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
+  #
+  # Also: scheduler
+  autoscaler_scheduler:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The autoscaler-scheduler instance group can scale between 0 and 3
+    # instances.
+    # For high availability it needs at least 2 instances.
+    count: 0
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 2350
+      limit: ~
+
+  # The autoscaler-servicebroker instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
+  #
+  # - route_registrar: Used for registering routes
+  #
+  # Also: servicebroker, bpm
+  autoscaler_servicebroker:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # The autoscaler-servicebroker instance group can scale between 0 and 3
+    # instances.
+    # For high availability it needs at least 2 instances.
+    count: 0
+
+    # Unit [millicore]
+    cpu:
+      request: 2000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 2350
+      limit: ~
+
   # The blobstore instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
@@ -1232,13 +1382,10 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: blobstore, loggregator_agent
+  # Also: blobstore, bpm
   blobstore:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The blobstore instance group cannot be scaled.
     count: 1
@@ -1263,11 +1410,13 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # - cloud_controller_clock: The Cloud Controller clock periodically schedules
-  #   Cloud Controller clean up tasks for app usage events, audit events, failed
-  #   jobs, and more. Only single instance of this job is necessary.
+  # - cloud_controller_clock: The Cloud Controller Clock runs the Diego Sync job
+  #   to keep the actual state of running processes in Diego in sync with Cloud
+  #   Controller's desired state. Additionally, the Clock schedules periodic
+  #   clean up jobs to prune app usage events, audit events, failed jobs, and
+  #   more.
   #
-  # Also: loggregator_agent, statsd_injector
+  # Also: statsd_injector
   cc_clock:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1296,7 +1445,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: tps, cc_uploader, loggregator_agent
+  # Also: tps, cc_uploader
   cc_uploader:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1327,8 +1476,6 @@ sizing:
   #
   # - cloud_controller_worker: Cloud Controller worker processes background
   #   tasks submitted via the.
-  #
-  # Also: loggregator_agent
   cc_worker:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1350,7 +1497,7 @@ sizing:
       request: 750
       limit: ~
 
-  # The cf-usb instance group contains the following jobs:
+  # The cf-usb-group instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
@@ -1359,15 +1506,12 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: cf-usb
-  cf_usb:
+  # Also: cf-usb, bpm
+  cf_usb_group:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
-    # The cf-usb instance group can scale between 1 and 3 instances.
+    # The cf-usb-group instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1388,13 +1532,10 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: credhub
+  # Also: credhub, bpm
   credhub_user:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The credhub-user instance group can scale between 0 and 1 instances.
     # For high availability it needs at least 1 instances.
@@ -1420,7 +1561,7 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: bbs, cfdot, loggregator_agent
+  # Also: bbs, cfdot
   diego_api:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1430,7 +1571,7 @@ sizing:
 
     # The diego-api instance group can scale between 0 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: 0
 
     # Unit [millicore]
     cpu:
@@ -1452,7 +1593,7 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: auctioneer, cfdot, loggregator_agent
+  # Also: auctioneer, cfdot
   diego_brain:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1462,7 +1603,7 @@ sizing:
 
     # The diego-brain instance group can scale between 0 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: 0
 
     # Unit [millicore]
     cpu:
@@ -1490,15 +1631,15 @@ sizing:
   #   SCF patches for upstream bugs
   #
   # Also: rep, cfdot, route_emitter, garden, groot-btrfs,
-  # cflinuxfs2-rootfs-setup, opensuse42-rootfs-setup, cf-sle12-setup,
-  # loggregator_agent, nfsv3driver
+  # cflinuxfs2-rootfs-setup, cflinuxfs3-rootfs-setup, opensuse42-rootfs-setup,
+  # cf-sle12-setup, nfsv3driver
   diego_cell:
     # Node affinity rules can be specified here
     affinity: {}
 
     # The diego-cell instance group can scale between 0 and 254 instances.
     # For high availability it needs at least 3 instances.
-    count: 1
+    count: 0
 
     # Unit [millicore]
     cpu:
@@ -1520,7 +1661,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: ssh_proxy, loggregator_agent, file_server
+  # Also: ssh_proxy, file_server
   diego_ssh:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1530,7 +1671,7 @@ sizing:
 
     # The diego-ssh instance group can scale between 0 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: 0
 
     # Unit [millicore]
     cpu:
@@ -1547,7 +1688,7 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: doppler, loggregator_agent
+  # Also: doppler
   doppler:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1579,7 +1720,7 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: loggregator_agent, locket
+  # Also: locket
   locket:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1610,13 +1751,10 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: loggregator_trafficcontroller, loggregator_agent, reverse_log_proxy
+  # Also: loggregator_trafficcontroller, reverse_log_proxy, bpm
   log_api:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The log-api instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
@@ -1630,6 +1768,33 @@ sizing:
     # Unit [MiB]
     memory:
       request: 128
+      limit: ~
+
+  # The loggregator-agent instance group contains the following jobs:
+  #
+  # - global-properties: Dummy BOSH job used to host global parameters that are
+  #   required to configure SCF
+  #
+  # Also: loggregator_agent
+  loggregator_agent:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
+
+    # The loggregator-agent instance group can scale between 1 and 3 instances.
+    # For high availability it needs at least 2 instances.
+    count: 1
+
+    # Unit [millicore]
+    cpu:
+      request: ~
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: ~
       limit: ~
 
   # The mysql instance group contains the following jobs:
@@ -1672,8 +1837,6 @@ sizing:
   #
   # - nats: The NATS server provides publish-subscribe messaging system for the
   #   Cloud Controller, the DEA , HM9000, and other Cloud Foundry components.
-  #
-  # Also: loggregator_agent
   nats:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1702,7 +1865,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: loggregator_agent, nfsbroker
+  # Also: nfsbroker
   nfs_broker:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1765,13 +1928,10 @@ sizing:
   #   most closely matches the host header of the request and load balances
   #   across the associated backends.
   #
-  # Also: loggregator_agent
+  # Also: bpm
   router:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The router instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
@@ -1794,13 +1954,10 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: loggregator_agent, routing-api
+  # Also: bpm, routing-api
   routing_api:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The routing-api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1844,7 +2001,7 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: scheduler, loggregator_agent
+  # Also: scheduler
   syslog_scheduler:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1875,7 +2032,7 @@ sizing:
   #
   # - wait-for-uaa: Wait for UAA to be ready before starting any jobs
   #
-  # Also: tcp_router, loggregator_agent
+  # Also: tcp_router
   tcp_router:
     # Node affinity rules can be specified here
     affinity: {}
