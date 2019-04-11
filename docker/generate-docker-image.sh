@@ -1,9 +1,12 @@
 #!/bin/bash
 
-BASEDIR="$(cd $(dirname $0)/.. && pwd)"
-EIRINIDIR="$BASEDIR/src/code.cloudfoundry.org/eirini"
-DOCKERDIR="$BASEDIR/docker"
-TAG=${1?"latest"}
+set -euo pipefail
+
+readonly BASEDIR="$(cd $(dirname $0)/.. && pwd)"
+readonly EIRINIDIR="$BASEDIR/src/code.cloudfoundry.org/eirini"
+readonly DOCKERDIR="$BASEDIR/docker"
+readonly DOCKER_USER=${1?"Please provide a docker user"}
+readonly TAG=${2?"Please provide a tag"}
 
 main(){
     echo "Creating Eirini docker images..."
@@ -20,9 +23,9 @@ build_opi(){
 }
 
 create_docker_images() {
-  create_image "$DOCKERDIR"/opi eirini/opi
-  create_image "$DOCKERDIR"/opi/init eirini/opi-init
-  create_image "$DOCKERDIR"/registry/certs/smuggler eirini/secret-smuggler
+  create_image "$DOCKERDIR"/opi ${DOCKER_USER}/opi
+  create_image "$DOCKERDIR"/opi/init ${DOCKER_USER}/opi-init
+  create_image "$DOCKERDIR"/registry/certs/smuggler ${DOCKER_USER}/secret-smuggler
 }
 
 create_image() {

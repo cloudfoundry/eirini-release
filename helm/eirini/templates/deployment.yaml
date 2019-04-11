@@ -42,7 +42,7 @@ spec:
               path: cc.ca
       initContainers:
       - name: configure-opi-yaml
-        image: eirini/opi-init:{{ .Values.opi.image_tag }}
+        image: {{ .Values.opi.init_image }}
         env:
         - name: "NATS_PASSWORD"
           valueFrom:
@@ -57,7 +57,7 @@ spec:
           readOnly: false
       containers:
       - name: opi
-        image: eirini/opi:{{ .Values.opi.image_tag }}
+        image: {{ .Values.opi.image }}
         imagePullPolicy: Always
         volumeMounts:
         - name: config-volume

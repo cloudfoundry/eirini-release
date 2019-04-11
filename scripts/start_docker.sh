@@ -1,11 +1,10 @@
 #! /bin/bash
 
-set -e
+set -exuo pipefail
 
-WORKSPACE=$HOME/workspace/eirini-release
+WORKSPACE=$(pwd)
 REPO=https://github.com/cloudfoundry-incubator/eirini-release
 BRANCH=secure-stager
-
 
 function ensure_exist() {
   dir=$1
@@ -16,6 +15,8 @@ function ensure_exist() {
       echo
       if [ "x$answer" == "xy" -o "x$answer" == "xY" ]; then
           git clone $repo $dir -b $branch --recursive
+      else
+        exit 1
       fi
   fi
 }
@@ -23,6 +24,6 @@ function ensure_exist() {
 ensure_exist $WORKSPACE $REPO $BRANCH
 
 # docker pull nimak/integration-tests
-docker run --rm --privileged \
-  -v ~/workspace/eirini-release:/eirini-release \
+docker run --rm \
+  -v ${WORKSPACE}:/eirini-release \
   -it nimak/integration-tests bash -l

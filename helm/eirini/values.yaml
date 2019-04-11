@@ -6,6 +6,9 @@ opi:
 
   namespace: eirini
   version: 0.0.0
+  image_tag: latest
+  init_image: eirini/opi-init:latest
+  image: eirini/opi:latest
   stager:
     downloader_image: eirini/recipe-downloader:latest
     uploader_image: eirini/recipe-uploader:latest
