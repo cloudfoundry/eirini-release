@@ -151,7 +151,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
+  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-api"
