@@ -151,7 +151,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if .Values.env.ENABLE_OPI_STAGING -}} 0 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-api"
@@ -411,7 +411,7 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:ca5ce3da8d941365b681606e0d561fb40c8afe58"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:d6a649ec166e74c036a963077bd780c286edb48c"
         lifecycle:
           preStop:
             exec:
@@ -559,7 +559,7 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:e881d73230aa4f1a9fa954e96725ff1a2341ee61"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:214517c814b007c6e23ff4a905cbee0baa487558"
         lifecycle:
           preStop:
             exec:
