@@ -3,5 +3,10 @@
 
 # ignore side effects of GOPATH
 bin/
+pkg/
 src/
 !src/code.cloudfoundry.org/eirini
+
+# Binaries for docker
+docker/opi/opi
+docker/rootfs-patcher/rootfs-patcher

@@ -1,28 +1,34 @@
 #!/bin/bash
 
-BASEDIR="$(cd $(dirname $0)/.. && pwd)"
-EIRINIDIR="$BASEDIR/src/code.cloudfoundry.org/eirini"
+set -euo pipefail
+
+BASEDIR="$(cd "$(dirname "$0")/.." && pwd)"
 DOCKERDIR="$BASEDIR/docker"
-TAG=${1?"latest"}
+TAG=${1:-"latest"}
 
 main(){
     echo "Creating Eirini docker images..."
     build_opi
+    build_rootfs_patcher
     create_docker_images
     echo "All images created successfully"
 }
 
 build_opi(){
-    GOPATH="$BASEDIR"
-    GOOS=linux CGO_ENABLED=0 go build -a -o $DOCKERDIR/opi/opi code.cloudfoundry.org/eirini/cmd/opi
-    verify_exit_code $? "Failed to build eirini"
-  cp $DOCKERDIR/opi/opi $DOCKERDIR/registry/opi
+  GOPATH="$BASEDIR" GOOS=linux CGO_ENABLED=0 go build -a -o "$DOCKERDIR/opi/opi" code.cloudfoundry.org/eirini/cmd/opi
+  verify_exit_code $? "Failed to build eirini"
+}
+
+build_rootfs_patcher() {
+  GOPATH="$BASEDIR" GOOS=linux CGO_ENABLED=0 go build -a -o "$DOCKERDIR/rootfs-patcher/rootfs-patcher" code.cloudfoundry.org/eirini/cmd/rootfs-patcher
+  verify_exit_code $? "Failed to build rootfs-patcher"
 }
 
 create_docker_images() {
   create_image "$DOCKERDIR"/opi eirini/opi
   create_image "$DOCKERDIR"/opi/init eirini/opi-init
   create_image "$DOCKERDIR"/registry/certs/smuggler eirini/secret-smuggler
+  create_image "$DOCKERDIR"/rootfs-patcher eirini/rootfs-patcher
 }
 
 create_image() {
