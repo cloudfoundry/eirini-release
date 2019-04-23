@@ -1,5 +1,4 @@
 ---
-{{- if gt (int .Values.sizing.autoscaler_api.count) 0 }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -101,7 +100,7 @@ items:
       app: "autoscaler-api-apiserver-public"
       {{- end }}
   spec:
-    {{- if not (or .Values.services.loadbalanced .Values.services.ingress) }}
+    {{- if not (or .Values.services.loadbalanced .Values.ingress.enabled) }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
     {{- end }}
 
@@ -117,11 +116,10 @@ items:
     type: "LoadBalancer"
     {{- end }}
 
-  {{- if and .Values.services.loadbalanced .Values.services.ingress }}
-  _incompatible: {{ fail "services.loadbalanced and services.ingress cannot both be set" }}
+  {{- if and .Values.services.loadbalanced .Values.ingress.enabled }}
+  _incompatible: {{ fail "services.loadbalanced and ingress.enabled cannot both be set" }}
   {{- end }}
 kind: "List"
-{{- end }}
 ---
 # The autoscaler-api instance group contains the following jobs:
 #
@@ -130,11 +128,18 @@ kind: "List"
 #
 # - route_registrar: Used for registering routes
 #
-# Also: apiserver, bpm
-{{- if gt (int .Values.sizing.autoscaler_api.count) 0 }}
+# Also: apiserver and bpm
 
 {{- if gt (int .Values.sizing.autoscaler_api.count) 3 }}
 _maxReplicas: {{ fail "autoscaler_api cannot have more than 3 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.autoscaler_api.count) 1) (lt (int .Values.sizing.autoscaler_api.count) 2)) }}
+_minHAReplicas: {{ fail "autoscaler_api must have at least 2 instances for HA" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.autoscaler_api.count) 1 }}
+_minReplicas: {{ fail "autoscaler_api must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -180,7 +185,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_api.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_api.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_api.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_api.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "autoscaler-api"
@@ -282,20 +287,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY }}
-        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-asapi-public-server-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY }}
         - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-asapi-public-server-cert-key"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY }}
+        - name: "AUTOSCALER_ASAPI_PUBLIC_SERVER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-asapi-public-server-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_ASAPI_SERVER_CERT }}
@@ -381,20 +386,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.AUTOSCALER_SCALING_ENGINE_CLIENT_CERT }}
-        - name: "AUTOSCALER_SCALING_ENGINE_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-scaling-engine-client-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.AUTOSCALER_SCALING_ENGINE_CLIENT_CERT }}
         - name: "AUTOSCALER_SCALING_ENGINE_CLIENT_CERT"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-scaling-engine-client-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.AUTOSCALER_SCALING_ENGINE_CLIENT_CERT }}
+        - name: "AUTOSCALER_SCALING_ENGINE_CLIENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-scaling-engine-client-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.AUTOSCALER_SCALING_ENGINE_CLIENT_CERT_KEY }}
@@ -429,20 +434,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.AUTOSCALER_SCHEDULER_CLIENT_CERT_KEY }}
-        - name: "AUTOSCALER_SCHEDULER_CLIENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-scheduler-client-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.AUTOSCALER_SCHEDULER_CLIENT_CERT_KEY }}
         - name: "AUTOSCALER_SCHEDULER_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-scheduler-client-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_SCHEDULER_CLIENT_CERT_KEY }}
+        - name: "AUTOSCALER_SCHEDULER_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-scheduler-client-cert-key"
+              name: "secrets"
         {{- end }}
 
         - name: "AUTOSCALER_SERVICE_OFFERING_ENABLED"
@@ -497,20 +502,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.NATS_PASSWORD }}
-        - name: "NATS_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "nats-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.NATS_PASSWORD }}
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "nats-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.NATS_PASSWORD }}
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets"
         {{- end }}
 
         - name: "PZ_LABEL_NAME"
@@ -521,7 +526,11 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-api:c7e8fb7d9f21cb38370e113deb9724e68a985b98"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-api:232ab8ab2a4b9177d7c1a397d9e48ce2bddcc8d4"
         lifecycle:
           preStop:
             exec:
@@ -566,12 +575,18 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "default-privileged"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -584,4 +599,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end }}

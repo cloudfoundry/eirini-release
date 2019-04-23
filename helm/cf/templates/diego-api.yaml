@@ -1,5 +1,4 @@
 ---
-{{- if gt (int .Values.sizing.diego_api.count) 0 }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -89,7 +88,6 @@ items:
       app.kubernetes.io/component: "diego-api"
       skiff-role-active: "true"
 kind: "List"
-{{- end }}
 ---
 # The diego-api instance group contains the following jobs:
 #
@@ -101,11 +99,18 @@ kind: "List"
 # - patch-properties: Dummy BOSH job used to host parameters that are used in
 #   SCF patches for upstream bugs
 #
-# Also: bbs, cfdot
-{{- if gt (int .Values.sizing.diego_api.count) 0 }}
+# Also: bbs and cfdot
 
 {{- if gt (int .Values.sizing.diego_api.count) 3 }}
 _maxReplicas: {{ fail "diego_api cannot have more than 3 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_api.count) 1) (lt (int .Values.sizing.diego_api.count) 2)) }}
+_minHAReplicas: {{ fail "diego_api must have at least 2 instances for HA" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.diego_api.count) 1 }}
+_minReplicas: {{ fail "diego_api must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -151,7 +156,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-api"
@@ -207,20 +212,20 @@ spec:
               key: "bbs-active-key-passphrase"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
 
-        {{- if .Values.secrets.BBS_AUCTIONEER_CERT }}
-        - name: "BBS_AUCTIONEER_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "bbs-auctioneer-cert"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.BBS_AUCTIONEER_CERT }}
         - name: "BBS_AUCTIONEER_CERT"
           valueFrom:
             secretKeyRef:
               key: "bbs-auctioneer-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_AUCTIONEER_CERT }}
+        - name: "BBS_AUCTIONEER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-auctioneer-cert"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.BBS_AUCTIONEER_CERT_KEY }}
@@ -255,20 +260,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.BBS_REP_CERT_KEY }}
-        - name: "BBS_REP_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "bbs-rep-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.BBS_REP_CERT_KEY }}
         - name: "BBS_REP_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "bbs-rep-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.BBS_REP_CERT_KEY }}
+        - name: "BBS_REP_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "bbs-rep-cert-key"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.BBS_SERVER_CRT }}
@@ -347,20 +352,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
-        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-client-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
         - name: "LOGGREGATOR_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "loggregator-client-cert-key"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
+        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-client-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "LOG_LEVEL"
@@ -382,20 +387,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_DIEGO_PASSWORD }}
-        - name: "MYSQL_DIEGO_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-diego-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MYSQL_DIEGO_PASSWORD }}
         - name: "MYSQL_DIEGO_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "mysql-diego-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_DIEGO_PASSWORD }}
+        - name: "MYSQL_DIEGO_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-diego-password"
+              name: "secrets"
         {{- end }}
 
         - name: "PZ_LABEL_NAME"
@@ -411,7 +416,11 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:d6a649ec166e74c036a963077bd780c286edb48c"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:1d71ff97ce70a0a0cfc2df4ae7477f708e155c1e"
         lifecycle:
           preStop:
             exec:
@@ -519,20 +528,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
         - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
@@ -559,7 +568,11 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:214517c814b007c6e23ff4a905cbee0baa487558"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:27973bc66223ebdc2493febd6f0e06188556c967"
         lifecycle:
           preStop:
             exec:
@@ -607,12 +620,18 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "withsysresource"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -625,4 +644,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end }}

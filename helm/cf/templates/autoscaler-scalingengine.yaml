@@ -1,5 +1,4 @@
 ---
-{{- if gt (int .Values.sizing.autoscaler_scalingengine.count) 0 }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -74,7 +73,6 @@ items:
     selector:
       app.kubernetes.io/component: "autoscaler-scalingengine"
 kind: "List"
-{{- end }}
 ---
 # The autoscaler-scalingengine instance group contains the following jobs:
 #
@@ -84,10 +82,17 @@ kind: "List"
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
 # Also: scalingengine
-{{- if gt (int .Values.sizing.autoscaler_scalingengine.count) 0 }}
 
 {{- if gt (int .Values.sizing.autoscaler_scalingengine.count) 3 }}
 _maxReplicas: {{ fail "autoscaler_scalingengine cannot have more than 3 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.autoscaler_scalingengine.count) 1) (lt (int .Values.sizing.autoscaler_scalingengine.count) 2)) }}
+_minHAReplicas: {{ fail "autoscaler_scalingengine must have at least 2 instances for HA" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.autoscaler_scalingengine.count) 1 }}
+_minReplicas: {{ fail "autoscaler_scalingengine must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -133,7 +138,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_scalingengine.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_scalingengine.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_scalingengine.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_scalingengine.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "autoscaler-scalingengine"
@@ -247,20 +252,20 @@ spec:
         - name: "AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS"
           value: {{if ne (typeOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) "<nil>"}}{{if has (kindOf .Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS) (list "map" "slice")}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | toJson | quote}}{{else}}{{.Values.env.AUTOSCALER_SCHEDULER_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS | quote}}{{end}}{{else}}""{{end}}
 
-        {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
-        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-uaa-client-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
         - name: "AUTOSCALER_UAA_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-uaa-client-secret"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
+        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "AZ_LABEL_NAME"
@@ -326,7 +331,11 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-scalingengine:60b0948cc9e3d703790089a74184a838bc492803"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-scalingengine:534588a8431058fee9e3432f83a1c14589c23030"
         lifecycle:
           preStop:
             exec:
@@ -380,8 +389,10 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
       restartPolicy: "Always"
       terminationGracePeriodSeconds: 600
       volumes:
@@ -395,4 +406,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end }}

@@ -48,20 +48,20 @@ spec:
     spec:
       containers:
       - env:
-        {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
-        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-uaa-client-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
         - name: "AUTOSCALER_UAA_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-uaa-client-secret"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
+        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "AZ_LABEL_NAME"
@@ -105,14 +105,6 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
 
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -121,16 +113,16 @@ spec:
               name: "secrets"
         {{- end }}
 
-        - name: "NO_PROXY"
-          value: {{if ne (typeOf .Values.env.NO_PROXY) "<nil>"}}{{if has (kindOf .Values.env.NO_PROXY) (list "map" "slice")}}{{.Values.env.NO_PROXY | toJson | quote}}{{else}}{{.Values.env.NO_PROXY | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if not .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
-        - name: "PERSI_NFS_BROKER_PASSWORD"
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "persi-nfs-broker-password"
+              key: "monit-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
+
+        - name: "NO_PROXY"
+          value: {{if ne (typeOf .Values.env.NO_PROXY) "<nil>"}}{{if has (kindOf .Values.env.NO_PROXY) (list "map" "slice")}}{{.Values.env.NO_PROXY | toJson | quote}}{{else}}{{.Values.env.NO_PROXY | quote}}{{end}}{{else}}""{{end}}
 
         {{- if .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
         - name: "PERSI_NFS_BROKER_PASSWORD"
@@ -138,6 +130,14 @@ spec:
             secretKeyRef:
               key: "persi-nfs-broker-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
+        - name: "PERSI_NFS_BROKER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "persi-nfs-broker-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "PZ_LABEL_NAME"
@@ -159,20 +159,20 @@ spec:
               key: "uaa-ca-cert"
               name: "secrets"
 
-        {{- if .Values.secrets.UAA_CC_CLIENT_SECRET }}
-        - name: "UAA_CC_CLIENT_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-cc-client-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CC_CLIENT_SECRET }}
         - name: "UAA_CC_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-cc-client-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CC_CLIENT_SECRET }}
+        - name: "UAA_CC_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-cc-client-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
@@ -191,20 +191,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
-        - name: "UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-cc-service-dashboards-client-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
         - name: "UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-cc-service-dashboards-client-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-dashboards-client-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
@@ -303,14 +303,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
-        - name: "UAA_CLIENTS_GOROUTER_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-gorouter-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
         - name: "UAA_CLIENTS_GOROUTER_SECRET"
           valueFrom:
@@ -319,12 +311,12 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
-        - name: "UAA_CLIENTS_LOGIN_SECRET"
+        {{- if .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
+        - name: "UAA_CLIENTS_GOROUTER_SECRET"
           valueFrom:
             secretKeyRef:
-              key: "uaa-clients-login-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+              key: "uaa-clients-gorouter-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
@@ -335,11 +327,11 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET }}
-        - name: "UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET"
+        {{- if not .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
+        - name: "UAA_CLIENTS_LOGIN_SECRET"
           valueFrom:
             secretKeyRef:
-              key: "uaa-clients-scf-auto-config-secret"
+              key: "uaa-clients-login-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -351,12 +343,12 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_TCP_EMITTER_SECRET }}
-        - name: "UAA_CLIENTS_TCP_EMITTER_SECRET"
+        {{- if not .Values.secrets.UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET }}
+        - name: "UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET"
           valueFrom:
             secretKeyRef:
-              key: "uaa-clients-tcp-emitter-secret"
-              name: "secrets"
+              key: "uaa-clients-scf-auto-config-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_TCP_EMITTER_SECRET }}
@@ -367,12 +359,12 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.UAA_CLIENTS_TCP_ROUTER_SECRET }}
-        - name: "UAA_CLIENTS_TCP_ROUTER_SECRET"
+        {{- if .Values.secrets.UAA_CLIENTS_TCP_EMITTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_EMITTER_SECRET"
           valueFrom:
             secretKeyRef:
-              key: "uaa-clients-tcp-router-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+              key: "uaa-clients-tcp-emitter-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.UAA_CLIENTS_TCP_ROUTER_SECRET }}
@@ -383,11 +375,23 @@ spec:
               name: "secrets"
         {{- end }}
 
+        {{- if not .Values.secrets.UAA_CLIENTS_TCP_ROUTER_SECRET }}
+        - name: "UAA_CLIENTS_TCP_ROUTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-tcp-router-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
         - name: "UAA_HOST"
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:2aacd77c129828cca593e318eb4db7d949f5970c"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:d3ea4dde93398a0e6dd403fc2839d58d196b7c7d"
         lifecycle:
           preStop:
             exec:
@@ -435,8 +439,10 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
       restartPolicy: "OnFailure"
       terminationGracePeriodSeconds: 600
       volumes:

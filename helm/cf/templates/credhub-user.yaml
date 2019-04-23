@@ -1,5 +1,4 @@
 ---
-{{- if gt (int .Values.sizing.credhub_user.count) 0 }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -74,7 +73,6 @@ items:
     selector:
       app.kubernetes.io/component: "credhub-user"
 kind: "List"
-{{- end }}
 ---
 # The credhub-user instance group contains the following jobs:
 #
@@ -83,11 +81,14 @@ kind: "List"
 #
 # - route_registrar: Used for registering routes
 #
-# Also: credhub, bpm
-{{- if gt (int .Values.sizing.credhub_user.count) 0 }}
+# Also: credhub and bpm
 
 {{- if gt (int .Values.sizing.credhub_user.count) 1 }}
 _maxReplicas: {{ fail "credhub_user cannot have more than 1 instances" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.credhub_user.count) 1 }}
+_minReplicas: {{ fail "credhub_user must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -133,7 +134,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.credhub_user.count) 0) -}} 1 {{- else -}} {{ .Values.sizing.credhub_user.count }} {{- end }}
+  replicas: {{ .Values.sizing.credhub_user.count }}
   selector:
     matchLabels:
       skiff-role-name: "credhub-user"
@@ -244,14 +245,6 @@ spec:
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -260,11 +253,11 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
-        - name: "MYSQL_CREDHUB_USER_PASSWORD"
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "mysql-credhub-user-password"
+              key: "monit-password"
               name: "secrets"
         {{- end }}
 
@@ -274,6 +267,14 @@ spec:
             secretKeyRef:
               key: "mysql-credhub-user-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_CREDHUB_USER_PASSWORD }}
+        - name: "MYSQL_CREDHUB_USER_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-credhub-user-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.NATS_PASSWORD }}
@@ -309,7 +310,11 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:fdb82b17033591a2d55267ad483dbd2e1ae3d89e"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:8d11c847cab9924d29ee33b9c35dfe8715b29436"
         lifecycle:
           preStop:
             exec:
@@ -351,12 +356,18 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "default-privileged"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -369,4 +380,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end }}

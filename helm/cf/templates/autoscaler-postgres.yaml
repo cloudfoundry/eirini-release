@@ -1,5 +1,4 @@
 ---
-{{- if gt (int .Values.sizing.autoscaler_postgres.count) 0 }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -74,7 +73,6 @@ items:
     selector:
       app.kubernetes.io/component: "autoscaler-postgres"
 kind: "List"
-{{- end }}
 ---
 # The autoscaler-postgres instance group contains the following jobs:
 #
@@ -84,10 +82,17 @@ kind: "List"
 # - postgres: The Postgres server provides a single instance Postgres database
 #   that can be used with the Cloud Controller or the UAA. It does not provide
 #   highly-available configuration.
-{{- if gt (int .Values.sizing.autoscaler_postgres.count) 0 }}
 
 {{- if gt (int .Values.sizing.autoscaler_postgres.count) 3 }}
 _maxReplicas: {{ fail "autoscaler_postgres cannot have more than 3 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.autoscaler_postgres.count) 1) (lt (int .Values.sizing.autoscaler_postgres.count) 2)) }}
+_minHAReplicas: {{ fail "autoscaler_postgres must have at least 2 instances for HA" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.autoscaler_postgres.count) 1 }}
+_minReplicas: {{ fail "autoscaler_postgres must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -133,7 +138,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_postgres.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_postgres.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.autoscaler_postgres.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.autoscaler_postgres.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "autoscaler-postgres"
@@ -243,7 +248,11 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-postgres:6a0a094250833c465f3e242466f7be51efc9dd55"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-postgres:42238de67136ae1f8c857880d3699efe2b45428c"
         lifecycle:
           preStop:
             exec:
@@ -300,8 +309,10 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
       restartPolicy: "Always"
       terminationGracePeriodSeconds: 600
       volumes:
@@ -318,12 +329,10 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: "postgres-data"
-      annotations:
-        volume.beta.kubernetes.io/storage-class: {{ .Values.kube.storage_class.persistent | quote }}
     spec:
       accessModes:
       - "ReadWriteOnce"
       resources:
         requests:
           storage: "{{ .Values.sizing.autoscaler_postgres.disk_sizes.postgres_data }}G"
-{{- end }}
+      storageClassName: {{ .Values.kube.storage_class.persistent | quote }}

@@ -6,6 +6,10 @@ kube:
   # Whether HostPath volume mounts are available
   hostpath_available: false
 
+  limits:
+    nproc:
+      hard: ""
+      soft: ""
   organization: "eirinicf"
   psp:
     nonprivileged: ~
@@ -49,7 +53,6 @@ bosh:
   instance_groups: []
 services:
   loadbalanced: false
-  ingress: ~
 secrets:
   # PEM encoded RSA private key used to identify host.
   # This value uses a generated default.
@@ -1119,12 +1122,13 @@ sizing:
   #
   # Also: bpm, statsd_injector, go-buildpack, binary-buildpack,
   # nodejs-buildpack, ruby-buildpack, php-buildpack, python-buildpack,
-  # staticfile-buildpack, nginx-buildpack, java-buildpack, dotnet-core-buildpack
+  # staticfile-buildpack, nginx-buildpack, java-buildpack, and
+  # dotnet-core-buildpack
   api_group:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The api-group instance group can scale between 1 and 65535 instances.
+    # The api_group instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1145,14 +1149,14 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: apiserver, bpm
+  # Also: apiserver and bpm
   autoscaler_api:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The autoscaler-api instance group can scale between 0 and 3 instances.
+    # The autoscaler_api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1179,10 +1183,10 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler-eventgenerator instance group can scale between 0 and 3
+    # The autoscaler_eventgenerator instance group can scale between 1 and 3
     # instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1209,9 +1213,9 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler-metrics instance group can scale between 0 and 3 instances.
+    # The autoscaler_metrics instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1238,10 +1242,10 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler-operator instance group can scale between 0 and 3
+    # The autoscaler_operator instance group can scale between 1 and 3
     # instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1268,10 +1272,10 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler-postgres instance group can scale between 0 and 3
+    # The autoscaler_postgres instance group can scale between 1 and 3
     # instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1301,10 +1305,10 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler-scalingengine instance group can scale between 0 and 3
+    # The autoscaler_scalingengine instance group can scale between 1 and 3
     # instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1331,10 +1335,10 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler-scheduler instance group can scale between 0 and 3
+    # The autoscaler_scheduler instance group can scale between 1 and 3
     # instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1355,15 +1359,15 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: servicebroker, bpm
+  # Also: servicebroker and bpm
   autoscaler_servicebroker:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The autoscaler-servicebroker instance group can scale between 0 and 3
+    # The autoscaler_servicebroker instance group can scale between 1 and 3
     # instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1382,7 +1386,7 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: blobstore, bpm
+  # Also: blobstore and bpm
   blobstore:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1424,7 +1428,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The cc-clock instance group can scale between 1 and 3 instances.
+    # The cc_clock instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1445,7 +1449,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: tps, cc_uploader
+  # Also: tps and cc_uploader
   cc_uploader:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1453,7 +1457,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The cc-uploader instance group can scale between 1 and 3 instances.
+    # The cc_uploader instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1483,7 +1487,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The cc-worker instance group can scale between 1 and 65535 instances.
+    # The cc_worker instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1506,12 +1510,12 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: cf-usb, bpm
+  # Also: cf-usb and bpm
   cf_usb_group:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The cf-usb-group instance group can scale between 1 and 3 instances.
+    # The cf_usb_group instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1532,14 +1536,13 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: credhub, bpm
+  # Also: credhub and bpm
   credhub_user:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The credhub-user instance group can scale between 0 and 1 instances.
-    # For high availability it needs at least 1 instances.
-    count: 0
+    # The credhub_user instance group cannot be scaled.
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1561,7 +1564,7 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: bbs, cfdot
+  # Also: bbs and cfdot
   diego_api:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1569,9 +1572,9 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The diego-api instance group can scale between 0 and 3 instances.
+    # The diego_api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1593,7 +1596,7 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: auctioneer, cfdot
+  # Also: auctioneer and cfdot
   diego_brain:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1601,9 +1604,9 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The diego-brain instance group can scale between 0 and 3 instances.
+    # The diego_brain instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1632,14 +1635,14 @@ sizing:
   #
   # Also: rep, cfdot, route_emitter, garden, groot-btrfs,
   # cflinuxfs2-rootfs-setup, cflinuxfs3-rootfs-setup, opensuse42-rootfs-setup,
-  # cf-sle12-setup, nfsv3driver
+  # cf-sle12-setup, and nfsv3driver
   diego_cell:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The diego-cell instance group can scale between 0 and 254 instances.
+    # The diego_cell instance group can scale between 1 and 254 instances.
     # For high availability it needs at least 3 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1661,7 +1664,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: ssh_proxy, file_server
+  # Also: ssh_proxy and file_server
   diego_ssh:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1669,9 +1672,9 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The diego-ssh instance group can scale between 0 and 3 instances.
+    # The diego_ssh instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 0
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -1751,12 +1754,12 @@ sizing:
   #
   # - route_registrar: Used for registering routes
   #
-  # Also: loggregator_trafficcontroller, reverse_log_proxy, bpm
+  # Also: loggregator_trafficcontroller, reverse_log_proxy, and bpm
   log_api:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The log-api instance group can scale between 1 and 65535 instances.
+    # The log_api instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1783,7 +1786,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The loggregator-agent instance group can scale between 1 and 3 instances.
+    # The loggregator_agent instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1805,7 +1808,7 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: mysql, proxy
+  # Also: mysql and proxy
   mysql:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1870,7 +1873,7 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The nfs-broker instance group can scale between 1 and 3 instances.
+    # The nfs_broker instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1902,7 +1905,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The post-deployment-setup instance group cannot be scaled.
+    # The post_deployment_setup instance group cannot be scaled.
     count: 1
 
     # Unit [millicore]
@@ -1954,12 +1957,12 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: bpm, routing-api
+  # Also: bpm and routing-api
   routing_api:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The routing-api instance group can scale between 1 and 3 instances.
+    # The routing_api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1983,7 +1986,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The secret-generation instance group cannot be scaled.
+    # The secret_generation instance group cannot be scaled.
     count: 1
 
     # Unit [millicore]
@@ -2009,7 +2012,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The syslog-scheduler instance group can scale between 1 and 3 instances.
+    # The syslog_scheduler instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -2040,7 +2043,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The tcp-router instance group can scale between 1 and 3 instances.
+    # The tcp_router instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -2057,3 +2060,17 @@ sizing:
     ports:
       tcp_route:
         count: 9
+
+enable: {}
+ingress:
+  # ingress.annotations allows specifying custom ingress annotations that gets
+  # merged to the default annotations.
+  annotations: {}
+
+  # ingress.enabled enables ingress support - working ingress controller
+  # necessary.
+  enabled: false
+
+  # ingress.tls.crt and ingress.tls.key, when specified, are used by the TLS
+  # secret for the Ingress resource.
+  tls: {}

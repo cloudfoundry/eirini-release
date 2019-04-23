@@ -1,5 +1,4 @@
 ---
-{{- if gt (int .Values.sizing.diego_ssh.count) 0 }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -93,7 +92,7 @@ items:
       app: "diego-ssh-ssh-proxy-public"
       {{- end }}
   spec:
-    {{- if not (or .Values.services.loadbalanced .Values.services.ingress) }}
+    {{- if not (or .Values.services.loadbalanced .Values.ingress.enabled) }}
     externalIPs: {{ .Values.kube.external_ips | toJson }}
     {{- end }}
 
@@ -109,8 +108,8 @@ items:
     type: "LoadBalancer"
     {{- end }}
 
-  {{- if and .Values.services.loadbalanced .Values.services.ingress }}
-  _incompatible: {{ fail "services.loadbalanced and services.ingress cannot both be set" }}
+  {{- if and .Values.services.loadbalanced .Values.ingress.enabled }}
+  _incompatible: {{ fail "services.loadbalanced and ingress.enabled cannot both be set" }}
   {{- end }}
 - apiVersion: "v1"
   kind: "Service"
@@ -160,7 +159,6 @@ items:
     selector:
       app.kubernetes.io/component: "diego-ssh"
 kind: "List"
-{{- end }}
 ---
 # The diego-ssh instance group contains the following jobs:
 #
@@ -169,11 +167,18 @@ kind: "List"
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# Also: ssh_proxy, file_server
-{{- if gt (int .Values.sizing.diego_ssh.count) 0 }}
+# Also: ssh_proxy and file_server
 
 {{- if gt (int .Values.sizing.diego_ssh.count) 3 }}
 _maxReplicas: {{ fail "diego_ssh cannot have more than 3 instances" }}
+{{- end }}
+
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_ssh.count) 1) (lt (int .Values.sizing.diego_ssh.count) 2)) }}
+_minHAReplicas: {{ fail "diego_ssh must have at least 2 instances for HA" }}
+{{- end }}
+
+{{- if lt (int .Values.sizing.diego_ssh.count) 1 }}
+_minReplicas: {{ fail "diego_ssh must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -219,7 +224,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_ssh.count) 0) -}} 2 {{- else -}} {{ .Values.sizing.diego_ssh.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_ssh.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.diego_ssh.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-ssh"
@@ -346,14 +351,6 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
 
-        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
-        - name: "LOGGREGATOR_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-client-cert"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
         - name: "LOGGREGATOR_CLIENT_CERT"
           valueFrom:
@@ -362,11 +359,11 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
-        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
+        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
+        - name: "LOGGREGATOR_CLIENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "loggregator-client-cert-key"
+              key: "loggregator-client-cert"
               name: "secrets"
         {{- end }}
 
@@ -378,16 +375,16 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        - name: "LOG_LEVEL"
-          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
+        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
+        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "monit-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+              key: "loggregator-client-cert-key"
+              name: "secrets"
         {{- end }}
+
+        - name: "LOG_LEVEL"
+          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -395,6 +392,14 @@ spec:
             secretKeyRef:
               key: "monit-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "PZ_LABEL_NAME"
@@ -431,7 +436,11 @@ spec:
           value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
         - name: "UAA_PORT"
           value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-ssh:d35cf1e43bb9480e7698ebb2b3a9b1f37df7dfce"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-ssh:4a774b66be8a8b3c482fce6115cd5d26184ee366"
         lifecycle:
           preStop:
             exec:
@@ -538,20 +547,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-agent-cert-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
         - name: "LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-agent-cert-key"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
@@ -578,7 +587,11 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:214517c814b007c6e23ff4a905cbee0baa487558"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:27973bc66223ebdc2493febd6f0e06188556c967"
         lifecycle:
           preStop:
             exec:
@@ -626,12 +639,18 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "withsysresource"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -644,4 +663,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end }}
