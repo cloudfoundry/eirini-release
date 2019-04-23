@@ -7,7 +7,7 @@ entries:
     digest: bee5bb0c64d265e9993b14a0be7b3c897efc5249ababb248736238928e625e7f
     name: cf
     urls:
-    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.12.0/eirini-cf.tgz
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.11.0/eirini-cf.tgz
     version: 2.14.5
   eirini:
   - apiVersion: v1
@@ -53,6 +53,6 @@ entries:
     digest: 53174ad395376f96c262a20ca5568d966f32a5be068889e9d29a5c9f18fbbbf8
     name: uaa
     urls:
-    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.12.0/eirini-uaa.tgz
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.11.0/eirini-uaa.tgz
     version: 2.14.5
 generated: 2019-04-09T21:05:44.395257997Z
