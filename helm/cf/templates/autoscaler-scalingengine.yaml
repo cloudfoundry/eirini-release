@@ -335,7 +335,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-scalingengine:534588a8431058fee9e3432f83a1c14589c23030"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-autoscaler-scalingengine:63cee97c9b3afda216eee8fb775f3914344b83ba"
         lifecycle:
           preStop:
             exec:
