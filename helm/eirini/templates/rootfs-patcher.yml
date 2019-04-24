@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+  name: rootfs-patcher
+spec:
+  template:
+    spec:
+      containers:
+      - name: patch
+        command:
+        - rootfs-patcher
+        - --namespace=eirini
+        - --rootfs-version={{ .Values.opi.rootfs_version }}
+        image: eirini/rootfs-patcher:{{ .Values.opi.image_tag }}
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+      serviceAccount: opi
+      serviceAccountName: opi
