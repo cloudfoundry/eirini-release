@@ -11,7 +11,7 @@
 #   Controller's desired state. Additionally, the Clock schedules periodic clean
 #   up jobs to prune app usage events, audit events, failed jobs, and more.
 #
-# Also: statsd_injector
+# Also: bpm and statsd_injector
 
 {{- if gt (int .Values.sizing.cc_clock.count) 3 }}
 _maxReplicas: {{ fail "cc_clock cannot have more than 3 instances" }}
@@ -353,7 +353,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:1ac5f5cd0cdc6230c40311739186129fad5fffb2"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:927d98335dbb8d84f3c3e695314d00ab10607eb9"
         lifecycle:
           preStop:
             exec:
@@ -386,19 +386,7 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.cc_clock.capabilities }}
           privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.cc_clock.capabilities) }}
-          capabilities:
-            add:
-            {{- range .Values.sizing.cc_clock.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.cc_clock.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -496,7 +484,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:2dd62874ad50006b41ae85f8d1421960b36eb2b2"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:99f9511d5528ebf8d2f961dde089f539db0ecc98"
         lifecycle:
           preStop:
             exec:
@@ -544,11 +532,18 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
       {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
       {{- end }}
+
       restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default-privileged"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

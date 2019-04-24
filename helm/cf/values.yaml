@@ -1420,13 +1420,10 @@ sizing:
   #   clean up jobs to prune app usage events, audit events, failed jobs, and
   #   more.
   #
-  # Also: statsd_injector
+  # Also: bpm and statsd_injector
   cc_clock:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The cc_clock instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1449,13 +1446,10 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: tps and cc_uploader
+  # Also: tps, bpm, and cc_uploader
   cc_uploader:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The cc_uploader instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1480,12 +1474,11 @@ sizing:
   #
   # - cloud_controller_worker: Cloud Controller worker processes background
   #   tasks submitted via the.
+  #
+  # Also: bpm
   cc_worker:
     # Node affinity rules can be specified here
     affinity: {}
-
-    # Additional privileges can be specified here
-    capabilities: []
 
     # The cc_worker instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.

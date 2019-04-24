@@ -8,6 +8,8 @@
 #
 # - cloud_controller_worker: Cloud Controller worker processes background tasks
 #   submitted via the.
+#
+# Also: bpm
 
 {{- if gt (int .Values.sizing.cc_worker.count) 65535 }}
 _maxReplicas: {{ fail "cc_worker cannot have more than 65535 instances" }}
@@ -355,7 +357,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-worker:96d235a3df90213a931167bf8940a3e402c04ba7"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-worker:413da95c73ad4e482a0d7a332b23659236bd7d4e"
         lifecycle:
           preStop:
             exec:
@@ -388,19 +390,7 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.cc_worker.capabilities }}
           privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.cc_worker.capabilities) }}
-          capabilities:
-            add:
-            {{- range .Values.sizing.cc_worker.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.cc_worker.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -498,7 +488,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:2dd62874ad50006b41ae85f8d1421960b36eb2b2"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:99f9511d5528ebf8d2f961dde089f539db0ecc98"
         lifecycle:
           preStop:
             exec:
@@ -546,11 +536,18 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
       {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
       {{- end }}
+
       restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default-privileged"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

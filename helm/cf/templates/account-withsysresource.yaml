@@ -1,6 +1,5 @@
 ---
 # Service account "withsysresource" is used by the following instance groups:
-# - cc-uploader
 # - diego-api
 # - diego-brain
 # - diego-ssh

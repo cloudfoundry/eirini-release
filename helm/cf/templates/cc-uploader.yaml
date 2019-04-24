@@ -93,7 +93,7 @@ kind: "List"
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# Also: tps and cc_uploader
+# Also: tps, bpm, and cc_uploader
 
 {{- if gt (int .Values.sizing.cc_uploader.count) 3 }}
 _maxReplicas: {{ fail "cc_uploader cannot have more than 3 instances" }}
@@ -394,7 +394,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-uploader:efcf9216bb98ce63981dbaf1315dd061acf684b0"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-uploader:1fddf68e9603b4b4e1a8766cb53db256667f076d"
         lifecycle:
           preStop:
             exec:
@@ -433,20 +433,7 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.cc_uploader.capabilities }}
           privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.cc_uploader.capabilities) }}
-          capabilities:
-            add:
-            - "SYS_RESOURCE"
-            {{- range .Values.sizing.cc_uploader.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.cc_uploader.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -544,7 +531,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:2dd62874ad50006b41ae85f8d1421960b36eb2b2"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:99f9511d5528ebf8d2f961dde089f539db0ecc98"
         lifecycle:
           preStop:
             exec:
@@ -601,7 +588,7 @@ spec:
       restartPolicy: "Always"
 
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "withsysresource"
+      serviceAccountName: "withsysresource-privileged"
       {{- end }}
 
       terminationGracePeriodSeconds: 600
