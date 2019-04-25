@@ -9,6 +9,7 @@ opi:
   image_tag: latest
   stager_image: eirini/recipe
   rootfs_version: 24.0.0
+  rootfs_patcher_timeout: 1h
 
 kube:
   external_ips: []
