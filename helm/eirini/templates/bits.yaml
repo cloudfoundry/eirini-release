@@ -130,7 +130,7 @@ spec:
           mountPath: /assets/
       initContainers:
       - name: "download-eirini-rootfs"
-        image: kiranjain2/eirinidownloader:latest
+        image: flintstonecf/eirinifs-downloader:latest
         env:
         - name: EIRINI_ROOTFS_VERSION
           value: {{ .Values.EIRINI_ROOTFS_VERSION }}
