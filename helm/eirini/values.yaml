@@ -28,5 +28,4 @@ env:
   # Base domain of the SCF cluster.
   # Example: "my-scf-cluster.com"
   DOMAIN: ~
-
-EIRINI_ROOTFS_VERSION: v35.0.0
+EIRINI_ROOTFS_VERSION: 
