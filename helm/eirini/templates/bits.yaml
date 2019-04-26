@@ -131,6 +131,9 @@ spec:
       initContainers:
       - name: "download-eirini-rootfs"
         image: flintstonecf/eirinifs-downloader:latest
+        env:
+        - name: EIRINI_ROOTFS_VERSION
+          value: {{ .Values.EIRINI_ROOTFS_VERSION }}
         command: ["/bin/sh", "-c", "./eirini-rootfs-downloader.sh"]
         volumeMounts:
         - name: bits-assets
