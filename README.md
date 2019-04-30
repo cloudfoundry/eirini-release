@@ -38,7 +38,7 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 
 1. Export the Registry certificate in the `BITS_TLS_KEY` and `BITS_TLS_CRT` environment variables. (see [Certificates](#Certificates))
 
-1. Set the environemnt varialbe `EIRINI_ROOTFS_VERSION`. This will donwload the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
+1. Set the environment variable `EIRINI_ROOTFS_VERSION`. This will downloads the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
 1. Install CF:
 
     ```bash
