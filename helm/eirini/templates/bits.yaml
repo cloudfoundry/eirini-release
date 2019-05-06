@@ -116,7 +116,7 @@ spec:
         imagePullPolicy: Always
         restartPolicy: OnFailure
         ports:
-          - containerPort: 4443
+          - containerPort: 8888
         volumeMounts:
         - name: bits-config
           mountPath: /workspace/jobs/bits-service/config
