@@ -17,6 +17,6 @@ spec:
         - --timeout={{ .Values.opi.rootfs_patcher_timeout }}
         image: eirini/rootfs-patcher:{{ .Values.opi.image_tag }}
         imagePullPolicy: IfNotPresent
-      restartPolicy: Never
+      restartPolicy: OnFailure
       serviceAccount: opi
       serviceAccountName: opi
