@@ -42,7 +42,7 @@ spec:
               path: cc.ca
       initContainers:
       - name: configure-opi-yaml
-        image: {{ .Values.opi.init_image }}
+        image: "{{ .Values.opi.init_image }}:{{ .Values.opi.image_tag }}"
         env:
         - name: "NATS_PASSWORD"
           valueFrom:
@@ -57,7 +57,7 @@ spec:
           readOnly: false
       containers:
       - name: opi
-        image: {{ .Values.opi.image }}
+        image: "{{ .Values.opi.image }}:{{ .Values.opi.image_tag }}"
         imagePullPolicy: Always
         volumeMounts:
         - name: config-volume

@@ -6,13 +6,16 @@ opi:
 
   namespace: eirini
   version: 0.0.0
+  init_image: eirini/opi-init
+  image: eirini/opi
   image_tag: latest
-  init_image: eirini/opi-init:latest
-  image: eirini/opi:latest
   stager:
-    downloader_image: eirini/recipe-downloader:latest
-    uploader_image: eirini/recipe-uploader:latest
-    executor_image: eirini/recipe-executor:latest
+    downloader_image: eirini/recipe-downloader
+    downloader_image_tag: sha256:7b16e8b2aa675027a6d3b9bfb39c1cce70541e4d2bfe0e416db50fcab6da97bd
+    executor_image: eirini/recipe-executor
+    executor_image_tag: sha256:707fb68723402347344364c4334dd822ba7247ba660cfebe6cbe1edbba7c3f9e
+    uploader_image: eirini/recipe-uploader
+    uploader_image_tag: sha256:a7ab8fabc6024a73a774ee42c14d4eaceda0fc4528471098a906ab36889dba70
 
 kube:
   external_ips: []
