@@ -9,17 +9,12 @@ TAG=${1:-"latest"}
 main(){
     echo "Creating Eirini docker images..."
     build_opi
-    build_rootfs_patcher
     create_docker_images
     echo "All images created successfully"
 }
 
 build_opi(){
   GOPATH="$BASEDIR" GOOS=linux CGO_ENABLED=0 go build -a -o "$DOCKERDIR/opi/opi" code.cloudfoundry.org/eirini/cmd/opi
-}
-
-build_rootfs_patcher() {
-  GOPATH="$BASEDIR" GOOS=linux CGO_ENABLED=0 go build -a -o "$DOCKERDIR/rootfs-patcher/rootfs-patcher" code.cloudfoundry.org/eirini/cmd/rootfs-patcher
 }
 
 create_docker_images() {
