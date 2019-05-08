@@ -23,7 +23,7 @@ kube:
   external_ips: []
 
 scf:
-  version: 2.14.5
+  version: 2.15.2.1
   secrets_generation_counter: 1
 
 services:
