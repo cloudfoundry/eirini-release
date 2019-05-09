@@ -21,7 +21,7 @@ create_docker_images() {
   create_image "$DOCKERDIR"/opi eirini/opi
   create_image "$DOCKERDIR"/opi/init eirini/opi-init
   create_image "$DOCKERDIR"/registry/certs/smuggler eirini/secret-smuggler
-  docker build -f  "$DOCKERDIR"/rootfs-patcher/Dockerfile -t eirini/rootfs-patcher "$BASEDIR"
+  docker build -f  "$DOCKERDIR"/rootfs-patcher/Dockerfile -t "eirini/rootfs-patcher:${TAG}" "$BASEDIR"
 }
 
 create_image() {
