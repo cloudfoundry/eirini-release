@@ -116,7 +116,7 @@ spec:
             type: DirectoryOrCreate
       containers:
       - name: bits
-        image: flintstonecf/bits-service:latest
+        image: flintstonecf/bits-service:2.26.0-dev.8
         imagePullPolicy: Always
         ports:
           - containerPort: 4443
@@ -129,10 +129,10 @@ spec:
           mountPath: /assets/
       initContainers:
       - name: "download-eirini-rootfs"
-        image: flintstonecf/eirinifs-downloader:latest
+        image: flintstonecf/eirinifs-downloader:2.26.0-dev.8
         env:
         - name: EIRINI_ROOTFS_VERSION
-          value: {{ .Values.EIRINI_ROOTFS_VERSION }}
+          value: {{ .Values.opi.rootfs_version }}
         command: ["/bin/sh", "-c", "./eirini-rootfs-downloader.sh"]
         volumeMounts:
         - name: bits-assets
