@@ -118,7 +118,6 @@ spec:
       - name: bits
         image: flintstonecf/bits-service:latest
         imagePullPolicy: Always
-        restartPolicy: OnFailure
         ports:
           - containerPort: 4443
         volumeMounts:
