@@ -9,7 +9,6 @@ opi:
   init_image: eirini/opi-init
   image: eirini/opi
   image_tag: latest
-<<<<<<< Updated upstream
   rootfs_version: 24.0.0
   rootfs_patcher_timeout: -1ns
   stager:
@@ -19,12 +18,6 @@ opi:
     executor_image_tag: sha256:707fb68723402347344364c4334dd822ba7247ba660cfebe6cbe1edbba7c3f9e
     uploader_image: eirini/recipe-uploader
     uploader_image_tag: sha256:a7ab8fabc6024a73a774ee42c14d4eaceda0fc4528471098a906ab36889dba70
-=======
-  stager_image: eirini/recipe
-  rootfs_version: 24.0.0
-  rootfs_patcher_timeout: -1ns
->>>>>>> Stashed changes
-
 kube:
   external_ips: []
 
