@@ -471,6 +471,11 @@ items:
   kind: "Service"
   metadata:
     name: "router-gorouter-public"
+    annotations:
+    {{- if .Values.services.externalDNS }}
+      external-dns.alpha.kubernetes.io/hostname: "*.{{ .Values.env.DOMAIN }},{{ .Values.env.DOMAIN }}"
+    {{- end }}
+
     labels:
       app.kubernetes.io/component: "router-gorouter-public"
       skiff-role-name: "router-gorouter-public"

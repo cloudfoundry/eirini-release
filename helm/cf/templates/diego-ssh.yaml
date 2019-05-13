@@ -419,6 +419,10 @@ items:
   kind: "Service"
   metadata:
     name: "diego-ssh-ssh-proxy-public"
+    annotations:
+    {{- if .Values.services.externalDNS }}
+      external-dns.alpha.kubernetes.io/hostname: ssh.{{ .Values.env.DOMAIN }}
+    {{- end }}
     labels:
       app.kubernetes.io/component: "diego-ssh-ssh-proxy-public"
       skiff-role-name: "diego-ssh-ssh-proxy-public"

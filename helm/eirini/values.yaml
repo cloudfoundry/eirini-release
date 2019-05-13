@@ -28,6 +28,7 @@ scf:
 
 services:
   loadbalanced: false
+  externalDNS: false
 
 secrets:
   BITS_SERVICE_SECRET: secret
@@ -39,3 +40,7 @@ env:
   # Example: "my-scf-cluster.com"
   DOMAIN: ~
 
+bits:
+  # If set to true, must provide a pre-existing secret
+  # named `private-registry-cert`
+  useExistingSecret: false

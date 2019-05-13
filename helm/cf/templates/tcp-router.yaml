@@ -371,6 +371,10 @@ items:
   kind: "Service"
   metadata:
     name: "tcp-router-tcp-router-public"
+    annotations:
+    {{- if .Values.services.externalDNS }}
+      external-dns.alpha.kubernetes.io/hostname: tcp.{{ .Values.env.DOMAIN }}
+    {{- end }}
     labels:
       app.kubernetes.io/component: "tcp-router-tcp-router-public"
       skiff-role-name: "tcp-router-tcp-router-public"
