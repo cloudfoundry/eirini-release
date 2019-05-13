@@ -841,7 +841,7 @@ env:
   DEFAULT_APP_SSH_ACCESS: "true"
 
   # The default stack to use if no custom stack is specified by an app.
-  DEFAULT_STACK: "opensuse42"
+  DEFAULT_STACK: "cflinuxfs2"
 
   # The container disk capacity the cell should manage. If this capacity is
   # larger than the actual disk quota of the cell component, over-provisioning
