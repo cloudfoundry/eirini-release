@@ -14,11 +14,11 @@ opi:
   rootfs_patcher_timeout: -1ns
   stager:
     downloader_image: eirini/recipe-downloader
-    downloader_image_tag: sha256:7b16e8b2aa675027a6d3b9bfb39c1cce70541e4d2bfe0e416db50fcab6da97bd
+    downloader_image_tag: 0.1.0
     executor_image: eirini/recipe-executor
-    executor_image_tag: sha256:707fb68723402347344364c4334dd822ba7247ba660cfebe6cbe1edbba7c3f9e
+    executor_image_tag: 0.1.0
     uploader_image: eirini/recipe-uploader
-    uploader_image_tag: sha256:a7ab8fabc6024a73a774ee42c14d4eaceda0fc4528471098a906ab36889dba70
+    uploader_image_tag: 0.1.0
 kube:
   external_ips: []
 
