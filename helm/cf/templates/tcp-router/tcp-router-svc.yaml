@@ -1,0 +1,26 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+name: "tcp-router-tcp-router"
+labels:
+  app.kubernetes.io/component: "tcp-router-tcp-router"
+  skiff-role-name: "tcp-router-tcp-router"
+  app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+  app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+  app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+  helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+spec:
+ports:
+- name: "healthcheck"
+  port: 2341
+  protocol: "TCP"
+  targetPort: 8080
+{{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
+- name: "tcp-route-{{ $port }}"
+  port: {{ add 20000 $port }}
+  protocol: "TCP"
+  targetPort: "tcp-route-{{ $port }}"
+{{- end }}
+selector:
+  app.kubernetes.io/component: "tcp-router"
