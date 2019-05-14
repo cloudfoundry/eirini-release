@@ -27,7 +27,7 @@ spec:
           readOnly: false
       containers:
       - name: loggregator-fluentd
-        image: eirini/loggregator-fluentd:0.2.0
+        image: eirini/loggregator-fluentd@{{ .Files.Get "versions/fluentd" }}
         imagePullPolicy: Always
         env:
         - name: FLUENT_UID
