@@ -11,7 +11,7 @@ opi:
   image_tag: latest
   rootfs_version: 40.0.0
   rootfs_tag: v40.0.0
-  rootfs_patcher_timeout: -1ns
+  rootfs_patcher_timeout: 2m
   stager:
     downloader_image: eirini/recipe-downloader
     downloader_image_tag: 0.1.0

@@ -8,6 +8,14 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      - name: bits-waiter
+        image: eirini/bits-waiter:{{ .Values.opi.image_tag }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bits-waiter
+        - --namespace=scf
+        - --timeout={{ .Values.opi.rootfs_patcher_timeout }}
       containers:
       - name: patch
         command:
