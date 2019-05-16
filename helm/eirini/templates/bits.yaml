@@ -137,7 +137,6 @@ spec:
         volumeMounts:
         - name: bits-assets
           mountPath: /assets/
-        restartPolicy: "OnFailure"
 
 # Service
 ---
