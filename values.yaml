@@ -39,3 +39,23 @@ eirini:
 
   kube:
     external_ips: *external_ips
+ 
+bits:
+  env:
+    DOMAIN: *DOMAIN
+  services: *services
+  opi:
+    use_registry_ingress: false
+    #Enable if use_registry_ingress is set to 'true'
+    #ingress_endpoint: kubernetes-cluster-ingress-endpoint
+    #Enable if your cluster is using docker,
+    #by default eirini will assume containerd
+    use_docker: false
+
+  secrets:
+    BLOBSTORE_PASSWORD: *BLOBSTORE_PASSWORD
+    BITS_SERVICE_SECRET: REPLACE
+    BITS_SERVICE_SIGNING_USER_PASSWORD: REPLACE
+
+  kube:
+    external_ips: *external_ips

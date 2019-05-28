@@ -23,6 +23,11 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
     helm repo add eirini https://cloudfoundry-incubator.github.io/eirini-release
     ```
 
+1. Make the Bits helm repository available to helm:
+
+     ```bash
+    helm repo add bits https://cloudfoundry-incubator.github.io/bits-service-release/helm
+    ```
 1. Install UAA:
 
     ```bash
@@ -46,10 +51,10 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 
     **NOTICE**
 
-    The above command will take the default value for `rootfs_tag`. In case you want to specify a rootfs_version at deploy time use
+    The above command will take the default value for `rootfs_version`. In case you want to specify a rootfs_version at deploy time use
 
     ```bash   
-    --set "eirini.opi.rootfs_tag=x.x.x" 
+    --set "bits.opi.rootfs_version=vx.x.x"
     ```
 
 This will download the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
