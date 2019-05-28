@@ -7,8 +7,8 @@ data:
   opi.yaml: |
     opi:
       kube_namespace: {{ .Values.opi.namespace }}
-      nats_password: {{ .Values.secrets.NATS_PASSWORD }}
       nats_ip: "nats-nats.{{ .Release.Namespace }}.svc.cluster.local"
+      nats_port: 4222
       cc_internal_api: "https://api.{{ .Release.Namespace }}.svc.cluster.local:9023"
       cc_certs_secret_name: "secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}"
       {{- if .Values.opi.use_registry_ingress }}
