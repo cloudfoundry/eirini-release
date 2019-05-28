@@ -559,7 +559,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-mysql:282d4ea99ca521da15d4b964805f6828dcb514dc"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-mysql:63c34391628b3cd83360134af2d1ad9cb94d684c"
         lifecycle:
           preStop:
             exec:
