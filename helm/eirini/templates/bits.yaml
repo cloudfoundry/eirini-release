@@ -111,7 +111,7 @@ spec:
           secret:
             secretName: private-registry-cert
         - name: bits-assets
-          hostPath:
+          emptyDir:
             path: /bits/assets/
             type: DirectoryOrCreate
       containers:
