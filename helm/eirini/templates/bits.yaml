@@ -111,9 +111,7 @@ spec:
           secret:
             secretName: private-registry-cert
         - name: bits-assets
-          emptyDir:
-            path: /bits/assets/
-            type: DirectoryOrCreate
+          emptyDir: {}
       containers:
       - name: bits
         image: flintstonecf/bits-service:2.26.0-dev.8
