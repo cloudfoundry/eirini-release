@@ -1,4 +1,5 @@
 ---
+{{ if not .Values.env.ENABLE_OPI_STAGING  }}
 # Service account "garden-runc" is used by the following instance groups:
 # - diego-cell
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
@@ -909,3 +910,4 @@ spec:
         requests:
           storage: "{{ .Values.sizing.diego_cell.disk_sizes.grootfs_data }}G"
       storageClassName: {{ .Values.kube.storage_class.persistent | quote }}
+{{- end}}
