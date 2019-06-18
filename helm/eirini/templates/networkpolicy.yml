@@ -15,3 +15,9 @@ spec:
       podSelector:
         matchLabels:
           app.kubernetes.io/component: router
+    - namespaceSelector:
+        matchLabels:
+          name: scf
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/component: adapter
