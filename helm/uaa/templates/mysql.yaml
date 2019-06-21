@@ -283,14 +283,13 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: "mysql-data"
-      annotations:
-        volume.beta.kubernetes.io/storage-class: {{ .Values.kube.storage_class.persistent | quote }}
     spec:
       accessModes:
       - "ReadWriteOnce"
       resources:
         requests:
           storage: "{{ .Values.sizing.mysql.disk_sizes.mysql_data }}G"
+      storageClassName: {{ .Values.kube.storage_class.persistent | quote }}
 ---
 apiVersion: "v1"
 items:
