@@ -1,4 +1,126 @@
 ---
+apiVersion: "v1"
+items:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "uaa-set"
+    labels:
+      app.kubernetes.io/component: "uaa-set"
+      skiff-role-name: "uaa-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "uaa-set"
+      {{- end }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "uaa"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 0
+    - name: "uaa-ssl"
+      port: 2793
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "uaa"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "uaa-uaa-set"
+    labels:
+      app.kubernetes.io/component: "uaa-uaa-set"
+      skiff-role-name: "uaa-uaa-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "uaa-uaa-set"
+      {{- end }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "uaa"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 0
+    - name: "uaa-ssl"
+      port: 2793
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "uaa"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "uaa-uaa"
+    labels:
+      app.kubernetes.io/component: "uaa-uaa"
+      skiff-role-name: "uaa-uaa"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "uaa-uaa"
+      {{- end }}
+  spec:
+    ports:
+    - name: "uaa"
+      port: 8080
+      protocol: "TCP"
+      targetPort: 8080
+    - name: "uaa-ssl"
+      port: 2793
+      protocol: "TCP"
+      targetPort: 8443
+    selector:
+      app.kubernetes.io/component: "uaa"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "uaa-uaa-public"
+    labels:
+      app.kubernetes.io/component: "uaa-uaa-public"
+      skiff-role-name: "uaa-uaa-public"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "uaa-uaa-public"
+      {{- end }}
+  spec:
+    {{- if not (or .Values.services.loadbalanced .Values.ingress.enabled) }}
+    externalIPs: {{ .Values.kube.external_ips | toJson }}
+    {{- end }}
+
+    ports:
+    - name: "uaa-ssl"
+      port: 2793
+      protocol: "TCP"
+      targetPort: 8443
+    selector:
+      app.kubernetes.io/component: "uaa"
+
+    {{- if .Values.services.loadbalanced }}
+    type: "LoadBalancer"
+    {{- end }}
+
+  {{- if and .Values.services.loadbalanced .Values.ingress.enabled }}
+  _incompatible: {{ fail "services.loadbalanced and ingress.enabled cannot both be set" }}
+  {{- end }}
+kind: "List"
+---
 # The uaa instance group contains the following jobs:
 #
 # - global-uaa-properties: Dummy BOSH job used to host global parameters that
@@ -62,6 +184,15 @@ metadata:
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
     app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+
+    {{- if .Values.config.use_istio }}
+    app: "uaa"
+    {{- end }}
+
+    {{- if .Values.config.use_istio }}
+    version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    {{- end }}
+
 spec:
   podManagementPolicy: "OrderedReady"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.uaa.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.uaa.count }} {{- end }}
@@ -80,8 +211,20 @@ spec:
         app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
         app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
         helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+
+        {{- if .Values.config.use_istio }}
+        app: "uaa"
+        {{- end }}
+
+        {{- if .Values.config.use_istio }}
+        version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        {{- end }}
+
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- if .Values.config.use_istio }}
+        sidecar.istio.io/inject: "false"
+        {{- end }}
     spec:
       affinity:
         {{- if .Values.sizing.uaa.affinity.nodeAffinity }}
@@ -170,20 +313,20 @@ spec:
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "monit-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT }}
@@ -239,14 +382,6 @@ spec:
         - name: "SMTP_USER"
           value: {{if ne (typeOf .Values.env.SMTP_USER) "<nil>"}}{{if has (kindOf .Values.env.SMTP_USER) (list "map" "slice")}}{{.Values.env.SMTP_USER | toJson | quote}}{{else}}{{.Values.env.SMTP_USER | quote}}{{end}}{{else}}""{{end}}
 
-        {{- if .Values.secrets.UAADB_PASSWORD }}
-        - name: "UAADB_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "uaadb-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAADB_PASSWORD }}
         - name: "UAADB_PASSWORD"
           valueFrom:
@@ -255,11 +390,21 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
+        {{- if .Values.secrets.UAADB_PASSWORD }}
+        - name: "UAADB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "uaadb-password"
+              name: "secrets"
+        {{- end }}
+
         - name: "UAA_ADMIN_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-admin-client-secret"
               name: "secrets"
+        - name: "UAA_PUBLIC_PORT"
+          value: {{if ne (typeOf .Values.env.UAA_PUBLIC_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PUBLIC_PORT) (list "map" "slice")}}{{.Values.env.UAA_PUBLIC_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PUBLIC_PORT | quote}}{{end}}{{else}}""{{end}}
 
         {{- if not .Values.secrets.UAA_SERVER_CERT }}
         - name: "UAA_SERVER_CERT"
@@ -293,7 +438,11 @@ spec:
               name: "secrets"
         {{- end }}
 
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:156c262f6d788dccc2e88912d584fe419ba34bb1"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:378dee28c60e7a7ac892d79ad8fa043d63c2c7cf"
         lifecycle:
           preStop:
             exec:
@@ -312,7 +461,7 @@ spec:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --resolve uaa:8443:$(getent hosts ${HOSTNAME} | awk '{ print $1 }') --fail -H 'Host: uaa' -H 'Accept: application/json' https://uaa:8443/info"
+            - "curl --resolve uaa.${DOMAIN}:8443:$(getent hosts ${HOSTNAME} | awk '{ print $1 }') --fail -H \"Host: uaa.${DOMAIN}\" -H 'Accept: application/json' https://uaa.${DOMAIN}:8443/info"
         resources:
           requests:
             {{- if and .Values.config.memory.requests .Values.sizing.uaa.memory.request }}
@@ -333,8 +482,6 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: false
-
           {{- if has "ALL" .Values.sizing.uaa.capabilities }}
           privileged: true
           {{- end }}
@@ -347,121 +494,24 @@ spec:
             {{- end }}
           {{- end }}
 
-        volumeMounts: ~
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.uaa.capabilities -}} true {{- else -}} false {{- end }}
+        volumeMounts:
+        - mountPath: "/opt/fissile/config"
+          name: "deployment-manifest"
+          readOnly: true
       dnsPolicy: "ClusterFirst"
       imagePullSecrets:
       - name: "registry-credentials"
       restartPolicy: "Always"
       terminationGracePeriodSeconds: 600
-      volumes: ~
+      volumes:
+      - name: "deployment-manifest"
+        secret:
+          secretName: "deployment-manifest"
+          items:
+          - key: "deployment-manifest"
+            path: "deployment-manifest.yml"
   {{- if or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 7)) }}
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
----
-apiVersion: "v1"
-items:
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "uaa-set"
-    labels:
-      app.kubernetes.io/component: "uaa-set"
-      skiff-role-name: "uaa-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "uaa"
-      port: 8080
-      protocol: "TCP"
-      targetPort: 0
-    - name: "uaa-ssl"
-      port: 2793
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "uaa"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "uaa-uaa-set"
-    labels:
-      app.kubernetes.io/component: "uaa-uaa-set"
-      skiff-role-name: "uaa-uaa-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "uaa"
-      port: 8080
-      protocol: "TCP"
-      targetPort: 0
-    - name: "uaa-ssl"
-      port: 2793
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "uaa"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "uaa-uaa"
-    labels:
-      app.kubernetes.io/component: "uaa-uaa"
-      skiff-role-name: "uaa-uaa"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    ports:
-    - name: "uaa"
-      port: 8080
-      protocol: "TCP"
-      targetPort: 8080
-    - name: "uaa-ssl"
-      port: 2793
-      protocol: "TCP"
-      targetPort: 8443
-    selector:
-      app.kubernetes.io/component: "uaa"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "uaa-uaa-public"
-    labels:
-      app.kubernetes.io/component: "uaa-uaa-public"
-      skiff-role-name: "uaa-uaa-public"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    {{- if not .Values.services.loadbalanced }}
-    externalIPs: {{ .Values.kube.external_ips | toJson }}
-    {{- end }}
-
-    ports:
-    - name: "uaa-ssl"
-      port: 2793
-      protocol: "TCP"
-      targetPort: 8443
-    selector:
-      app.kubernetes.io/component: "uaa"
-
-    {{- if .Values.services.loadbalanced }}
-    type: "LoadBalancer"
-    {{- end }}
-
-kind: "List"

@@ -1,4 +1,214 @@
 ---
+apiVersion: "v1"
+items:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-set"
+    labels:
+      app.kubernetes.io/component: "mysql-set"
+      skiff-role-name: "mysql-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "mysql-set"
+      {{- end }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "mysql"
+      port: 13306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-tcp"
+      port: 4567
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-udp"
+      port: 4567
+      protocol: "UDP"
+      targetPort: 0
+    - name: "galera-ist"
+      port: 4568
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthcheck"
+      port: 9200
+      protocol: "TCP"
+      targetPort: 0
+    - name: "xtrabackup"
+      port: 4444
+      protocol: "TCP"
+      targetPort: 0
+    - name: "mysql-proxy"
+      port: 3306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "api"
+      port: 80
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthck-proxy"
+      port: 1936
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-mysql-set"
+    labels:
+      app.kubernetes.io/component: "mysql-mysql-set"
+      skiff-role-name: "mysql-mysql-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "mysql-mysql-set"
+      {{- end }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "mysql"
+      port: 13306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-tcp"
+      port: 4567
+      protocol: "TCP"
+      targetPort: 0
+    - name: "galera-udp"
+      port: 4567
+      protocol: "UDP"
+      targetPort: 0
+    - name: "galera-ist"
+      port: 4568
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthcheck"
+      port: 9200
+      protocol: "TCP"
+      targetPort: 0
+    - name: "xtrabackup"
+      port: 4444
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-mysql"
+    labels:
+      app.kubernetes.io/component: "mysql-mysql"
+      skiff-role-name: "mysql-mysql"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "mysql-mysql"
+      {{- end }}
+  spec:
+    ports:
+    - name: "mysql"
+      port: 13306
+      protocol: "TCP"
+      targetPort: 13306
+    - name: "galera-tcp"
+      port: 4567
+      protocol: "TCP"
+      targetPort: 4567
+    - name: "galera-udp"
+      port: 4567
+      protocol: "UDP"
+      targetPort: 4567
+    - name: "galera-ist"
+      port: 4568
+      protocol: "TCP"
+      targetPort: 4568
+    - name: "healthcheck"
+      port: 9200
+      protocol: "TCP"
+      targetPort: 9200
+    - name: "xtrabackup"
+      port: 4444
+      protocol: "TCP"
+      targetPort: 4444
+    selector:
+      app.kubernetes.io/component: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-proxy-set"
+    labels:
+      app.kubernetes.io/component: "mysql-proxy-set"
+      skiff-role-name: "mysql-proxy-set"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "mysql-proxy-set"
+      {{- end }}
+  spec:
+    clusterIP: "None"
+    ports:
+    - name: "mysql-proxy"
+      port: 3306
+      protocol: "TCP"
+      targetPort: 0
+    - name: "api"
+      port: 80
+      protocol: "TCP"
+      targetPort: 0
+    - name: "healthck-proxy"
+      port: 1936
+      protocol: "TCP"
+      targetPort: 0
+    selector:
+      app.kubernetes.io/component: "mysql"
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    name: "mysql-proxy"
+    labels:
+      app.kubernetes.io/component: "mysql-proxy"
+      skiff-role-name: "mysql-proxy"
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+      {{- if .Values.config.use_istio }}
+      app: "mysql-proxy"
+      {{- end }}
+  spec:
+    ports:
+    - name: "mysql-proxy"
+      port: 3306
+      protocol: "TCP"
+      targetPort: 3306
+    - name: "api"
+      port: 80
+      protocol: "TCP"
+      targetPort: 80
+    - name: "healthck-proxy"
+      port: 1936
+      protocol: "TCP"
+      targetPort: 1936
+    selector:
+      app.kubernetes.io/component: "mysql"
+kind: "List"
+---
 # The mysql instance group contains the following jobs:
 #
 # - global-uaa-properties: Dummy BOSH job used to host global parameters that
@@ -7,7 +217,7 @@
 # - patch-properties: Dummy BOSH job used to host parameters that are used in
 #   SCF patches for upstream bugs
 #
-# Also: mysql, proxy
+# Also: mysql and proxy
 
 {{- if gt (int .Values.sizing.mysql.count) 3 }}
 _maxReplicas: {{ fail "mysql cannot have more than 3 instances" }}
@@ -53,6 +263,15 @@ metadata:
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
     app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+
+    {{- if .Values.config.use_istio }}
+    app: "mysql"
+    {{- end }}
+
+    {{- if .Values.config.use_istio }}
+    version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    {{- end }}
+
 spec:
   podManagementPolicy: "OrderedReady"
   replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.mysql.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.mysql.count }} {{- end }}
@@ -71,8 +290,20 @@ spec:
         app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
         app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
         helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+
+        {{- if .Values.config.use_istio }}
+        app: "mysql"
+        {{- end }}
+
+        {{- if .Values.config.use_istio }}
+        version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        {{- end }}
+
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- if .Values.config.use_istio }}
+        sidecar.istio.io/inject: "false"
+        {{- end }}
     spec:
       affinity:
         {{- if .Values.sizing.mysql.affinity.nodeAffinity }}
@@ -87,14 +318,6 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -103,12 +326,12 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.MYSQL_ADMIN_PASSWORD }}
-        - name: "MYSQL_ADMIN_PASSWORD"
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "mysql-admin-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+              key: "monit-password"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.MYSQL_ADMIN_PASSWORD }}
@@ -117,6 +340,14 @@ spec:
             secretKeyRef:
               key: "mysql-admin-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.MYSQL_ADMIN_PASSWORD }}
+        - name: "MYSQL_ADMIN_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-admin-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.MYSQL_CLUSTER_HEALTH_PASSWORD }}
@@ -190,7 +421,11 @@ spec:
               name: "secrets"
         {{- end }}
 
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-mysql:80b11cab845e3bf30cfa7ddf2cb3d8504295e33b"
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-mysql:75d806182e493ff39c640269d598eef40a6fec3b"
         lifecycle:
           preStop:
             exec:
@@ -252,8 +487,6 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: false
-
           {{- if has "ALL" .Values.sizing.mysql.capabilities }}
           privileged: true
           {{- end }}
@@ -266,16 +499,26 @@ spec:
             {{- end }}
           {{- end }}
 
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.mysql.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/var/vcap/store"
           name: "mysql-data"
           readOnly: false
+        - mountPath: "/opt/fissile/config"
+          name: "deployment-manifest"
+          readOnly: true
       dnsPolicy: "ClusterFirst"
       imagePullSecrets:
       - name: "registry-credentials"
       restartPolicy: "Always"
       terminationGracePeriodSeconds: 600
-      volumes: ~
+      volumes:
+      - name: "deployment-manifest"
+        secret:
+          secretName: "deployment-manifest"
+          items:
+          - key: "deployment-manifest"
+            path: "deployment-manifest.yml"
   {{- if or (gt (int .Capabilities.KubeVersion.Major) 1) (and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (.Capabilities.KubeVersion.Minor | trimSuffix "+" | int) 7)) }}
   updateStrategy:
     type: "RollingUpdate"
@@ -291,198 +534,3 @@ spec:
       resources:
         requests:
           storage: "{{ .Values.sizing.mysql.disk_sizes.mysql_data }}G"
----
-apiVersion: "v1"
-items:
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "mysql-set"
-    labels:
-      app.kubernetes.io/component: "mysql-set"
-      skiff-role-name: "mysql-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "mysql"
-      port: 13306
-      protocol: "TCP"
-      targetPort: 0
-    - name: "galera-tcp"
-      port: 4567
-      protocol: "TCP"
-      targetPort: 0
-    - name: "galera-udp"
-      port: 4567
-      protocol: "UDP"
-      targetPort: 0
-    - name: "galera-ist"
-      port: 4568
-      protocol: "TCP"
-      targetPort: 0
-    - name: "healthcheck"
-      port: 9200
-      protocol: "TCP"
-      targetPort: 0
-    - name: "xtrabackup"
-      port: 4444
-      protocol: "TCP"
-      targetPort: 0
-    - name: "mysql-proxy"
-      port: 3306
-      protocol: "TCP"
-      targetPort: 0
-    - name: "api"
-      port: 80
-      protocol: "TCP"
-      targetPort: 0
-    - name: "healthck-proxy"
-      port: 1936
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "mysql"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "mysql-mysql-set"
-    labels:
-      app.kubernetes.io/component: "mysql-mysql-set"
-      skiff-role-name: "mysql-mysql-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "mysql"
-      port: 13306
-      protocol: "TCP"
-      targetPort: 0
-    - name: "galera-tcp"
-      port: 4567
-      protocol: "TCP"
-      targetPort: 0
-    - name: "galera-udp"
-      port: 4567
-      protocol: "UDP"
-      targetPort: 0
-    - name: "galera-ist"
-      port: 4568
-      protocol: "TCP"
-      targetPort: 0
-    - name: "healthcheck"
-      port: 9200
-      protocol: "TCP"
-      targetPort: 0
-    - name: "xtrabackup"
-      port: 4444
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "mysql"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "mysql-mysql"
-    labels:
-      app.kubernetes.io/component: "mysql-mysql"
-      skiff-role-name: "mysql-mysql"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    ports:
-    - name: "mysql"
-      port: 13306
-      protocol: "TCP"
-      targetPort: 13306
-    - name: "galera-tcp"
-      port: 4567
-      protocol: "TCP"
-      targetPort: 4567
-    - name: "galera-udp"
-      port: 4567
-      protocol: "UDP"
-      targetPort: 4567
-    - name: "galera-ist"
-      port: 4568
-      protocol: "TCP"
-      targetPort: 4568
-    - name: "healthcheck"
-      port: 9200
-      protocol: "TCP"
-      targetPort: 9200
-    - name: "xtrabackup"
-      port: 4444
-      protocol: "TCP"
-      targetPort: 4444
-    selector:
-      app.kubernetes.io/component: "mysql"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "mysql-proxy-set"
-    labels:
-      app.kubernetes.io/component: "mysql-proxy-set"
-      skiff-role-name: "mysql-proxy-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "mysql-proxy"
-      port: 3306
-      protocol: "TCP"
-      targetPort: 0
-    - name: "api"
-      port: 80
-      protocol: "TCP"
-      targetPort: 0
-    - name: "healthck-proxy"
-      port: 1936
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "mysql"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "mysql-proxy"
-    labels:
-      app.kubernetes.io/component: "mysql-proxy"
-      skiff-role-name: "mysql-proxy"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-  spec:
-    ports:
-    - name: "mysql-proxy"
-      port: 3306
-      protocol: "TCP"
-      targetPort: 3306
-    - name: "api"
-      port: 80
-      protocol: "TCP"
-      targetPort: 80
-    - name: "healthck-proxy"
-      port: 1936
-      protocol: "TCP"
-      targetPort: 1936
-    selector:
-      app.kubernetes.io/component: "mysql"
-kind: "List"
