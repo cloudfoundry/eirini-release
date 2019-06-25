@@ -7,24 +7,14 @@ DOCKERDIR="$BASEDIR/docker"
 TAG=${1:-"latest"}
 
 main(){
-    echo "Creating Eirini docker images..."
-    build_opi
-    create_docker_images
-    echo "All images created successfully"
-}
-
-build_opi(){
-  pushd "$BASEDIR/src/code.cloudfoundry.org/eirini/cmd/opi"
-  GOOS=linux CGO_ENABLED=0 go build -a -o "$DOCKERDIR/opi/opi" .
-  popd
-}
-
-create_docker_images() {
-  create_image "$DOCKERDIR"/opi eirini/opi
+  echo "Creating Eirini docker images..."
   create_image "$DOCKERDIR"/opi/init eirini/opi-init
   create_image "$DOCKERDIR"/registry/certs/smuggler eirini/secret-smuggler
+  docker build -f  "$DOCKERDIR"/opi/Dockerfile -t "eirini/opi:${TAG}" "$BASEDIR"
   docker build -f  "$DOCKERDIR"/rootfs-patcher/Dockerfile -t "eirini/rootfs-patcher:${TAG}" "$BASEDIR"
   docker build -f  "$DOCKERDIR"/bits-waiter/Dockerfile -t "eirini/bits-waiter:${TAG}" "$BASEDIR"
+
+  echo "All images created successfully"
 }
 
 create_image() {
