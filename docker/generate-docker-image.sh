@@ -14,7 +14,9 @@ main(){
 }
 
 build_opi(){
-  GOPATH="$BASEDIR" GOOS=linux CGO_ENABLED=0 go build -a -o "$DOCKERDIR/opi/opi" code.cloudfoundry.org/eirini/cmd/opi
+  pushd "$BASEDIR/src/code.cloudfoundry.org/eirini/cmd/opi"
+  GOOS=linux CGO_ENABLED=0 go build -a -o "$DOCKERDIR/opi/opi" .
+  popd
 }
 
 create_docker_images() {
