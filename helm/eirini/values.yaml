@@ -9,8 +9,7 @@ opi:
   init_image: eirini/opi-init
   image: eirini/opi
   image_tag: latest
-  rootfs_version: 40.0.0
-  rootfs_tag: v40.0.0
+  rootfs_version: v66.0.0
   rootfs_patcher_timeout: 2m
   stager:
     downloader_image: eirini/recipe-downloader
