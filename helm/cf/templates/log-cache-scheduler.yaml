@@ -1,101 +1,26 @@
 ---
-apiVersion: "v1"
-items:
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "locket-set"
-    labels:
-      app.kubernetes.io/component: "locket-set"
-      skiff-role-name: "locket-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "locket-set"
-      {{- end }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "locket"
-      port: 8891
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "locket"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "locket-locket-set"
-    labels:
-      app.kubernetes.io/component: "locket-locket-set"
-      skiff-role-name: "locket-locket-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "locket-locket-set"
-      {{- end }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "locket"
-      port: 8891
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "locket"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "locket-locket"
-    labels:
-      app.kubernetes.io/component: "locket-locket"
-      skiff-role-name: "locket-locket"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "locket-locket"
-      {{- end }}
-  spec:
-    ports:
-    - name: "locket"
-      port: 8891
-      protocol: "TCP"
-      targetPort: 8891
-    selector:
-      app.kubernetes.io/component: "locket"
-kind: "List"
----
-# The locket instance group contains the following jobs:
+# The log-cache-scheduler instance group contains the following jobs:
 #
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# - patch-properties: Dummy BOSH job used to host parameters that are used in
-#   SCF patches for upstream bugs
+# - log-cache-scheduler-properties: Dummy BOSH job used to host parameters that
+#   are used in SCF patches
 #
-# Also: locket
+# Also: log-cache-scheduler, log-cache-expvar-forwarder, and bpm
 
-{{- if gt (int .Values.sizing.locket.count) 3 }}
-_maxReplicas: {{ fail "locket cannot have more than 3 instances" }}
+{{- if gt (int .Values.sizing.log_cache_scheduler.count) 65535 }}
+_maxReplicas: {{ fail "log_cache_scheduler cannot have more than 65535 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.locket.count) 1) (lt (int .Values.sizing.locket.count) 2)) }}
-_minHAReplicas: {{ fail "locket must have at least 2 instances for HA" }}
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.log_cache_scheduler.count) 1) (lt (int .Values.sizing.log_cache_scheduler.count) 2)) }}
+_minHAReplicas: {{ fail "log_cache_scheduler must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.locket.count) 1 }}
-_minReplicas: {{ fail "locket must have at least 1 instances" }}
+{{- if lt (int .Values.sizing.log_cache_scheduler.count) 1 }}
+_minReplicas: {{ fail "log_cache_scheduler must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -121,10 +46,10 @@ _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "
 apiVersion: "apps/v1beta1"
 kind: "StatefulSet"
 metadata:
-  name: "locket"
+  name: "log-cache-scheduler"
   labels:
-    app.kubernetes.io/component: "locket"
-    skiff-role-name: "locket"
+    app.kubernetes.io/component: "log-cache-scheduler"
+    skiff-role-name: "log-cache-scheduler"
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -132,7 +57,7 @@ metadata:
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 
     {{- if .Values.config.use_istio }}
-    app: "locket"
+    app: "log-cache-scheduler"
     {{- end }}
 
     {{- if .Values.config.use_istio }}
@@ -141,17 +66,17 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.locket.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.locket.count }}{{ end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.log_cache_scheduler.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.log_cache_scheduler.count }}{{ end }}
   selector:
     matchLabels:
-      skiff-role-name: "locket"
-  serviceName: "locket-set"
+      skiff-role-name: "log-cache-scheduler"
+  serviceName: "log-cache-scheduler-set"
   template:
     metadata:
-      name: "locket"
+      name: "log-cache-scheduler"
       labels:
-        app.kubernetes.io/component: "locket"
-        skiff-role-name: "locket"
+        app.kubernetes.io/component: "log-cache-scheduler"
+        skiff-role-name: "log-cache-scheduler"
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
         app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
         app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -159,7 +84,7 @@ spec:
         helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 
         {{- if .Values.config.use_istio }}
-        app: "locket"
+        app: "log-cache-scheduler"
         {{- end }}
 
         {{- if .Values.config.use_istio }}
@@ -181,11 +106,11 @@ spec:
                 - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
-                  - "locket"
+                  - "doppler"
               topologyKey: "beta.kubernetes.io/os"
             weight: 100
-        {{- if .Values.sizing.locket.affinity.nodeAffinity }}
-        nodeAffinity: {{ toJson .Values.sizing.locket.affinity.nodeAffinity }}
+        {{- if .Values.sizing.log_cache_scheduler.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.log_cache_scheduler.affinity.nodeAffinity }}
         {{- end }}
       containers:
       - env:
@@ -193,49 +118,8 @@ spec:
           value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if not .Values.secrets.DIEGO_CLIENT_CERT }}
-        - name: "DIEGO_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "diego-client-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.DIEGO_CLIENT_CERT }}
-        - name: "DIEGO_CLIENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "diego-client-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.DIEGO_CLIENT_CERT_KEY }}
-        - name: "DIEGO_CLIENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "diego-client-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.DIEGO_CLIENT_CERT_KEY }}
-        - name: "DIEGO_CLIENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "diego-client-cert-key"
-              name: "secrets"
-        {{- end }}
-
         - name: "GARDEN_ROOTFS_DRIVER"
           value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
-
-        {{- if .Values.secrets.INTERNAL_CA_CERT }}
-        - name: "INTERNAL_CA_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "internal-ca-cert"
-              name: "secrets"
-        {{- end }}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -245,6 +129,14 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
+        {{- end }}
+
         - name: "KUBERNETES_CLUSTER_DOMAIN"
           value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
         - name: "KUBERNETES_NAMESPACE"
@@ -252,46 +144,67 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
 
-        {{- if not .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
-        - name: "LOGGREGATOR_CLIENT_CERT"
+        {{- if not .Values.secrets.LOG_CACHE_CERT }}
+        - name: "LOG_CACHE_CERT"
           valueFrom:
             secretKeyRef:
-              key: "loggregator-client-cert"
+              key: "log-cache-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
-        - name: "LOGGREGATOR_CLIENT_CERT"
+        {{- if .Values.secrets.LOG_CACHE_CERT }}
+        - name: "LOG_CACHE_CERT"
           valueFrom:
             secretKeyRef:
-              key: "loggregator-client-cert"
+              key: "log-cache-cert"
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
-        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
+        {{- if .Values.secrets.LOG_CACHE_CERT_KEY }}
+        - name: "LOG_CACHE_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "loggregator-client-cert-key"
+              key: "log-cache-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOG_CACHE_CERT_KEY }}
+        - name: "LOG_CACHE_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT_KEY }}
-        - name: "LOGGREGATOR_CLIENT_CERT_KEY"
+        {{- if not .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT"
           valueFrom:
             secretKeyRef:
-              key: "loggregator-client-cert-key"
+              key: "log-cache-to-loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-to-loggregator-agent-cert"
               name: "secrets"
         {{- end }}
 
-        - name: "LOG_LEVEL"
-          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
+        {{- if .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "monit-password"
+              key: "log-cache-to-loggregator-agent-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-to-loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -303,20 +216,12 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.MYSQL_DIEGO_LOCKET_PASSWORD }}
-        - name: "MYSQL_DIEGO_LOCKET_PASSWORD"
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "mysql-diego-locket-password"
+              key: "monit-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.MYSQL_DIEGO_LOCKET_PASSWORD }}
-        - name: "MYSQL_DIEGO_LOCKET_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-diego-locket-password"
-              name: "secrets"
         {{- end }}
 
         - name: "PZ_LABEL_NAME"
@@ -336,47 +241,43 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-locket:49ff1460a41fcd9cc01d3d0bfb7bfa4ca29c9396"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-log-cache-scheduler:8505217a6368b40a6bb4623c40e3df59b2cd69a6"
         lifecycle:
           preStop:
             exec:
               command:
               - "/opt/fissile/pre-stop.sh"
         livenessProbe: ~
-        name: "locket"
-        ports:
-        - containerPort: 8891
-          name: "locket"
-          protocol: "TCP"
+        name: "log-cache-scheduler"
+        ports: ~
         readinessProbe:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "head -c0 </dev/tcp/${HOSTNAME}/8891"
         resources:
           requests:
-            {{- if and .Values.config.memory.requests .Values.sizing.locket.memory.request }}
-            memory: "{{ int .Values.sizing.locket.memory.request }}Mi"
+            {{- if and .Values.config.memory.requests .Values.sizing.log_cache_scheduler.memory.request }}
+            memory: "{{ int .Values.sizing.log_cache_scheduler.memory.request }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.requests .Values.sizing.locket.cpu.request }}
-            cpu: "{{ int .Values.sizing.locket.cpu.request }}m"
+            {{- if and .Values.config.cpu.requests .Values.sizing.log_cache_scheduler.cpu.request }}
+            cpu: "{{ int .Values.sizing.log_cache_scheduler.cpu.request }}m"
             {{- end }}
 
           limits:
-            {{- if and .Values.config.memory.limits .Values.sizing.locket.memory.limit }}
-            memory: "{{ int .Values.sizing.locket.memory.limit }}Mi"
+            {{- if and .Values.config.memory.limits .Values.sizing.log_cache_scheduler.memory.limit }}
+            memory: "{{ int .Values.sizing.log_cache_scheduler.memory.limit }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.limits .Values.sizing.locket.cpu.limit }}
-            cpu: "{{ int .Values.sizing.locket.cpu.limit }}m"
+            {{- if and .Values.config.cpu.limits .Values.sizing.log_cache_scheduler.cpu.limit }}
+            cpu: "{{ int .Values.sizing.log_cache_scheduler.cpu.limit }}m"
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: false
+          allowPrivilegeEscalation: true
           capabilities:
             add:
-            - "SYS_RESOURCE"
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -554,7 +455,7 @@ spec:
       restartPolicy: "Always"
 
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "privileged"
+      serviceAccountName: "default"
       {{- end }}
 
       terminationGracePeriodSeconds: 600

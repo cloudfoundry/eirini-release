@@ -1,4 +1,5 @@
 ---
+{{- if .Values.enable.credhub }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -73,6 +74,7 @@ items:
     selector:
       app.kubernetes.io/component: "credhub-user"
 kind: "List"
+{{- end }}
 ---
 # The credhub-user instance group contains the following jobs:
 #
@@ -82,6 +84,7 @@ kind: "List"
 # - route_registrar: Used for registering routes
 #
 # Also: credhub and bpm
+{{- if .Values.enable.credhub }}
 
 {{- if gt (int .Values.sizing.credhub_user.count) 1 }}
 _maxReplicas: {{ fail "credhub_user cannot have more than 1 instances" }}
@@ -134,7 +137,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ .Values.sizing.credhub_user.count }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.credhub_user.count) 1) }}{{ 1 }}{{ else }}{{ .Values.sizing.credhub_user.count }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "credhub-user"
@@ -241,7 +244,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
+          value: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) }}{{ 2 | quote }}{{ else }}{{ .Values.sizing.nats.count | quote }}{{ end }}
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
@@ -314,7 +317,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:918d27ae55a735007df7b66da3f87fcf7a7c02c3"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:d763eee03d0e86f3c13c0ed6ef38a98dbcfbd492"
         lifecycle:
           preStop:
             exec:
@@ -350,7 +353,10 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -365,7 +371,7 @@ spec:
       restartPolicy: "Always"
 
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
+      serviceAccountName: "default"
       {{- end }}
 
       terminationGracePeriodSeconds: 600
@@ -380,3 +386,4 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
+{{- end }}

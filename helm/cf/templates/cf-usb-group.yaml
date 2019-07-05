@@ -1,4 +1,5 @@
 ---
+{{- if .Values.enable.cf_usb }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -85,6 +86,7 @@ items:
     selector:
       app.kubernetes.io/component: "cf-usb-group"
 kind: "List"
+{{- end }}
 ---
 # The cf-usb-group instance group contains the following jobs:
 #
@@ -96,6 +98,7 @@ kind: "List"
 # - route_registrar: Used for registering routes
 #
 # Also: cf-usb and bpm
+{{- if .Values.enable.cf_usb }}
 
 {{- if gt (int .Values.sizing.cf_usb_group.count) 3 }}
 _maxReplicas: {{ fail "cf_usb_group cannot have more than 3 instances" }}
@@ -152,7 +155,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cf_usb_group.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.cf_usb_group.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cf_usb_group.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.cf_usb_group.count }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "cf-usb-group"
@@ -281,7 +284,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
+          value: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) }}{{ 2 | quote }}{{ else }}{{ .Values.sizing.nats.count | quote }}{{ end }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -369,7 +372,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:296b9a43cd5c49e1bc96675c79f792dbf8d1f892"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:332aba0b3bb421ff0190254b3cc90b822ed5a612"
         lifecycle:
           preStop:
             exec:
@@ -408,7 +411,10 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -423,7 +429,7 @@ spec:
       restartPolicy: "Always"
 
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
+      serviceAccountName: "default"
       {{- end }}
 
       terminationGracePeriodSeconds: 600
@@ -438,3 +444,4 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
+{{- end }}
