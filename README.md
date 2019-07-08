@@ -13,6 +13,9 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 
 **Note**: Eirini is currently being tested with HELM > 2.13.1, Kubernetes 1.11, and containerd as the container runtime.
 
+### Minimum cluster requirements
+SCF with Eirini can be started on a single-node cluster with 4 cores and 16GBs of RAM, which can run about 10 apps. With these specs the startup is really slow. Adding more cores will decrease the startup time.
+
 ## Installation
 
 1. Choose a [non NFS based `StorageClass`](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#choosing-a-storage-class) because MySQL does not work well with it. For additional information you can take a look at [Storage Class](#storage-class)
