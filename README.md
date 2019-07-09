@@ -9,12 +9,16 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 * Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
 * Install [Metrics server](https://github.com/kubernetes-incubator/metrics-server) in the system namespace
 * Install [helm](https://helm.sh/)
-* To be able to use the [bits service](https://github.com/cloudfoundry-incubator/bits-service) private registry in your Kubernetes cluster, you need to have a signed TLS certificate, with a CA that the docker or containerd daemon on the nodes trust, and a CN that is pointing to the bits service.
+* To be able to use the [bits service](https://github.com/cloudfoundry-incubator/bits-service) private registry in your Kubernetes cluster,
+you need to have a signed TLS certificate, with a CA that the docker or containerd daemon on the nodes trust, and a CN that is pointing to the bits service.
 
 **Note**: Eirini is currently being tested with HELM > 2.14.1, Kubernetes 1.13, and containerd as the container runtime.
 
 ### Minimum cluster requirements
-SCF with Eirini can be started on a single-node cluster with 4 cores and 16GBs of RAM, which can run about 10 apps. With these specs the startup is really slow. Adding more cores will decrease the startup time.
+
+We have validated that the deployment can start with a single-node 4 core 16GB cluster, although the initial startup will be very slow with this setup.
+We recommend at least 8 cores and 16GB of RAM for the SCF control plane and at least two additional nodes that you can scale relative to the average consumption
+of resource of the applications that you will be deploying. To make staging of applications faster with Diego, operators should scale the Diego cells to the number of additional nodes.
 
 ## Installation
 
@@ -56,7 +60,7 @@ SCF with Eirini can be started on a single-node cluster with 4 cores and 16GBs o
 
     The above command will take the default value for `rootfs_version`. In case you want to specify a rootfs_version at deploy time use
 
-    ```bash   
+    ```bash
     --set "bits.opi.rootfs_version=vx.x.x" \
     --set "eirini.opi.rootfs_version=vx.x.x"
     ```
@@ -73,11 +77,14 @@ This will download the mentioned version of `eirinifs.tar`. (see [eirinifs relea
 
 ### Storage Class
 
+It is highly recommended to use fast storage class for the blobstore. MySQL does
+not work with NFS-based storage.
+
 #### Using the HostPath Provisioner
 
 As storage class, you can deploy a `hostpath` provisioner to your cluster. You can for example follow the documentation in this [repository](https://github.com/MaZderMind/hostpath-provisioner#dynamic-provisioning-of-kubernetes-hostpath-volumes). `hostpath` is not recommended for production use.
 
-You can execute the following commands to have the `hostpath` provisioner installed in your Kube cluster:
+You can execute the following commands to have the `hostpath` provisioner installed in your Kubernetes cluster:
 
 ```bash
 kubectl create -f https://raw.githubusercontent.com/MaZderMind/hostpath-provisioner/master/manifests/rbac.yaml
