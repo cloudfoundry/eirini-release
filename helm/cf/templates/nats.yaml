@@ -151,7 +151,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.nats.count }}{{ end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.nats.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "nats"
@@ -229,7 +229,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) }}{{ 2 | quote }}{{ else }}{{ .Values.sizing.nats.count | quote }}{{ end }}
+          value: {{ .Values.sizing.nats.count | quote }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -275,7 +275,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-nats:5332a75cfe9c0dba7d3d611309d28875f0418b1b"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-nats:21db836970ad644b7b9153a233aa6e6aa6ebc89e"
         lifecycle:
           preStop:
             exec:
@@ -314,11 +314,7 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "SYS_RESOURCE"
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -448,7 +444,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1afa182f78584e1ed133dc90afff16ecb2f3b9a3"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:7eeab4644cfd09bb3ceb94e0bab32699e3418f2d"
         lifecycle:
           preStop:
             exec:
@@ -478,27 +474,18 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default"
+      serviceAccountName: "default-privileged"
       {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

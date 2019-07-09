@@ -1,5 +1,4 @@
 ---
-{{ if not .Values.env.ENABLE_OPI_STAGING  }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -157,7 +156,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.diego_api.count }}{{ end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_api.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.diego_api.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-api"
@@ -421,7 +420,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:356af5364a90b89ecbe8083b3ad60e3d950a78e6"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-api:7bb12c45fa2bf25e06360024cf9629a4879fe98a"
         lifecycle:
           preStop:
             exec:
@@ -463,10 +462,20 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: false
+          {{- if has "ALL" .Values.sizing.diego_api.capabilities }}
+          privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.diego_api.capabilities) }}
           capabilities:
             add:
             - "SYS_RESOURCE"
+            {{- range .Values.sizing.diego_api.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+          allowPrivilegeEscalation: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -596,7 +605,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1afa182f78584e1ed133dc90afff16ecb2f3b9a3"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:7eeab4644cfd09bb3ceb94e0bab32699e3418f2d"
         lifecycle:
           preStop:
             exec:
@@ -626,27 +635,18 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "privileged"
       {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -659,4 +659,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end}}

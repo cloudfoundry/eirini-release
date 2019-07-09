@@ -70,7 +70,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cc_clock.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.cc_clock.count }}{{ end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cc_clock.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.cc_clock.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "cc-clock"
@@ -355,7 +355,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:e9356fae56ed4a41ab0cc46b0d2340d87001cb51"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:4e11d037c48b89352b4795b70e9249c2c076c306"
         lifecycle:
           preStop:
             exec:
@@ -388,10 +388,7 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -521,7 +518,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1afa182f78584e1ed133dc90afff16ecb2f3b9a3"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:7eeab4644cfd09bb3ceb94e0bab32699e3418f2d"
         lifecycle:
           preStop:
             exec:
@@ -551,27 +548,18 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default"
+      serviceAccountName: "default-privileged"
       {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

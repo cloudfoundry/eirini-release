@@ -1,22 +1,15 @@
 ---
-# Role "configgin-role" used by accounts:
-# - default
-# - default-privileged
-# - eirini
-# - garden-runc
-# - privileged
-# - secret-generator
-# - tests
+# Cluster role "withsysresource" used by accounts:
 # - withsysresource
 # - withsysresource-privileged
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "rbac.authorization.k8s.io/v1"
-kind: "Role"
+kind: "ClusterRole"
 metadata:
-  name: "configgin-role"
+  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-withsysresource" .Release.Namespace) }}
   labels:
-    app.kubernetes.io/component: "configgin-role"
-    skiff-role-name: "configgin-role"
+    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-withsysresource" .Release.Namespace) }}
+    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-withsysresource" .Release.Namespace) }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -24,24 +17,11 @@ metadata:
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 rules:
 - apiGroups:
-  - ""
+  - "extensions"
+  resourceNames:
+  - {{ if .Values.kube.psp.withsysresource }}{{ .Values.kube.psp.withsysresource }}{{ else }}{{ template "fissile.SanitizeName" (printf "%s-psp-withsysresource" .Release.Namespace) }}{{ end }}
   resources:
-  - "pods"
+  - "podsecuritypolicies"
   verbs:
-  - "get"
-  - "list"
-  - "patch"
-- apiGroups:
-  - ""
-  resources:
-  - "services"
-  verbs:
-  - "get"
-- apiGroups:
-  - "apps"
-  resources:
-  - "statefulsets"
-  verbs:
-  - "get"
-  - "patch"
+  - "use"
 {{- end }}

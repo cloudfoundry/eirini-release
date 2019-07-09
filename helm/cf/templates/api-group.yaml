@@ -187,7 +187,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.api_group.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.api_group.count }}{{ end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.api_group.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.api_group.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "api-group"
@@ -447,7 +447,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) }}{{ 2 | quote }}{{ else }}{{ .Values.sizing.nats.count | quote }}{{ end }}
+          value: {{ .Values.sizing.nats.count | quote }}
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
         - name: "MAX_APP_DISK_IN_MB"
@@ -633,7 +633,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:f74cc038b4ad3c32aacb131bb8dd3bc89fd1caa5"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:4cda3de7d743da2e3eab68235914efd754100b03"
         lifecycle:
           preStop:
             exec:
@@ -679,10 +679,7 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -812,7 +809,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1afa182f78584e1ed133dc90afff16ecb2f3b9a3"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:7eeab4644cfd09bb3ceb94e0bab32699e3418f2d"
         lifecycle:
           preStop:
             exec:
@@ -842,27 +839,18 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default"
+      serviceAccountName: "default-privileged"
       {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

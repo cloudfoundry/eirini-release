@@ -1217,6 +1217,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The autoscaler_eventgenerator instance group can be enabled by the
     # autoscaler feature.
     # It can scale between 1 and 3 instances.
@@ -1244,6 +1247,9 @@ sizing:
   autoscaler_metrics:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The autoscaler_metrics instance group can be enabled by the autoscaler
     # feature.
@@ -1273,6 +1279,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The autoscaler_operator instance group can be enabled by the autoscaler
     # feature.
     # It can scale between 1 and 3 instances.
@@ -1300,6 +1309,9 @@ sizing:
   autoscaler_postgres:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The autoscaler_postgres instance group can be enabled by the autoscaler
     # feature.
@@ -1331,6 +1343,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The autoscaler_scalingengine instance group can be enabled by the
     # autoscaler feature.
     # It can scale between 1 and 3 instances.
@@ -1358,6 +1373,9 @@ sizing:
   autoscaler_scheduler:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The autoscaler_scheduler instance group can be enabled by the autoscaler
     # feature.
@@ -1592,6 +1610,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The diego_api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
@@ -1620,6 +1641,9 @@ sizing:
   diego_brain:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The diego_brain instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1686,6 +1710,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The diego_ssh instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
@@ -1743,6 +1770,9 @@ sizing:
   locket:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The locket instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1853,6 +1883,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The mysql instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
@@ -1938,6 +1971,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The post_deployment_setup instance group cannot be scaled.
     count: 1
 
@@ -2015,6 +2051,9 @@ sizing:
   secret_generation:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The secret_generation instance group cannot be scaled.
     count: 1

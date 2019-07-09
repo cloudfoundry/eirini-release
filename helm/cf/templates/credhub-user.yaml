@@ -137,7 +137,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.credhub_user.count) 1) }}{{ 1 }}{{ else }}{{ .Values.sizing.credhub_user.count }}{{ end }}
+  replicas: {{ .Values.sizing.credhub_user.count }}
   selector:
     matchLabels:
       skiff-role-name: "credhub-user"
@@ -244,7 +244,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ if and .Values.config.HA (eq (int .Values.sizing.nats.count) 1) }}{{ 2 | quote }}{{ else }}{{ .Values.sizing.nats.count | quote }}{{ end }}
+          value: {{ .Values.sizing.nats.count | quote }}
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
@@ -317,7 +317,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:1dff97e3f958840b44ac637d429154149b15858b"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:be139f5f49dc7a4222d02013e11a6c2d952816df"
         lifecycle:
           preStop:
             exec:
@@ -353,27 +353,18 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default"
+      serviceAccountName: "default-privileged"
       {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

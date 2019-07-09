@@ -274,7 +274,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.mysql.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.mysql.count }}{{ end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.mysql.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.mysql.count }} {{- end }}
   selector:
     matchLabels:
       skiff-role-name: "mysql"
@@ -559,7 +559,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-mysql:e77fdf2e732d67c80265fd85d63f038996468abe"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-mysql:4cc27158d90a31674af8889fbcada783d873c15e"
         lifecycle:
           preStop:
             exec:
@@ -621,7 +621,19 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: false
+          {{- if has "ALL" .Values.sizing.mysql.capabilities }}
+          privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.mysql.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.mysql.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.mysql.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/var/vcap/store"
           name: "mysql-data"
@@ -630,18 +642,9 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default"
-      {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
