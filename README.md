@@ -7,11 +7,11 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 ## Prerequisites
 
 * Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
-* Install [Heapster](https://github.com/kubernetes-retired/heapster/) in the system namespace
+* Install [Metrics server](https://github.com/kubernetes-incubator/metrics-server) in the system namespace
 * Install [helm](https://helm.sh/)
 * To be able to use the [bits service](https://github.com/cloudfoundry-incubator/bits-service) private registry in your Kubernetes cluster, you need to have a signed TLS certificate, with a CA that the docker or containerd daemon on the nodes trust, and a CN that is pointing to the bits service.
 
-**Note**: Eirini is currently being tested with HELM > 2.13.1, Kubernetes 1.11, and containerd as the container runtime.
+**Note**: Eirini is currently being tested with HELM > 2.14.1, Kubernetes 1.13, and containerd as the container runtime.
 
 ### Minimum cluster requirements
 SCF with Eirini can be started on a single-node cluster with 4 cores and 16GBs of RAM, which can run about 10 apps. With these specs the startup is really slow. Adding more cores will decrease the startup time.
