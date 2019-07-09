@@ -235,6 +235,15 @@ spec:
                 - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
+                  - "diego-cell"
+              topologyKey: "beta.kubernetes.io/os"
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "app.kubernetes.io/component"
+                  operator: "In"
+                  values:
                   - "router"
               topologyKey: "beta.kubernetes.io/os"
             weight: 100
@@ -425,7 +434,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:d653c617366ea4dd2e11751a9c2289bbfbbca18d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:0cc2ab20c3871e41a94a85114a4f56484a3eb611"
         lifecycle:
           preStop:
             exec:
@@ -599,7 +608,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:f2844fc3b6d3b1c5c0b50a330792c4cfc419a484"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1afa182f78584e1ed133dc90afff16ecb2f3b9a3"
         lifecycle:
           preStop:
             exec:
