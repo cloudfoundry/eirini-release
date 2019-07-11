@@ -11,6 +11,7 @@ opi:
   image_tag: latest
   rootfs_version: v66.0.0
   rootfs_patcher_timeout: 2m
+  registry_secret_name: registry-credentials
   stager:
     downloader_image: eirini/recipe-downloader
     downloader_image_tag: 0.2.0
