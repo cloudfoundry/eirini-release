@@ -8,11 +8,13 @@ TAG=${1:-"latest"}
 
 main(){
   echo "Creating Eirini docker images..."
+  readonly git_sha=$(git -C "$BASEDIR/src/code.cloudfoundry.org/eirini" rev-parse HEAD)
+
   create_image "$DOCKERDIR"/opi/init eirini/opi-init
   create_image "$DOCKERDIR"/registry/certs/smuggler eirini/secret-smuggler
-  docker build -f  "$DOCKERDIR"/opi/Dockerfile -t "eirini/opi:${TAG}" "$BASEDIR"
-  docker build -f  "$DOCKERDIR"/rootfs-patcher/Dockerfile -t "eirini/rootfs-patcher:${TAG}" "$BASEDIR"
-  docker build -f  "$DOCKERDIR"/bits-waiter/Dockerfile -t "eirini/bits-waiter:${TAG}" "$BASEDIR"
+  docker build -f  "$DOCKERDIR"/opi/Dockerfile -t "eirini/opi:${TAG}" "$BASEDIR" --build-arg "GIT_SHA=$git_sha"
+  docker build -f  "$DOCKERDIR"/rootfs-patcher/Dockerfile -t "eirini/rootfs-patcher:${TAG}" "$BASEDIR" --build-arg "GIT_SHA=$git_sha"
+  docker build -f  "$DOCKERDIR"/bits-waiter/Dockerfile -t "eirini/bits-waiter:${TAG}" "$BASEDIR" --build-arg "GIT_SHA=$git_sha"
 
   echo "All images created successfully"
 }
