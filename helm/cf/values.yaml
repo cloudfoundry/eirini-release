@@ -226,14 +226,6 @@ secrets:
   # A map of labels and encryption keys
   CC_DB_ENCRYPTION_KEYS: "~"
 
-  # The PEM-encoded certificate for secure TLS communication over external
-  # endpoints.
-  # This value uses a generated default.
-  CC_PUBLIC_TLS_CERT: ~
-
-  # The PEM-encoded key for secure TLS communication over external endpoints.
-  CC_PUBLIC_TLS_CERT_KEY: ~
-
   # The PEM-encoded certificate for internal cloud controller traffic.
   # This value uses a generated default.
   CC_SERVER_CRT: ~
@@ -309,27 +301,6 @@ secrets:
 
   # PEM-encoded client key for loggregator mutual authentication
   LOGGREGATOR_CLIENT_CERT_KEY: ~
-
-  # PEM-encoded client certificate for loggregator forwarder authentication
-  # This value uses a generated default.
-  LOGGREGATOR_FORWARD_CERT: ~
-
-  # PEM-encoded client key for loggregator forwarder authentication
-  LOGGREGATOR_FORWARD_CERT_KEY: ~
-
-  # PEM-encoded certificate.
-  # This value uses a generated default.
-  LOG_CACHE_CERT: ~
-
-  # PEM-encoded key.
-  LOG_CACHE_CERT_KEY: ~
-
-  # PEM-encoded certificate.
-  # This value uses a generated default.
-  LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT: ~
-
-  # PEM-encoded key.
-  LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY: ~
 
   # Password used for the monit API.
   # This value uses a generated default.
@@ -591,6 +562,10 @@ env:
 
   # The minimum number of connections to the Autoscaler appmetrics database.
   AUTOSCALER_APPMETRICS_DB_CONNECTION_CONFIG_MAX_OPEN_CONNECTIONS: "100"
+
+  # Whether to skip ssl validation when Autoscaler components to communicate
+  # with CloudFoundry components.
+  AUTOSCALER_CF_SKIP_SSL_VALIDATION: "true"
 
   # The maximum number of connections the Autoscaler postgres database server
   # could serve.
@@ -1075,19 +1050,6 @@ env:
   # Support contact information for the cluster
   SUPPORT_ADDRESS: "support@example.com"
 
-  # Regex for which SITS tests the test runner should focus on executing.
-  SYNC_INTEGRATION_TESTS_FOCUS: ~
-
-  # The number of parallel test executors to spawn for Cloud Foundry sync
-  # integration tests.
-  SYNC_INTEGRATION_TESTS_NODES: "4"
-
-  # Regex for which SITS tests the test runner should skip.
-  SYNC_INTEGRATION_TESTS_SKIP: ~
-
-  # Whether the output of the sync integration tests should be verbose or not.
-  SYNC_INTEGRATION_TESTS_VERBOSE: "false"
-
   # TCP routing domain of the SCF cluster; only used for testing;
   # Example: "tcp.my-scf-cluster.com"
   TCP_DOMAIN: ~
@@ -1118,10 +1080,13 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: adapter and bpm
+  # Also: adapter
   adapter:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The adapter instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
@@ -1189,9 +1154,7 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The autoscaler_api instance group can be enabled by the autoscaler
-    # feature.
-    # It can scale between 1 and 3 instances.
+    # The autoscaler_api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1220,9 +1183,8 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler_eventgenerator instance group can be enabled by the
-    # autoscaler feature.
-    # It can scale between 1 and 3 instances.
+    # The autoscaler_eventgenerator instance group can scale between 1 and 3
+    # instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1251,9 +1213,7 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler_metrics instance group can be enabled by the autoscaler
-    # feature.
-    # It can scale between 1 and 3 instances.
+    # The autoscaler_metrics instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1282,9 +1242,8 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler_operator instance group can be enabled by the autoscaler
-    # feature.
-    # It can scale between 1 and 3 instances.
+    # The autoscaler_operator instance group can scale between 1 and 3
+    # instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1313,9 +1272,9 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler_postgres instance group can be enabled by the autoscaler
-    # feature.
-    # It cannot be scaled.
+    # The autoscaler_postgres instance group can scale between 1 and 3
+    # instances.
+    # For high availability it needs at least 2 instances.
     count: 1
 
     # Unit [millicore]
@@ -1324,7 +1283,7 @@ sizing:
       limit: ~
 
     disk_sizes:
-      postgres_data: 5
+      postgres_data: 100
 
     # Unit [MiB]
     memory:
@@ -1346,9 +1305,8 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler_scalingengine instance group can be enabled by the
-    # autoscaler feature.
-    # It can scale between 1 and 3 instances.
+    # The autoscaler_scalingengine instance group can scale between 1 and 3
+    # instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1377,9 +1335,8 @@ sizing:
     # Additional privileges can be specified here
     capabilities: []
 
-    # The autoscaler_scheduler instance group can be enabled by the autoscaler
-    # feature.
-    # It can scale between 1 and 3 instances.
+    # The autoscaler_scheduler instance group can scale between 1 and 3
+    # instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1407,9 +1364,8 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The autoscaler_servicebroker instance group can be enabled by the
-    # autoscaler feature.
-    # It can scale between 1 and 3 instances.
+    # The autoscaler_servicebroker instance group can scale between 1 and 3
+    # instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1458,15 +1414,13 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # - wait-for-api: Wait for API to be ready before starting any jobs
-  #
   # - cloud_controller_clock: The Cloud Controller Clock runs the Diego Sync job
   #   to keep the actual state of running processes in Diego in sync with Cloud
   #   Controller's desired state. Additionally, the Clock schedules periodic
   #   clean up jobs to prune app usage events, audit events, failed jobs, and
   #   more.
   #
-  # Also: statsd_injector and bpm
+  # Also: bpm and statsd_injector
   cc_clock:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1492,7 +1446,7 @@ sizing:
   #
   # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
-  # Also: tps, cc_uploader, and bpm
+  # Also: tps, bpm, and cc_uploader
   cc_uploader:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1554,8 +1508,7 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The cf_usb_group instance group is enabled by the cf_usb feature.
-    # It can scale between 1 and 3 instances.
+    # The cf_usb_group instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
 
@@ -1581,8 +1534,7 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The credhub_user instance group can be enabled by the credhub feature.
-    # It cannot be scaled.
+    # The credhub_user instance group cannot be scaled.
     count: 1
 
     # Unit [millicore]
@@ -1664,10 +1616,10 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
   # - get-kubectl: This job exists only to ensure the presence of the kubectl
   #   binary in the role referencing it.
+  #
+  # - authorize-internal-ca: Install both internal and UAA CA certificates
   #
   # - wait-for-uaa: Wait for UAA to be ready before starting any jobs
   #
@@ -1675,8 +1627,8 @@ sizing:
   #   SCF patches for upstream bugs
   #
   # Also: rep, cfdot, route_emitter, garden, groot-btrfs,
-  # cflinuxfs3-rootfs-setup, cf-sle12-setup, sle15-rootfs-setup, nfsv3driver,
-  # and mapfs
+  # cflinuxfs2-rootfs-setup, cflinuxfs3-rootfs-setup, opensuse42-rootfs-setup,
+  # cf-sle12-setup, and nfsv3driver
   diego_cell:
     # Node affinity rules can be specified here
     affinity: {}
@@ -1732,15 +1684,13 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # - route_registrar: Used for registering routes
-  #
-  # Also: log-cache-gateway, log-cache-nozzle, log-cache-cf-auth-proxy,
-  # log-cache-expvar-forwarder, log-cache, doppler, and bpm
+  # Also: doppler
   doppler:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The doppler instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
@@ -1785,7 +1735,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 128
+      request: 310
       limit: ~
 
   # The log-api instance group contains the following jobs:
@@ -1816,45 +1766,18 @@ sizing:
       request: 128
       limit: ~
 
-  # The log-cache-scheduler instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # - log-cache-scheduler-properties: Dummy BOSH job used to host parameters
-  #   that are used in SCF patches
-  #
-  # Also: log-cache-scheduler, log-cache-expvar-forwarder, and bpm
-  log_cache_scheduler:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The log_cache_scheduler instance group can scale between 1 and 65535
-    # instances.
-    # For high availability it needs at least 2 instances.
-    count: 1
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 410
-      limit: ~
-
   # The loggregator-agent instance group contains the following jobs:
   #
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: loggr-expvar-forwarder, loggregator_agent, and bpm
+  # Also: loggregator_agent
   loggregator_agent:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The loggregator_agent instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -1910,11 +1833,12 @@ sizing:
   #
   # - nats: The NATS server provides publish-subscribe messaging system for the
   #   Cloud Controller, the DEA , HM9000, and other Cloud Foundry components.
-  #
-  # Also: bpm
   nats:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The nats instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -2073,10 +1997,13 @@ sizing:
   # - global-properties: Dummy BOSH job used to host global parameters that are
   #   required to configure SCF
   #
-  # Also: scheduler and bpm
+  # Also: scheduler
   syslog_scheduler:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The syslog_scheduler instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -2101,10 +2028,13 @@ sizing:
   #
   # - wait-for-uaa: Wait for UAA to be ready before starting any jobs
   #
-  # Also: tcp_router and bpm
+  # Also: tcp_router
   tcp_router:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The tcp_router instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
@@ -2124,19 +2054,7 @@ sizing:
       tcp_route:
         count: 9
 
-enable:
-  # The autoscaler feature enables these instance groups: autoscaler_postgres,
-  # autoscaler_api, autoscaler_metrics, autoscaler_scalingengine,
-  # autoscaler_scheduler, autoscaler_operator, autoscaler_servicebroker, and
-  # autoscaler_eventgenerator
-  autoscaler: false
-
-  # The cf_usb feature enables these instance groups: cf_usb_group
-  cf_usb: true
-
-  # The credhub feature enables these instance groups: credhub_user
-  credhub: false
-
+enable: {}
 ingress:
   # ingress.annotations allows specifying custom ingress annotations that gets
   # merged to the default annotations.

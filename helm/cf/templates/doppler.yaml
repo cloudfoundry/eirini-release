@@ -19,10 +19,6 @@ items:
   spec:
     clusterIP: "None"
     ports:
-    - name: "log-cache"
-      port: 8080
-      protocol: "TCP"
-      targetPort: 0
     - name: "dropsonde-udp"
       port: 3457
       protocol: "UDP"
@@ -43,57 +39,6 @@ items:
       port: 8082
       protocol: "TCP"
       targetPort: 0
-    - name: "log-cache-proxy"
-      port: 8083
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "doppler"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "doppler-log-cache-set"
-    labels:
-      app.kubernetes.io/component: "doppler-log-cache-set"
-      skiff-role-name: "doppler-log-cache-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "doppler-log-cache-set"
-      {{- end }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "log-cache"
-      port: 8080
-      protocol: "TCP"
-      targetPort: 0
-    selector:
-      app.kubernetes.io/component: "doppler"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "doppler-log-cache"
-    labels:
-      app.kubernetes.io/component: "doppler-log-cache"
-      skiff-role-name: "doppler-log-cache"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "doppler-log-cache"
-      {{- end }}
-  spec:
-    ports:
-    - name: "log-cache"
-      port: 8080
-      protocol: "TCP"
-      targetPort: 8080
     selector:
       app.kubernetes.io/component: "doppler"
 - apiVersion: "v1"
@@ -132,10 +77,6 @@ items:
       targetPort: 0
     - name: "doppler-grpc"
       port: 8082
-      protocol: "TCP"
-      targetPort: 0
-    - name: "log-cache-proxy"
-      port: 8083
       protocol: "TCP"
       targetPort: 0
     selector:
@@ -177,10 +118,6 @@ items:
       port: 8082
       protocol: "TCP"
       targetPort: 8082
-    - name: "log-cache-proxy"
-      port: 8083
-      protocol: "TCP"
-      targetPort: 8083
     selector:
       app.kubernetes.io/component: "doppler"
 kind: "List"
@@ -190,12 +127,7 @@ kind: "List"
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
 #
-# - authorize-internal-ca: Install both internal and UAA CA certificates
-#
-# - route_registrar: Used for registering routes
-#
-# Also: log-cache-gateway, log-cache-nozzle, log-cache-cf-auth-proxy,
-# log-cache-expvar-forwarder, log-cache, doppler, and bpm
+# Also: doppler
 
 {{- if gt (int .Values.sizing.doppler.count) 65535 }}
 _maxReplicas: {{ fail "doppler cannot have more than 65535 instances" }}
@@ -304,8 +236,6 @@ spec:
           value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
-        - name: "DOMAIN"
-          value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
 
         {{- if not .Values.secrets.DOPPLER_CERT }}
         - name: "DOPPLER_CERT"
@@ -364,80 +294,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: "metadata.namespace"
-        - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
-
-        {{- if .Values.secrets.LOG_CACHE_CERT }}
-        - name: "LOG_CACHE_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOG_CACHE_CERT }}
-        - name: "LOG_CACHE_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOG_CACHE_CERT_KEY }}
-        - name: "LOG_CACHE_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOG_CACHE_CERT_KEY }}
-        - name: "LOG_CACHE_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-cert-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT }}
-        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-to-loggregator-agent-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT }}
-        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-to-loggregator-agent-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-to-loggregator-agent-cert-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY }}
-        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "log-cache-to-loggregator-agent-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -447,19 +303,11 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.NATS_PASSWORD }}
-        - name: "NATS_PASSWORD"
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.NATS_PASSWORD }}
-        - name: "NATS_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "nats-password"
+              key: "monit-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -471,37 +319,11 @@ spec:
           value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_PROTOCOL"
           value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
-        - name: "UAA_CA_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-ca-cert"
-              name: "secrets"
-
-        {{- if .Values.secrets.UAA_CLIENTS_DOPPLER_SECRET }}
-        - name: "UAA_CLIENTS_DOPPLER_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-doppler-secret"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.UAA_CLIENTS_DOPPLER_SECRET }}
-        - name: "UAA_CLIENTS_DOPPLER_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-doppler-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        - name: "UAA_HOST"
-          value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
-        - name: "UAA_PORT"
-          value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "VCAP_HARD_NPROC"
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-doppler:23aab4deb2f9e023b78d4e80f46738d0a5a741f7"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-doppler:d0c13e6502ab80a338f1293122506cdef967a16b"
         lifecycle:
           preStop:
             exec:
@@ -510,9 +332,6 @@ spec:
         livenessProbe: ~
         name: "doppler"
         ports:
-        - containerPort: 8080
-          name: "log-cache"
-          protocol: "TCP"
         - containerPort: 3457
           name: "dropsonde-udp"
           protocol: "UDP"
@@ -527,9 +346,6 @@ spec:
           protocol: "TCP"
         - containerPort: 8082
           name: "doppler-grpc"
-          protocol: "TCP"
-        - containerPort: 8083
-          name: "log-cache-proxy"
           protocol: "TCP"
         readinessProbe:
           exec:
@@ -556,7 +372,19 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.doppler.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.doppler.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.doppler.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.doppler.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -626,38 +454,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
-        - name: "LOGGREGATOR_FORWARD_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
-        - name: "LOGGREGATOR_FORWARD_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
-        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
-        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -686,7 +482,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:5de06807231fdef4272d70c9b3db18b7b66ab832"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1220fec6ea4f2042e109c4106973603e5b6b43d9"
         lifecycle:
           preStop:
             exec:
@@ -716,18 +512,29 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.loggregator_agent.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.loggregator_agent.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.loggregator_agent.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.loggregator_agent.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "privileged"
       {{- end }}
+      restartPolicy: "Always"
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

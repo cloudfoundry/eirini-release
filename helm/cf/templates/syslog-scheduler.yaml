@@ -79,7 +79,7 @@ kind: "List"
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
 #
-# Also: scheduler and bpm
+# Also: scheduler
 
 {{- if gt (int .Values.sizing.syslog_scheduler.count) 3 }}
 _maxReplicas: {{ fail "syslog_scheduler cannot have more than 3 instances" }}
@@ -275,7 +275,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-syslog-scheduler:2d4c3787b75e05ef90def5ae6bb5983b65681f10"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-syslog-scheduler:9e31593ae6318258134a2f8750362c9835a15bf8"
         lifecycle:
           preStop:
             exec:
@@ -312,7 +312,19 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.syslog_scheduler.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.syslog_scheduler.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.syslog_scheduler.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.syslog_scheduler.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -382,38 +394,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
-        - name: "LOGGREGATOR_FORWARD_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
-        - name: "LOGGREGATOR_FORWARD_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
-        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
-        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -442,7 +422,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:5de06807231fdef4272d70c9b3db18b7b66ab832"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1220fec6ea4f2042e109c4106973603e5b6b43d9"
         lifecycle:
           preStop:
             exec:
@@ -472,18 +452,29 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.loggregator_agent.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.loggregator_agent.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.loggregator_agent.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.loggregator_agent.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
       {{- end }}
+      restartPolicy: "Always"
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

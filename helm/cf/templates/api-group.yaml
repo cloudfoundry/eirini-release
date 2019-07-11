@@ -27,10 +27,6 @@ items:
       port: 9023
       protocol: "TCP"
       targetPort: 0
-    - name: "api-mutual-tls"
-      port: 9024
-      protocol: "TCP"
-      targetPort: 0
     - name: "statsd"
       port: 8125
       protocol: "TCP"
@@ -61,10 +57,6 @@ items:
       targetPort: 0
     - name: "api-tls"
       port: 9023
-      protocol: "TCP"
-      targetPort: 0
-    - name: "api-mutual-tls"
-      port: 9024
       protocol: "TCP"
       targetPort: 0
     - name: "statsd"
@@ -98,10 +90,6 @@ items:
       port: 9023
       protocol: "TCP"
       targetPort: 9023
-    - name: "api-mutual-tls"
-      port: 9024
-      protocol: "TCP"
-      targetPort: 9024
     - name: "statsd"
       port: 8125
       protocol: "TCP"
@@ -280,20 +268,20 @@ spec:
         - name: "BROKER_CLIENT_TIMEOUT_SECONDS"
           value: {{if ne (typeOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) "<nil>"}}{{if has (kindOf .Values.env.BROKER_CLIENT_TIMEOUT_SECONDS) (list "map" "slice")}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | toJson | quote}}{{else}}{{.Values.env.BROKER_CLIENT_TIMEOUT_SECONDS | quote}}{{end}}{{else}}""{{end}}
 
-        {{- if not .Values.secrets.BULK_API_PASSWORD }}
-        - name: "BULK_API_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "bulk-api-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.BULK_API_PASSWORD }}
         - name: "BULK_API_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "bulk-api-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.BULK_API_PASSWORD }}
+        - name: "BULK_API_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "bulk-api-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "CATS_SUITES"
@@ -305,38 +293,6 @@ spec:
             secretKeyRef:
               key: "cc-db-encryption-keys"
               name: "secrets"
-
-        {{- if not .Values.secrets.CC_PUBLIC_TLS_CERT }}
-        - name: "CC_PUBLIC_TLS_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "cc-public-tls-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.CC_PUBLIC_TLS_CERT }}
-        - name: "CC_PUBLIC_TLS_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "cc-public-tls-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.CC_PUBLIC_TLS_CERT_KEY }}
-        - name: "CC_PUBLIC_TLS_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "cc-public-tls-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.CC_PUBLIC_TLS_CERT_KEY }}
-        - name: "CC_PUBLIC_TLS_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "cc-public-tls-cert-key"
-              name: "secrets"
-        {{- end }}
 
         {{- if not .Values.secrets.CC_SERVER_CRT }}
         - name: "CC_SERVER_CRT"
@@ -354,20 +310,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.CC_SERVER_CRT_KEY }}
-        - name: "CC_SERVER_CRT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "cc-server-crt-key"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.CC_SERVER_CRT_KEY }}
         - name: "CC_SERVER_CRT_KEY"
           valueFrom:
             secretKeyRef:
               key: "cc-server-crt-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.CC_SERVER_CRT_KEY }}
+        - name: "CC_SERVER_CRT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "cc-server-crt-key"
+              name: "secrets"
         {{- end }}
 
         - name: "CDN_URI"
@@ -424,20 +380,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.INTERNAL_CA_CERT }}
-        - name: "INTERNAL_CA_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "internal-ca-cert"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
           valueFrom:
             secretKeyRef:
               key: "internal-ca-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets"
         {{- end }}
 
         - name: "KUBERNETES_CLUSTER_DOMAIN"
@@ -471,14 +427,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.MYSQL_CCDB_ROLE_PASSWORD }}
-        - name: "MYSQL_CCDB_ROLE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-ccdb-role-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.MYSQL_CCDB_ROLE_PASSWORD }}
         - name: "MYSQL_CCDB_ROLE_PASSWORD"
           valueFrom:
@@ -487,12 +435,12 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.NATS_PASSWORD }}
-        - name: "NATS_PASSWORD"
+        {{- if not .Values.secrets.MYSQL_CCDB_ROLE_PASSWORD }}
+        - name: "MYSQL_CCDB_ROLE_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "secrets"
+              key: "mysql-ccdb-role-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.NATS_PASSWORD }}
@@ -501,6 +449,14 @@ spec:
             secretKeyRef:
               key: "nats-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.NATS_PASSWORD }}
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets"
         {{- end }}
 
         - name: "NGINX_MAX_REQUEST_BODY_SIZE"
@@ -589,20 +545,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
-        - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-cc-service-key-client-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
         - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-cc-service-key-client-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET }}
+        - name: "UAA_CLIENTS_CC_SERVICE_KEY_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-service-key-client-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET }}
@@ -633,7 +589,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:33fe950a75ad8f57d857f6611cabbeaab9cb2f32"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:e6eaf22bc669b4da2c8abd18028cf84d24e0e492"
         lifecycle:
           preStop:
             exec:
@@ -647,9 +603,6 @@ spec:
           protocol: "TCP"
         - containerPort: 9023
           name: "api-tls"
-          protocol: "TCP"
-        - containerPort: 9024
-          name: "api-mutual-tls"
           protocol: "TCP"
         - containerPort: 8125
           name: "statsd"
@@ -749,38 +702,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
-        - name: "LOGGREGATOR_FORWARD_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
-        - name: "LOGGREGATOR_FORWARD_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert"
-              name: "secrets"
-        {{- end }}
-
-        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
-        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert-key"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
-        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "loggregator-forward-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -809,7 +730,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:5de06807231fdef4272d70c9b3db18b7b66ab832"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1220fec6ea4f2042e109c4106973603e5b6b43d9"
         lifecycle:
           preStop:
             exec:
@@ -839,18 +760,36 @@ spec:
             {{- end }}
 
         securityContext:
+          {{- if has "ALL" .Values.sizing.loggregator_agent.capabilities }}
           privileged: true
+          {{- end }}
+
+          {{- if not (has "ALL" .Values.sizing.loggregator_agent.capabilities) }}
+          capabilities:
+            add:
+            {{- range .Values.sizing.loggregator_agent.capabilities }}
+            - {{ . | upper }}
+            {{- end }}
+          {{- end }}
+
+          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.loggregator_agent.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "default-privileged"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

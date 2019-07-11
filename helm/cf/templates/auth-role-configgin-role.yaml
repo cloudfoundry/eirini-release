@@ -2,11 +2,10 @@
 # Role "configgin-role" used by accounts:
 # - default
 # - default-privileged
-# - eirini
 # - garden-runc
 # - privileged
 # - secret-generator
-# - tests
+# - test-brain
 # - withsysresource
 # - withsysresource-privileged
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
@@ -43,5 +42,4 @@ rules:
   - "statefulsets"
   verbs:
   - "get"
-  - "patch"
 {{- end }}

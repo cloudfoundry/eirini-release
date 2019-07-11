@@ -1,5 +1,4 @@
 ---
-{{- if .Values.enable.cf_usb }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -86,7 +85,6 @@ items:
     selector:
       app.kubernetes.io/component: "cf-usb-group"
 kind: "List"
-{{- end }}
 ---
 # The cf-usb-group instance group contains the following jobs:
 #
@@ -98,7 +96,6 @@ kind: "List"
 # - route_registrar: Used for registering routes
 #
 # Also: cf-usb and bpm
-{{- if .Values.enable.cf_usb }}
 
 {{- if gt (int .Values.sizing.cf_usb_group.count) 3 }}
 _maxReplicas: {{ fail "cf_usb_group cannot have more than 3 instances" }}
@@ -372,7 +369,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:43184085062f2b74c35aa0d5e6969c432b246e5c"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:296b9a43cd5c49e1bc96675c79f792dbf8d1f892"
         lifecycle:
           preStop:
             exec:
@@ -417,12 +414,18 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "default-privileged"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -435,4 +438,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end }}
