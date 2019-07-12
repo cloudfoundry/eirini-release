@@ -1,4 +1,5 @@
 ---
+{{- if .Values.enable.credhub }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -73,6 +74,7 @@ items:
     selector:
       app.kubernetes.io/component: "credhub-user"
 kind: "List"
+{{- end }}
 ---
 # The credhub-user instance group contains the following jobs:
 #
@@ -82,6 +84,7 @@ kind: "List"
 # - route_registrar: Used for registering routes
 #
 # Also: credhub and bpm
+{{- if .Values.enable.credhub }}
 
 {{- if gt (int .Values.sizing.credhub_user.count) 1 }}
 _maxReplicas: {{ fail "credhub_user cannot have more than 1 instances" }}
@@ -314,7 +317,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:918d27ae55a735007df7b66da3f87fcf7a7c02c3"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:08525ef50be6286c717ea19c01a3630ece209e8b"
         lifecycle:
           preStop:
             exec:
@@ -356,18 +359,12 @@ spec:
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "default-privileged"
       {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -380,3 +377,4 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
+{{- end }}

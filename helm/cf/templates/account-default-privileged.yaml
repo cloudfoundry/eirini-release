@@ -1,14 +1,21 @@
 ---
 # Service account "default-privileged" is used by the following instance groups:
+# - adapter
 # - api-group
 # - autoscaler-api
 # - autoscaler-servicebroker
 # - blobstore
 # - cc-clock
+# - cc-uploader
 # - cc-worker
 # - cf-usb-group
 # - credhub-user
 # - log-api
+# - log-cache-scheduler
+# - nats
+# - smoke-tests
+# - syslog-scheduler
+# - tcp-router
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "v1"
 kind: "ServiceAccount"

@@ -1,155 +1,26 @@
 ---
-apiVersion: "v1"
-items:
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "tcp-router-set"
-    labels:
-      app.kubernetes.io/component: "tcp-router-set"
-      skiff-role-name: "tcp-router-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "tcp-router-set"
-      {{- end }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "healthcheck"
-      port: 2341
-      protocol: "TCP"
-      targetPort: 0
-    {{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
-    - name: "tcp-route-{{ $port }}"
-      port: {{ add 20000 $port }}
-      protocol: "TCP"
-      targetPort: 0
-    {{- end }}
-    selector:
-      app.kubernetes.io/component: "tcp-router"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "tcp-router-tcp-router-set"
-    labels:
-      app.kubernetes.io/component: "tcp-router-tcp-router-set"
-      skiff-role-name: "tcp-router-tcp-router-set"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "tcp-router-tcp-router-set"
-      {{- end }}
-  spec:
-    clusterIP: "None"
-    ports:
-    - name: "healthcheck"
-      port: 2341
-      protocol: "TCP"
-      targetPort: 0
-    {{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
-    - name: "tcp-route-{{ $port }}"
-      port: {{ add 20000 $port }}
-      protocol: "TCP"
-      targetPort: 0
-    {{- end }}
-    selector:
-      app.kubernetes.io/component: "tcp-router"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "tcp-router-tcp-router"
-    labels:
-      app.kubernetes.io/component: "tcp-router-tcp-router"
-      skiff-role-name: "tcp-router-tcp-router"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "tcp-router-tcp-router"
-      {{- end }}
-  spec:
-    ports:
-    - name: "healthcheck"
-      port: 2341
-      protocol: "TCP"
-      targetPort: 8080
-    {{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
-    - name: "tcp-route-{{ $port }}"
-      port: {{ add 20000 $port }}
-      protocol: "TCP"
-      targetPort: "tcp-route-{{ $port }}"
-    {{- end }}
-    selector:
-      app.kubernetes.io/component: "tcp-router"
-- apiVersion: "v1"
-  kind: "Service"
-  metadata:
-    name: "tcp-router-tcp-router-public"
-    labels:
-      app.kubernetes.io/component: "tcp-router-tcp-router-public"
-      skiff-role-name: "tcp-router-tcp-router-public"
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-      app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
-      app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
-      helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
-      {{- if .Values.config.use_istio }}
-      app: "tcp-router-tcp-router-public"
-      {{- end }}
-  spec:
-    {{- if not (or .Values.services.loadbalanced .Values.ingress.enabled) }}
-    externalIPs: {{ .Values.kube.external_ips | toJson }}
-    {{- end }}
-
-    ports:
-    {{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
-    - name: "tcp-route-{{ $port }}"
-      port: {{ add 20000 $port }}
-      protocol: "TCP"
-      targetPort: "tcp-route-{{ $port }}"
-    {{- end }}
-    selector:
-      app.kubernetes.io/component: "tcp-router"
-
-    {{- if .Values.services.loadbalanced }}
-    type: "LoadBalancer"
-    {{- end }}
-
-  {{- if and .Values.services.loadbalanced .Values.ingress.enabled }}
-  _incompatible: {{ fail "services.loadbalanced and ingress.enabled cannot both be set" }}
-  {{- end }}
-kind: "List"
----
-# The tcp-router instance group contains the following jobs:
+# The log-cache-scheduler instance group contains the following jobs:
 #
 # - global-properties: Dummy BOSH job used to host global parameters that are
 #   required to configure SCF
 #
 # - authorize-internal-ca: Install both internal and UAA CA certificates
 #
-# - wait-for-uaa: Wait for UAA to be ready before starting any jobs
+# - log-cache-scheduler-properties: Dummy BOSH job used to host parameters that
+#   are used in SCF patches
 #
-# Also: tcp_router and bpm
+# Also: log-cache-scheduler, log-cache-expvar-forwarder, and bpm
 
-{{- if gt (int .Values.sizing.tcp_router.count) 3 }}
-_maxReplicas: {{ fail "tcp_router cannot have more than 3 instances" }}
+{{- if gt (int .Values.sizing.log_cache_scheduler.count) 65535 }}
+_maxReplicas: {{ fail "log_cache_scheduler cannot have more than 65535 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.tcp_router.count) 1) (lt (int .Values.sizing.tcp_router.count) 2)) }}
-_minHAReplicas: {{ fail "tcp_router must have at least 2 instances for HA" }}
+{{- if and .Values.config.HA (and (ne (int .Values.sizing.log_cache_scheduler.count) 1) (lt (int .Values.sizing.log_cache_scheduler.count) 2)) }}
+_minHAReplicas: {{ fail "log_cache_scheduler must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.tcp_router.count) 1 }}
-_minReplicas: {{ fail "tcp_router must have at least 1 instances" }}
+{{- if lt (int .Values.sizing.log_cache_scheduler.count) 1 }}
+_minReplicas: {{ fail "log_cache_scheduler must have at least 1 instances" }}
 {{- end }}
 
 {{- if .Values.sizing.HA }}
@@ -175,10 +46,10 @@ _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "
 apiVersion: "apps/v1beta1"
 kind: "StatefulSet"
 metadata:
-  name: "tcp-router"
+  name: "log-cache-scheduler"
   labels:
-    app.kubernetes.io/component: "tcp-router"
-    skiff-role-name: "tcp-router"
+    app.kubernetes.io/component: "log-cache-scheduler"
+    skiff-role-name: "log-cache-scheduler"
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -186,7 +57,7 @@ metadata:
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 
     {{- if .Values.config.use_istio }}
-    app: "tcp-router"
+    app: "log-cache-scheduler"
     {{- end }}
 
     {{- if .Values.config.use_istio }}
@@ -195,17 +66,17 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.tcp_router.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.tcp_router.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.log_cache_scheduler.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.log_cache_scheduler.count }} {{- end }}
   selector:
     matchLabels:
-      skiff-role-name: "tcp-router"
-  serviceName: "tcp-router-set"
+      skiff-role-name: "log-cache-scheduler"
+  serviceName: "log-cache-scheduler-set"
   template:
     metadata:
-      name: "tcp-router"
+      name: "log-cache-scheduler"
       labels:
-        app.kubernetes.io/component: "tcp-router"
-        skiff-role-name: "tcp-router"
+        app.kubernetes.io/component: "log-cache-scheduler"
+        skiff-role-name: "log-cache-scheduler"
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
         app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
         app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -213,7 +84,7 @@ spec:
         helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 
         {{- if .Values.config.use_istio }}
-        app: "tcp-router"
+        app: "log-cache-scheduler"
         {{- end }}
 
         {{- if .Values.config.use_istio }}
@@ -235,11 +106,11 @@ spec:
                 - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
-                  - "tcp-router"
+                  - "doppler"
               topologyKey: "beta.kubernetes.io/os"
             weight: 100
-        {{- if .Values.sizing.tcp_router.affinity.nodeAffinity }}
-        nodeAffinity: {{ toJson .Values.sizing.tcp_router.affinity.nodeAffinity }}
+        {{- if .Values.sizing.log_cache_scheduler.affinity.nodeAffinity }}
+        nodeAffinity: {{ toJson .Values.sizing.log_cache_scheduler.affinity.nodeAffinity }}
         {{- end }}
       containers:
       - env:
@@ -272,14 +143,68 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: "metadata.namespace"
-        - name: "LOG_LEVEL"
-          value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
-        {{- if not .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
+        {{- if not .Values.secrets.LOG_CACHE_CERT }}
+        - name: "LOG_CACHE_CERT"
           valueFrom:
             secretKeyRef:
-              key: "monit-password"
+              key: "log-cache-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOG_CACHE_CERT }}
+        - name: "LOG_CACHE_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.LOG_CACHE_CERT_KEY }}
+        - name: "LOG_CACHE_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOG_CACHE_CERT_KEY }}
+        - name: "LOG_CACHE_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-to-loggregator-agent-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-to-loggregator-agent-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-to-loggregator-agent-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY }}
+        - name: "LOG_CACHE_TO_LOGGREGATOR_AGENT_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "log-cache-to-loggregator-agent-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
@@ -289,6 +214,14 @@ spec:
             secretKeyRef:
               key: "monit-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "PZ_LABEL_NAME"
@@ -304,80 +237,40 @@ spec:
             secretKeyRef:
               key: "uaa-ca-cert"
               name: "secrets"
-
-        {{- if not .Values.secrets.UAA_CLIENTS_TCP_ROUTER_SECRET }}
-        - name: "UAA_CLIENTS_TCP_ROUTER_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-tcp-router-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.UAA_CLIENTS_TCP_ROUTER_SECRET }}
-        - name: "UAA_CLIENTS_TCP_ROUTER_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-tcp-router-secret"
-              name: "secrets"
-        {{- end }}
-
-        - name: "UAA_HOST"
-          value: {{if ne (typeOf .Values.env.UAA_HOST) "<nil>"}}{{if has (kindOf .Values.env.UAA_HOST) (list "map" "slice")}}{{.Values.env.UAA_HOST | toJson | quote}}{{else}}{{.Values.env.UAA_HOST | quote}}{{end}}{{else}}{{fail "env.UAA_HOST has not been set"}}{{end}}
-        - name: "UAA_PORT"
-          value: {{if ne (typeOf .Values.env.UAA_PORT) "<nil>"}}{{if has (kindOf .Values.env.UAA_PORT) (list "map" "slice")}}{{.Values.env.UAA_PORT | toJson | quote}}{{else}}{{.Values.env.UAA_PORT | quote}}{{end}}{{else}}""{{end}}
         - name: "VCAP_HARD_NPROC"
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-tcp-router:27e5298378adf367ef3678f6c549e5fe39b2b674"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-log-cache-scheduler:a0d017600c72676eeb7d6816ea7ee87fca7c630f"
         lifecycle:
           preStop:
             exec:
               command:
               - "/opt/fissile/pre-stop.sh"
         livenessProbe: ~
-        name: "tcp-router"
-        ports:
-        - containerPort: 8080
-          name: "healthcheck"
-          protocol: "TCP"
-
-        {{- if gt (int .Values.sizing.tcp_router.ports.tcp_route.count) 20 }}
-        - {{ fail ".Values.sizing.tcp_router.ports.tcp_route.count must not exceed 20" }}
-        {{- end }}
-
-        {{- if lt (int .Values.sizing.tcp_router.ports.tcp_route.count) 1 }}
-        - {{ fail ".Values.sizing.tcp_router.ports.tcp_route.count must be at least 1" }}
-        {{- end }}
-
-        {{- range $port := until (int .Values.sizing.tcp_router.ports.tcp_route.count) }}
-        - containerPort: {{ add 20000 $port }}
-          name: "tcp-route-{{ $port }}"
-          protocol: "TCP"
-        {{- end }}
-
+        name: "log-cache-scheduler"
+        ports: ~
         readinessProbe:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --silent --fail --head http://${HOSTNAME}:8080/health"
         resources:
           requests:
-            {{- if and .Values.config.memory.requests .Values.sizing.tcp_router.memory.request }}
-            memory: "{{ int .Values.sizing.tcp_router.memory.request }}Mi"
+            {{- if and .Values.config.memory.requests .Values.sizing.log_cache_scheduler.memory.request }}
+            memory: "{{ int .Values.sizing.log_cache_scheduler.memory.request }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.requests .Values.sizing.tcp_router.cpu.request }}
-            cpu: "{{ int .Values.sizing.tcp_router.cpu.request }}m"
+            {{- if and .Values.config.cpu.requests .Values.sizing.log_cache_scheduler.cpu.request }}
+            cpu: "{{ int .Values.sizing.log_cache_scheduler.cpu.request }}m"
             {{- end }}
 
           limits:
-            {{- if and .Values.config.memory.limits .Values.sizing.tcp_router.memory.limit }}
-            memory: "{{ int .Values.sizing.tcp_router.memory.limit }}Mi"
+            {{- if and .Values.config.memory.limits .Values.sizing.log_cache_scheduler.memory.limit }}
+            memory: "{{ int .Values.sizing.log_cache_scheduler.memory.limit }}Mi"
             {{- end }}
 
-            {{- if and .Values.config.cpu.limits .Values.sizing.tcp_router.cpu.limit }}
-            cpu: "{{ int .Values.sizing.tcp_router.cpu.limit }}m"
+            {{- if and .Values.config.cpu.limits .Values.sizing.log_cache_scheduler.cpu.limit }}
+            cpu: "{{ int .Values.sizing.log_cache_scheduler.cpu.limit }}m"
             {{- end }}
 
         securityContext:

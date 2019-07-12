@@ -27,10 +27,6 @@ items:
       port: 443
       protocol: "TCP"
       targetPort: 0
-    - name: "doppler-ssl"
-      port: 4443
-      protocol: "TCP"
-      targetPort: 0
     selector:
       app.kubernetes.io/component: "router"
 - apiVersion: "v1"
@@ -59,10 +55,6 @@ items:
       port: 443
       protocol: "TCP"
       targetPort: 0
-    - name: "doppler-ssl"
-      port: 4443
-      protocol: "TCP"
-      targetPort: 0
     selector:
       app.kubernetes.io/component: "router"
 - apiVersion: "v1"
@@ -88,10 +80,6 @@ items:
       targetPort: 8000
     - name: "router-ssl"
       port: 443
-      protocol: "TCP"
-      targetPort: 443
-    - name: "doppler-ssl"
-      port: 4443
       protocol: "TCP"
       targetPort: 443
     selector:
@@ -123,10 +111,6 @@ items:
       targetPort: 8000
     - name: "router-ssl"
       port: 443
-      protocol: "TCP"
-      targetPort: 443
-    - name: "doppler-ssl"
-      port: 4443
       protocol: "TCP"
       targetPort: 443
     selector:
@@ -245,6 +229,15 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "app.kubernetes.io/component"
+                  operator: "In"
+                  values:
+                  - "diego-cell"
+              topologyKey: "beta.kubernetes.io/os"
+            weight: 100
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:
@@ -441,7 +434,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:ae74e62b17045b78dcfc2e3434d07cccfee58f1d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:66759487262c9ce0cf39b0509d0c016f0c4461b6"
         lifecycle:
           preStop:
             exec:
@@ -455,9 +448,6 @@ spec:
           protocol: "TCP"
         - containerPort: 443
           name: "router-ssl"
-          protocol: "TCP"
-        - containerPort: 443
-          name: "doppler-ssl"
           protocol: "TCP"
         readinessProbe:
           exec:
@@ -554,6 +544,38 @@ spec:
               name: "secrets"
         {{- end }}
 
+        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
+        - name: "LOGGREGATOR_FORWARD_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-forward-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT }}
+        - name: "LOGGREGATOR_FORWARD_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-forward-cert"
+              name: "secrets"
+        {{- end }}
+
+        {{- if .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
+        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-forward-cert-key"
+              name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.LOGGREGATOR_FORWARD_CERT_KEY }}
+        - name: "LOGGREGATOR_FORWARD_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "loggregator-forward-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
         {{- if .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -582,7 +604,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1220fec6ea4f2042e109c4106973603e5b6b43d9"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:5de06807231fdef4272d70c9b3db18b7b66ab832"
         lifecycle:
           preStop:
             exec:
@@ -612,36 +634,18 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.loggregator_agent.capabilities }}
           privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.loggregator_agent.capabilities) }}
-          capabilities:
-            add:
-            {{- range .Values.sizing.loggregator_agent.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.loggregator_agent.capabilities -}} true {{- else -}} false {{- end }}
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
-
-      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      {{- end }}
-
       restartPolicy: "Always"
-
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "privileged"
       {{- end }}
-
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
