@@ -131,6 +131,31 @@ Both [IKS](https://cloud.ibm.com/docs/containers?topic=containers-network_polici
 
 For other implementations of the Kubernetes networking model, take a look [here](https://kubernetes.io/docs/concepts/cluster-administration/networking/#how-to-implement-the-kubernetes-networking-model). Keep in mind that not all implementations support defining network polcies (e.g. Flannel). For a more detailed comparison between different plugins, take a look [here](https://docs.google.com/spreadsheets/d/1qCOlor16Wp5mHd6MQxB5gUEQILnijyDLIExEpqmee2k/edit#gid=0) (not maintained by us).
 
+#### Securing SCF endpoints
+
+It is not possible to do it with native Kubernetes network policies. In order to achieve this, the CNI plugin can be used directly. If you're using [Calico](https://www.projectcalico.org/) on IBMCloud, you can run the following command:
+
+```bash
+calicoctl apply --config $CALICOCNF -f - <<EOF
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: deny-scf-access
+  namespace: eirini
+spec:
+  types:
+  - Egress
+  egress:
+  - action: Deny
+    destination:
+      namespaceSelector: name == 'scf'
+  - action: Allow
+EOF
+```
+
+You can use [this](https://www.ibm.com/cloud/blog/configure-calicoctl-for-ibm-cloud-kubernetes-service) guide to export `$CALICOCNF` on IBM Cloud. 
+
+Note that GKE does not currently support creating custom Calico network policies.
 
 
 ## Resources
