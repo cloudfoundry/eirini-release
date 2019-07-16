@@ -195,7 +195,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.uaa.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.uaa.count }} {{- end }}
+  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.uaa.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.uaa.count }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "uaa"
@@ -442,7 +442,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:378dee28c60e7a7ac892d79ad8fa043d63c2c7cf"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:ffbfb8ac5867fc25a375442f27577c490850d2a1"
         lifecycle:
           preStop:
             exec:
@@ -482,27 +482,24 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.uaa.capabilities }}
-          privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.uaa.capabilities) }}
-          capabilities:
-            add:
-            {{- range .Values.sizing.uaa.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.uaa.capabilities -}} true {{- else -}} false {{- end }}
+          allowPrivilegeEscalation: false
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
