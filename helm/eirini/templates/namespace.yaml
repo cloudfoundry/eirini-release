@@ -4,3 +4,18 @@ kind: Namespace
 metadata:
   name: {{ .Values.opi.namespace }}
 
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: eirini-nonprivileged
+  namespace: {{ .Values.opi.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-nonprivileged" .Release.Namespace) }}
+subjects:
+- kind: ServiceAccount
+  name: default
+{{- end }}

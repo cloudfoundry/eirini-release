@@ -6,7 +6,7 @@ env:
   UAA_PORT: 2793
 
 kube:
-  auth: rbac
+  auth: &auth rbac
   external_ips: &external_ips
   - <worker-node-ip>
   storage_class:
@@ -36,6 +36,7 @@ eirini:
     BITS_SERVICE_SIGNING_USER_PASSWORD: &BITS_SERVICE_SIGNING_USER_PASSWORD  "<bits-user-pw>"
 
   kube:
+    auth: *auth
     external_ips: *external_ips
  
 bits:
