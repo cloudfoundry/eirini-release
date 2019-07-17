@@ -149,6 +149,7 @@ spec:
   - action: Deny
     destination:
       namespaceSelector: name == 'scf'
+      selector: source_type == 'APP'
   - action: Allow
 EOF
 ```
