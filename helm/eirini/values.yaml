@@ -9,7 +9,6 @@ opi:
   init_image: eirini/opi-init
   image: eirini/opi
   image_tag: latest
-  rootfs_version: v66.0.0
   rootfs_patcher_timeout: 2m
   registry_secret_name: registry-credentials
   stager:
@@ -21,6 +20,9 @@ opi:
     uploader_image_tag: 0.2.0
 kube:
   external_ips: []
+
+global:
+  rootfs_version: v66.0.0
 
 scf:
   version: 2.16.4
