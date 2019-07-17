@@ -147,9 +147,10 @@ spec:
   - Egress
   egress:
   - action: Deny
+    source:
+      selector: source_type == 'APP'
     destination:
       namespaceSelector: name == 'scf'
-      selector: source_type == 'APP'
   - action: Allow
 EOF
 ```
