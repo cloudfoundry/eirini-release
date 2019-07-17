@@ -1,3 +1,10 @@
+{{- if not .Values.bits.useExistingSecret }}
+{{- if not hasKey .Values.secrets "BITS_TLS_CRT" }}
+_needsTlsCrt: {{ fail "secrets.BITS_TLS_CRT must be set" }}
+{{- end }}
+{{- if not hasKey .Values.secrets "BITS_TLS_KEY" }}
+_needsTlsKey: {{ fail "secrets.BITS_TLS_KEY must be set" }}
+{{- end }}
 # Certificate
 ---
 apiVersion: v1
@@ -8,3 +15,4 @@ kind: Secret
 metadata:
   name: private-registry-cert
 type: Opaque
+{{- end }}

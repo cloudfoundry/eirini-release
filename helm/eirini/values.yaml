@@ -29,6 +29,12 @@ scf:
 services:
   loadbalanced: false
 
+bits:
+  # set to true if you wish to use a pre-populated
+  # secret for TLS certs, such as that created by
+  # cert-manager
+  useExistingSecret: false
+
 secrets:
   BITS_SERVICE_SECRET: secret
   BITS_SERVICE_SIGNING_USER_PASSWORD: notpassword123
@@ -38,4 +44,3 @@ env:
   # Base domain of the SCF cluster.
   # Example: "my-scf-cluster.com"
   DOMAIN: ~
-
