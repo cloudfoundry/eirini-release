@@ -8,7 +8,7 @@ spec:
       initContainers:
       - name: bits-waiter
         {{- if (typeOf .Values.opi.bits_waiter_image) "<nil>" }}
-        image: eirini/bits-waiter@{{ .Files.get "versions/bits-waiter" }}
+        image: eirini/bits-waiter@{{ .Files.Get "versions/bits-waiter" }}
         {{- else }}
         image: {{.Values.opi.bits_waiter_image}}:{{ .Values.opi.image_tag }}
         {{- end }}
@@ -24,7 +24,7 @@ spec:
         - --namespace={{ .Values.opi.namespace }}
         - --rootfs-version={{ .Values.opi.rootfs_version }}
         {{- if (typeOf .Values.opi.rootfs_patcher_image) "<nil>" }}
-        image: eirini/rootfs-patcher@{{ .Files.get "versions/rootfs-patcher" }}
+        image: eirini/rootfs-patcher@{{ .Files.Get "versions/rootfs-patcher" }}
         {{- else }}
         image: {{.Values.opi.rootfs_patcher_image}}:{{ .Values.opi.image_tag }}
         {{- end }}

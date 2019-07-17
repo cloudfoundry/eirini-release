@@ -44,7 +44,7 @@ spec:
       initContainers:
       - name: configure-opi-yaml
         {{- if (typeOf .Values.opi.init_image) "<nil>" }}
-        image: eirini/opi-init@{{ .Files.get "versions/opi-init" }}
+        image: eirini/opi-init@{{ .Files.Get "versions/opi-init" }}
         {{- else }}
         image: {{ .values.opi.init_image }}:{{ .values.opi.image_tag }}
         {{- end }}
@@ -63,7 +63,7 @@ spec:
       containers:
       - name: opi
         {{- if (typeOf .Values.opi.image) "<nil>" }}
-        image: eirini/opi@{{ .Files.get "versions/opi" }}
+        image: eirini/opi@{{ .Files.Get "versions/opi" }}
         {{- else }}
         image: {{ .Values.opi.image }}:{{ .Values.opi.image_tag }}
         {{- end }}
