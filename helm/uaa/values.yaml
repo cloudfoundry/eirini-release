@@ -10,11 +10,11 @@ kube:
     nproc:
       hard: ""
       soft: ""
-  organization: "splatform"
+  organization: "cap"
   psp:
-    default: ~
+    nonprivileged: ~
   registry:
-    hostname: "staging.registry.howdoi.website"
+    hostname: "registry.suse.com"
     username: ""
     password: ""
 
@@ -178,6 +178,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
+    # Additional privileges can be specified here
+    capabilities: []
+
     # The mysql instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: 1
@@ -201,6 +204,9 @@ sizing:
   secret_generation:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The secret_generation instance group cannot be scaled.
     count: 1
@@ -236,6 +242,9 @@ sizing:
   uaa:
     # Node affinity rules can be specified here
     affinity: {}
+
+    # Additional privileges can be specified here
+    capabilities: []
 
     # The uaa instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
