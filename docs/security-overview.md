@@ -12,10 +12,10 @@ Table last updated 08/07/19. [Link to spreadsheet](https://docs.google.com/sprea
 
 * User Namespaces - False, not possible in Kubernetes yet
 * Rootless - False, not possible in Kubernetes yet
-* Seccomp - Soon, [relevant Pivotal Tracker story](https://www.pivotaltracker.com/story/show/167127083)
+* Seccomp - True, runtime default is applied
 * AppArmor - True, runtime default is applied
 * Root Capability Dropping - True, runtime default is applied
-* No New Privileges - Soon, [relevant Pivotal Tracker story](https://www.pivotaltracker.com/story/show/167129301)
+* No New Privileges - True, [`allowPrivilegedEscalation` is set to `false`](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 * Cgroups - True if container processes' access to physical resources restricted by Cgroups
 * Disk Quotas - False, not possible in Kubernetes yet
 * Procfs/Sysfs limits - True, runtime default is applied
