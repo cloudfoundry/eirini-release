@@ -20,9 +20,6 @@ opi:
 kube:
   external_ips: []
 
-global:
-  rootfs_version: v66.0.0
-
 scf:
   version: 2.16.4
   secrets_generation_counter: 1
@@ -39,4 +36,5 @@ env:
   # Base domain of the SCF cluster.
   # Example: "my-scf-cluster.com"
   DOMAIN: ~
-
+global:
+  rootfs_version: v75.0.0
