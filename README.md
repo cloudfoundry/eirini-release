@@ -61,10 +61,8 @@ of resource of the applications that you will be deploying. To make staging of a
     The above command will take the default value for `rootfs_version`. In case you want to specify a rootfs_version at deploy time use
 
     ```bash
-    --set "bits.opi.rootfs_version=vx.x.x" \
-    --set "eirini.opi.rootfs_version=vx.x.x"
+    --set "global.rootfs_version=vx.x.x"
     ```
-    _Note: Both versions should be the same!_
 
 This will download the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
 1. Use the following command to verify that every CF control plane pod is `running` and `ready`:
