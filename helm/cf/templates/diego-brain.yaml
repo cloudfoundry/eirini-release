@@ -1,5 +1,4 @@
 ---
-{{ if not .Values.env.ENABLE_OPI_STAGING  }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -420,7 +419,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-brain:0ad67ad804de125127b8a611c23ffeeeb00e7d7f"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-brain:ac46732dd578071f4119e16d7ecf7d96258eb8d3"
         lifecycle:
           preStop:
             exec:
@@ -601,7 +600,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:5de06807231fdef4272d70c9b3db18b7b66ab832"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:069c32a42dc846117cc319a5c44124018b281a9d"
         lifecycle:
           preStop:
             exec:
@@ -655,4 +654,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end}}
