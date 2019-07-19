@@ -1,4 +1,4 @@
-apiVersion: 2.16.4+cf6.10.0.186.g82bdbff
+apiVersion: 2.16.4+cf6.10.0.188.gea5be5e
 appVersion: 1.4
 description: A Helm chart for SUSE Cloud Foundry
 name: cf
