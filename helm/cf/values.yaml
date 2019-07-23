@@ -284,13 +284,6 @@ secrets:
   # PEM-encoded key.
   DOPPLER_CERT_KEY: ~
 
-  # The PEM-encoded Eirini client certificate
-  # This value uses a generated default.
-  EIRINI_CLIENT_CRT: ~
-
-  # The PEM-encoded Eirini client certificate key
-  EIRINI_CLIENT_CRT_KEY: ~
-
   # Basic auth password for access to the Cloud Controller's internal API.
   # This value uses a generated default.
   INTERNAL_API_PASSWORD: ~
