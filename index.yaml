@@ -1,6 +1,15 @@
 apiVersion: v1
 entries:
   cf:
+  - apiVersion: 2.16.4+cf6.10.0.183.g0a62733
+    appVersion: "1.4"
+    created: "2019-07-23T10:33:24.674574624Z"
+    description: A Helm chart for SUSE Cloud Foundry
+    digest: 1def96668f1ba2a934fe68ddacdeb2c7891b6f4822407eefc29ade753d5a9465
+    name: cf
+    urls:
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.14.0/eirini-cf.tgz
+    version: 2.16.4
   - apiVersion: 2.15.2+cf3.6.0.17.g5631c48
     appVersion: 1.13.1
     created: "2019-06-05T10:13:32.196691712Z"
@@ -19,6 +28,15 @@ entries:
     - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.11.0/eirini-cf.tgz
     version: 2.14.5
   eirini:
+  - apiVersion: v1
+    appVersion: 0.3.0
+    created: "2019-07-23T10:33:24.676160924Z"
+    description: A Helm chart for CloudFoundry/Eirini
+    digest: 01ca72ef85d1068976b04f3beb631879d24cf4cb600f03d6842551d7d251e621
+    name: eirini
+    urls:
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.14.0/eirini.tgz
+    version: 0.14.0
   - apiVersion: v1
     appVersion: 0.3.0
     created: "2019-06-05T10:13:32.199097238Z"
@@ -65,6 +83,15 @@ entries:
     - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.9.0/eirini.tgz
     version: 0.9.0
   uaa:
+  - apiVersion: 2.17.1+cf7.11.0.4.ga6c993eb
+    appVersion: 1.4.1
+    created: "2019-07-23T10:33:24.675660476Z"
+    description: A Helm chart for SUSE UAA
+    digest: 4334fe4187e9b3dd1efca7a042ed9c67b41c8066e55bd4a7d9ab01e095aeed0a
+    name: uaa
+    urls:
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.14.0/eirini-uaa.tgz
+    version: 2.17.1
   - apiVersion: 2.14.5+cf2.7.0.3.gbc13ddc
     created: "2019-06-05T10:13:32.198231853Z"
     description: A Helm chart for SUSE UAA
@@ -73,4 +100,4 @@ entries:
     urls:
     - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.13.0/eirini-uaa.tgz
     version: 2.14.5
-generated: "2019-06-05T10:13:32.190736187Z"
+generated: "2019-07-23T10:33:24.667647183Z"
