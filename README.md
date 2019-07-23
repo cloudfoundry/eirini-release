@@ -157,6 +157,29 @@ You can use [this](https://www.ibm.com/cloud/blog/configure-calicoctl-for-ibm-cl
 
 Note that GKE does not currently support creating custom Calico network policies.
 
+#### Securing Kubernetes API Endpoint
+
+The kubernetes API is available in all pods by default at `https://kubernetes.default`. To disallow access to this from application instances, you'd need to apply this network policy:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  name: eirini-egress-policy
+  namespace: eirini
+spec:
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - <API IP Address>/32
+  podSelector: {}
+  policyTypes:
+  - Egress
+```
+
+For IKS cluster the API IP Address is `172.20.0.1` by default. If there are multiple K8s API nodes, IP address of each of them would need to be specified in the `except` array.
 
 ## Resources
 
