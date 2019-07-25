@@ -30,7 +30,6 @@ eirini:
     #ingress_endpoint: kubernetes-cluster-ingress-endpoint
     #Enable if your cluster is using docker,
     #by default eirini will assume containerd
-    rootfs_version: &rootfs_version v66.0.0
     use_docker: false
 
   secrets:
@@ -51,7 +50,6 @@ bits:
     #ingress_endpoint: kubernetes-cluster-ingress-endpoint
     #Enable if your cluster is using docker,
     #by default eirini will assume containerd
-    rootfs_version: *rootfs_version
     use_docker: false
 
   secrets:
