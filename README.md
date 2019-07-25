@@ -153,13 +153,15 @@ spec:
 EOF
 ```
 
-You can use [this](https://www.ibm.com/cloud/blog/configure-calicoctl-for-ibm-cloud-kubernetes-service) guide to export `$CALICOCNF` on IBM Cloud. 
+You can use [this](https://www.ibm.com/cloud/blog/configure-calicoctl-for-ibm-cloud-kubernetes-service) guide to export `$CALICOCNF` on IBM Cloud.
 
 Note that GKE does not currently support creating custom Calico network policies.
 
 #### Securing Kubernetes API Endpoint
 
-The kubernetes API is available in all pods by default at `https://kubernetes.default`. To disallow access to this from application instances, you'd need to apply this network policy:
+The Kubernetes API is available in all pods by default at `https://kubernetes.default`. Eirini does not mount
+service account credentials to the pod and uses default service account in the namespace. This prevents Eirini pods from using Kubernetes API.
+To completely disallow access to this from application instances, you'd need to apply this network policy:
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -179,7 +181,8 @@ spec:
   - Egress
 ```
 
-For IKS cluster the API IP Address is `172.20.0.1` by default. If there are multiple K8s API nodes, IP address of each of them would need to be specified in the `except` array.
+You can get IP address of the master by running `kubectl get endpoints` command. If there are multiple Kubernetes API nodes, IP address
+of each of them would need to be specified in the `except` array.
 
 ## Resources
 
