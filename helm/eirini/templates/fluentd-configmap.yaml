@@ -15,14 +15,20 @@ data:
       path /var/log/containers/*.log
       pos_file /var/log/fluentd-containers.log.pos
       tag kubernetes.*
-      {{- if .Values.opi.use_docker }}
-      format json
-      {{- else }}
-      format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
-      {{- end }}
       read_from_head true
       refresh_interval 1
-      time_format %Y-%m-%dT%H:%M:%S.%N%:z
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
+        </pattern>
+        <pattern>
+          format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+          time_format %Y-%m-%dT%H:%M:%S.%N%:z
+        </pattern>
+      </parse>
     </source>
 
     <filter kubernetes.**>
