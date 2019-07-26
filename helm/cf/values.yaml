@@ -898,7 +898,7 @@ env:
   DROPLET_MAX_STAGED_STORED: "5"
 
   # Stage apps in Eirini <3
-  ENABLE_OPI_STAGING: "false"
+  ENABLE_OPI_STAGING: "true"
 
   # By default, Cloud Foundry does not enable Cloud Controller request logging.
   # To enable this feature, you must set this property to "true". You can learn
