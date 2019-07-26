@@ -44,7 +44,7 @@ spec:
       initContainers:
       - name: configure-opi-yaml
         {{- if .Values.opi.init_image }}
-        image: {{ .values.opi.init_image }}:{{ .values.opi.image_tag }}
+        image: {{ .Values.opi.init_image }}:{{ .Values.opi.image_tag }}
         {{- else }}
         image: eirini/opi-init@{{ .Files.Get "versions/opi-init" }}
         {{- end }}
