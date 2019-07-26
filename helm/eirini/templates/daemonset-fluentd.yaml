@@ -27,10 +27,10 @@ spec:
           readOnly: false
       containers:
       - name: loggregator-fluentd
-        {{- if (typeOf .Values.opi.loggregator_fluentd_image) "<nil>" }}
-        image: eirini/loggregator-fluentd@{{ .Files.Get "versions/fluentd" }}
-        {{- else }}
+        {{- if .Values.opi.loggregator_fluentd_image }}
         image: {{ .Values.opi.loggregator_fluentd_image }}:{{ .Values.opi.image_tag }}
+        {{- else }}
+        image: eirini/loggregator-fluentd@{{ .Files.Get "versions/fluentd" }}
         {{- end }}
         imagePullPolicy: Always
         env:
