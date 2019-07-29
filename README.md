@@ -73,6 +73,12 @@ This will download the mentioned version of `eirinifs.tar`. (see [eirinifs relea
 
 ## Notes
 
+### Diego staging
+
+By default, Eirini now stages applications using Kubernetes pods. This currently breaks some [CATS](https://github.com/cloudfoundry/cf-acceptance-tests). For list of CATS that 
+are breaking in our pipeline you can check our [CI config](https://github.com/cloudfoundry-incubator/eirini-ci/blob/master/pipelines/modules/opi-skipped-cats.yml). 
+You can enable staging using Diego by add `ENABLE_OPI_STAGING: false` in `env` section of your values.yaml. This will use more resources.
+
 ### Storage Class
 
 It is highly recommended to use fast storage class for the blobstore. MySQL does
