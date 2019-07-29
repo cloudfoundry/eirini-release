@@ -65,6 +65,8 @@ of resource of the applications that you will be deploying. To make staging of a
     ```
 
 This will download the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
+
+Additionally, if you want to override eirini images, please follow instructions in [Overriding Eirini Images](#overriding-eirini-images)
 1. Use the following command to verify that every CF control plane pod is `running` and `ready`:
 
     ```bash
@@ -72,6 +74,22 @@ This will download the mentioned version of `eirinifs.tar`. (see [eirinifs relea
     ```
 
 ## Notes
+
+### Overriding Eirini Images
+
+Eirini has a few images which are deployed by the helm chart. By default these come from the eirini Docker Hub account and the versions of them are located in [the versions directory](helm/eirini/versions). These versions are sha256 sums of the images that will be installed by default. If you want to override any of these images please follow this table:
+
+
+| Image               | Property                               | Default                      |
+|---------------------|----------------------------------------|------------------------------|
+| opi                 | `eirini.opi.image`                     | `eirini/opi`                 |
+| opi-init            | `eirini.opi.init_image`                | `eirini/opi-init`            |
+| secret-smuggler     | `eirini.opi.secret_smuggler_image`     | `eirini/secret-smuggler`     |
+| bits-waiter         | `eirini.opi.bits_waiter`               | `eirini/bit-waiter`          |
+| rootfs-patcher      | `eirini.opi.rootfs_patcher`            | `eirini/rootfs-patcher`      |
+| loggregator-fluentd | `eirini.opi.loggregator_fluentd_image` | `eirini/loggregator-fluentd` |
+
+By default, this is will install the `latest` tag of any image that was overriden. To change that, you'd have to set `eirini.opi.image_tag` as well. As of now, all the overriden images need to have same tag.
 
 ### Diego staging
 
