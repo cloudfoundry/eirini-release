@@ -10,13 +10,13 @@ kube:
   external_ips: &external_ips
   - <worker-node-ip>
   storage_class:
-    persistent: <your-storage-class>
-    shared: <your-storage-class>
+    persistent: <persistent-storage-class>
+    shared: <shared-storage-class>
 
 secrets: &secrets
-  CLUSTER_ADMIN_PASSWORD: REPLACE
-  UAA_ADMIN_CLIENT_SECRET: REPLACE
-  BLOBSTORE_PASSWORD: &BLOBSTORE_PASSWORD "REPLACE"
+  CLUSTER_ADMIN_PASSWORD: <cluster-admin-pw>
+  UAA_ADMIN_CLIENT_SECRET: <uaa-admin-secret>
+  BLOBSTORE_PASSWORD: &BLOBSTORE_PASSWORD "<blobstore-pw>"
 
 services: &services
   loadbalanced: false
@@ -27,16 +27,13 @@ eirini:
   services: *services
   opi:
     use_registry_ingress: false
-    #Enable if use_registry_ingress is set to 'true'
-    #ingress_endpoint: kubernetes-cluster-ingress-endpoint
-    #Enable if your cluster is using docker,
-    #by default eirini will assume containerd
-    use_docker: false
+    # Enable if use_registry_ingress is set to 'true'
+    # ingress_endpoint: kubernetes-cluster-ingress-endpoint
 
   secrets:
     BLOBSTORE_PASSWORD: *BLOBSTORE_PASSWORD
-    BITS_SERVICE_SECRET: REPLACE
-    BITS_SERVICE_SIGNING_USER_PASSWORD: REPLACE
+    BITS_SERVICE_SECRET: &BITS_SERVICE_SECRET "<bits-secret>"
+    BITS_SERVICE_SIGNING_USER_PASSWORD: &BITS_SERVICE_SIGNING_USER_PASSWORD  "<bits-user-pw>"
 
   kube:
     external_ips: *external_ips
@@ -47,16 +44,13 @@ bits:
   services: *services
   opi:
     use_registry_ingress: false
-    #Enable if use_registry_ingress is set to 'true'
-    #ingress_endpoint: kubernetes-cluster-ingress-endpoint
-    #Enable if your cluster is using docker,
-    #by default eirini will assume containerd
-    use_docker: false
+    # Enable if use_registry_ingress is set to 'true'
+    # ingress_endpoint: kubernetes-cluster-ingress-endpoint
 
   secrets:
     BLOBSTORE_PASSWORD: *BLOBSTORE_PASSWORD
-    BITS_SERVICE_SECRET: REPLACE
-    BITS_SERVICE_SIGNING_USER_PASSWORD: REPLACE
+    BITS_SERVICE_SECRET: *BITS_SERVICE_SECRET
+    BITS_SERVICE_SIGNING_USER_PASSWORD: *BITS_SERVICE_SIGNING_USER_PASSWORD
 
   kube:
     external_ips: *external_ips
