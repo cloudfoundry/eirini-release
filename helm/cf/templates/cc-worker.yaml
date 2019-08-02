@@ -357,7 +357,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-worker:e475981848d80995a13177704da93dd4a57539ec"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-worker:2900e26538e9db95158abe5597e5996fa3efb7a4"
         lifecycle:
           preStop:
             exec:
@@ -520,7 +520,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:069c32a42dc846117cc319a5c44124018b281a9d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:5de06807231fdef4272d70c9b3db18b7b66ab832"
         lifecycle:
           preStop:
             exec:

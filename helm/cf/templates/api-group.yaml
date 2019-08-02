@@ -399,39 +399,6 @@ spec:
           value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
         - name: "DROPLET_MAX_STAGED_STORED"
           value: {{if ne (typeOf .Values.env.DROPLET_MAX_STAGED_STORED) "<nil>"}}{{if has (kindOf .Values.env.DROPLET_MAX_STAGED_STORED) (list "map" "slice")}}{{.Values.env.DROPLET_MAX_STAGED_STORED | toJson | quote}}{{else}}{{.Values.env.DROPLET_MAX_STAGED_STORED | quote}}{{end}}{{else}}{{fail "env.DROPLET_MAX_STAGED_STORED has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.EIRINI_CLIENT_CRT }}
-        - name: "EIRINI_CLIENT_CRT"
-          valueFrom:
-            secretKeyRef:
-              key: "eirini-client-crt"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.EIRINI_CLIENT_CRT }}
-        - name: "EIRINI_CLIENT_CRT"
-          valueFrom:
-            secretKeyRef:
-              key: "eirini-client-crt"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.EIRINI_CLIENT_CRT_KEY }}
-        - name: "EIRINI_CLIENT_CRT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "eirini-client-crt-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.EIRINI_CLIENT_CRT_KEY }}
-        - name: "EIRINI_CLIENT_CRT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "eirini-client-crt-key"
-              name: "secrets"
-        {{- end }}
-
         - name: "ENABLE_OPI_STAGING"
           value: {{if ne (typeOf .Values.env.ENABLE_OPI_STAGING) "<nil>"}}{{if has (kindOf .Values.env.ENABLE_OPI_STAGING) (list "map" "slice")}}{{.Values.env.ENABLE_OPI_STAGING | toJson | quote}}{{else}}{{.Values.env.ENABLE_OPI_STAGING | quote}}{{end}}{{else}}""{{end}}
         - name: "ENABLE_SECURITY_EVENT_LOGGING"
@@ -666,7 +633,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:8167da745730349f7fa99b4cfc486db72e42aac4"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:33fe950a75ad8f57d857f6611cabbeaab9cb2f32"
         lifecycle:
           preStop:
             exec:
@@ -842,7 +809,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:069c32a42dc846117cc319a5c44124018b281a9d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:5de06807231fdef4272d70c9b3db18b7b66ab832"
         lifecycle:
           preStop:
             exec:
