@@ -10,11 +10,11 @@ opi:
   registry_secret_name: registry-credentials
   stager:
     downloader_image: eirini/recipe-downloader
-    downloader_image_tag: 0.2.0
+    downloader_image_tag: 0.3.0
     executor_image: eirini/recipe-executor
-    executor_image_tag: 0.2.0
+    executor_image_tag: 0.3.0
     uploader_image: eirini/recipe-uploader
-    uploader_image_tag: 0.2.0
+    uploader_image_tag: 0.3.0
 kube:
   external_ips: []
 
