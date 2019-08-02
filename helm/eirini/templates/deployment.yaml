@@ -41,6 +41,12 @@ spec:
               path: cc.key
             - key: internal-ca-cert
               path: cc.ca
+            - key: eirini-client-crt
+              path: eirini-server.crt
+            - key: eirini-client-crt-key
+              path: eirini-server.key
+            - key: internal-ca-cert
+              path: eirini-client-ca.crt
       initContainers:
       - name: configure-opi-yaml
         {{- if .Values.opi.init_image }}
