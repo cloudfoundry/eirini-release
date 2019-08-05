@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: blobstore-cleaner
+spec:
+  schedule: {{ .Values.opi.blobstore_cleaner_schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: "opi"
+          restartPolicy: OnFailure
+          containers:
+          - image: wernight/kubectl
+            name: kubectl
+            args:
+            - exec
+            - blobstore-0
+            - --container=blobstore
+            - --namespace={{ .Release.Namespace }}
+            - --
+            - /bin/sh
+            - -c
+            - rm -f /var/vcap/store/shared/cc-droplets/sh/a2/sha256:*

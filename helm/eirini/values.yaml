@@ -8,6 +8,7 @@ opi:
   image_tag: latest
   rootfs_patcher_timeout: 2m
   registry_secret_name: registry-credentials
+  blobstore_cleaner_schedule: "0 */2 * * *"
   stager:
     downloader_image: eirini/recipe-downloader
     downloader_image_tag: 0.3.0

@@ -75,6 +75,10 @@ Additionally, if you want to override eirini images, please follow instructions 
 
 ## Notes
 
+### Blobstore Cleanup
+
+Due to the way bits-service currently works, there are some droplet leftovers in the Blobstore component when an app is deleted or upgraded. For this reason, Eirini provides [a Kubernetes CronJob](./helm/eirini/templates/blobstore-cleaner-cron.yml) which periodically cleans up the Blobstore leftovers. By default, this cron job runs every 2 hours, but this can be configured by setting the `.Values.eirini.opi.blobstore_cleaner_schedule` propeperty in the `values.yml` file. The value follows the standard [Cron format](https://www.freebsd.org/cgi/man.cgi?crontab%285%29#end).
+
 ### Overriding Eirini Images
 
 Eirini has a few images which are deployed by the helm chart. By default these come from the eirini Docker Hub account and the versions of them are located in [the versions directory](helm/eirini/versions). These versions are sha256 sums of the images that will be installed by default. If you want to override any of these images please follow this table:
