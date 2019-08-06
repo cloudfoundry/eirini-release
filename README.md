@@ -208,6 +208,18 @@ spec:
 You can get IP address of the master by running `kubectl get endpoints` command. If there are multiple Kubernetes API nodes, IP address
 of each of them would need to be specified in the `except` array.
 
+## Troubleshooting
+
+### Disk full on blobstore
+
+If all the CF apps are running, it is safe to delete all files in `/var/vcap/store/shared/cc-droplets/sh/a2/` directory on the `blobstore-0` pod.
+To do so, you can run this command:
+
+```bash
+kubectl exec -n <scf-namespace> blobstore-0 -c blobstore -- \
+  /bin/sh -c 'rm -rf /var/vcap/store/shared/cc-droplets/sh/a2/sha256:*'
+```
+
 ## Resources
 
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
