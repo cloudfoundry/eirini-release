@@ -20,7 +20,7 @@ kube:
 
 scf:
   version: 2.16.4
-  secrets_generation_counter: 1
+  secrets_generation_counter: 2
 
 services:
   loadbalanced: false

@@ -21,7 +21,7 @@ kube:
     password: ""
 
   # Increment this counter to rotate all generated secrets
-  secrets_generation_counter: 1
+  secrets_generation_counter: 2
 
   storage_class:
     persistent: "persistent"
