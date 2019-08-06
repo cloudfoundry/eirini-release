@@ -19,7 +19,7 @@ data:
       registry_address: "registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"
       {{- end }}
       registry_secret_name: {{ .Values.opi.registry_secret_name }}
-      eirini_address: "http://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
+      eirini_address: "https://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
       downloader_image: "{{ .Values.opi.stager.downloader_image }}:{{ .Values.opi.stager.downloader_image_tag }}"
       executor_image: "{{ .Values.opi.stager.executor_image }}:{{ .Values.opi.stager.executor_image_tag }}"
       uploader_image: "{{ .Values.opi.stager.uploader_image }}:{{ .Values.opi.stager.uploader_image_tag }}"
