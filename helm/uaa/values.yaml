@@ -253,14 +253,22 @@ sizing:
 
 enable: {}
 ingress:
-  # ingress.annotations allows specifying custom ingress annotations that gets
-  # merged to the default annotations.
-  annotations: {}
-
-  # ingress.enabled enables ingress support - working ingress controller
-  # necessary.
+  ## Enable Ingress
+  ##
   enabled: false
 
-  # ingress.tls.crt and ingress.tls.key, when specified, are used by the TLS
-  # secret for the Ingress resource.
+  ## Annotations to be added to the web ingress.
+  ## Example:
+  ##   kubernetes.io/ingress.class: nginx
+  ##   kubernetes.io/tls-acme: 'true'
+  ##
+  annotations: {}
+
+  ## TLS configuration.
+  ## Secrets must be manually created in the namespace.
+  ## Example:
+  ##   - secretName: concourse-web-tls
+  ##     hosts:
+  ##       - concourse.domain.com
+  ##
   tls: {}
