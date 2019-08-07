@@ -17,7 +17,7 @@ spec:
           app.kubernetes.io/component: router
     - namespaceSelector:
         matchLabels:
-          name: scf
+          name: {{ .Release.Namespace }}
       podSelector:
         matchLabels:
           app.kubernetes.io/component: adapter
