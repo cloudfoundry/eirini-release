@@ -3,11 +3,12 @@ opi:
   ingress_endpoint: no-ingress-set
   use_registry_ingress: false
 
-  namespace: eirini
-  version: 0.0.0
+  disk_limit_mb: 2048
   image_tag: latest
-  rootfs_patcher_timeout: 2m
+  namespace: eirini
   registry_secret_name: registry-credentials
+  rootfs_patcher_timeout: 2m
+  version: 0.0.0
   stager:
     downloader_image: eirini/recipe-downloader
     downloader_image_tag: 0.3.0
