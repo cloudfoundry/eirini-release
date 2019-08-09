@@ -17,7 +17,6 @@ opi:
     uploader_image: eirini/recipe-uploader
     uploader_image_tag: 0.3.0
 kube:
-  auth: "rbac"
   external_ips: []
 
 scf:
