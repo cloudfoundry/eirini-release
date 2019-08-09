@@ -6,6 +6,17 @@ metadata:
   namespace: {{ .Values.opi.namespace }}
 rules:
 - apiGroups:
+  - "batch"
+  resources:
+  - "jobs"
+  verbs:
+  - "create"
+  - "get"
+  - "update"
+  - "delete"
+  - "list"
+  - "watch"
+- apiGroups:
   - "apps"
   resources:
   - "statefulsets"
@@ -16,6 +27,21 @@ rules:
   - "delete"
   - "list"
   - "watch"
+- apiGroups:
+  - "metrics.k8s.io"
+  resources:
+  - "pods"
+  verbs:
+  - "get"
+  - "list"
+- apiGroups:
+  - ""
+  resources:
+  - "events"
+  verbs:
+  - "get"
+  - "list"
+
 - apiGroups:
   - ""
   resources:
