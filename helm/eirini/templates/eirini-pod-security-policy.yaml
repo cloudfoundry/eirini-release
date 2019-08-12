@@ -6,60 +6,60 @@ metadata:
   namespace: {{ .Values.opi.namespace }}
 rules:
 - apiGroups:
-  - "batch"
+  - batch
   resources:
-  - "jobs"
+  - jobs
   verbs:
-  - "create"
-  - "get"
-  - "update"
-  - "delete"
-  - "list"
-  - "watch"
+  - create
+  - get
+  - update
+  - delete
+  - list
+  - watch
 - apiGroups:
-  - "apps"
+  - apps
   resources:
-  - "statefulsets"
+  - statefulsets
   verbs:
-  - "create"
-  - "get"
-  - "update"
-  - "delete"
-  - "list"
-  - "watch"
+  - create
+  - get
+  - update
+  - delete
+  - list
+  - watch
 - apiGroups:
-  - "metrics.k8s.io"
+  - metrics.k8s.io
   resources:
-  - "pods"
+  - pods
   verbs:
-  - "get"
-  - "list"
-- apiGroups:
-  - ""
-  resources:
-  - "events"
-  verbs:
-  - "get"
-  - "list"
+  - get
+  - list
 - apiGroups:
   - ""
   resources:
-  - "pods"
+  - events
   verbs:
-  - "create"
-  - "get"
-  - "list"
-  - "delete"
-  - "update"
-  - "watch"
+  - get
+  - list
 - apiGroups:
   - ""
   resources:
-  - "secrets"
+  - pods
   verbs:
-  - "get"
-  - "create"
-  - "patch"
+  - create
+  - get
+  - list
+  - delete
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - create
+  - patch
 ---
 # Bind to the default service account
 apiVersion: rbac.authorization.k8s.io/v1
@@ -82,12 +82,24 @@ metadata:
   name: {{ .Release.Namespace }}-eirini-role
   namespace: {{ .Release.Namespace }}
 rules:
-- apiGroups: ['']
-  resources: ['secrets']
-  verbs:     ['get']
-- apiGroups: ['policy']
-  resources: ['podsecuritypolicies']
-  verbs:     ['use']
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - list
+- apiGroups:
+  - policy
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
   resourceNames:
   - {{ .Release.Namespace }}-eirini
 
