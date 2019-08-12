@@ -52,14 +52,6 @@ rules:
   - delete
   - update
   - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - create
-  - patch
 ---
 # Bind to the default service account
 apiVersion: rbac.authorization.k8s.io/v1
@@ -82,12 +74,6 @@ metadata:
   name: {{ .Release.Namespace }}-eirini-role
   namespace: {{ .Release.Namespace }}
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
 - apiGroups:
   - policy
   resources:
@@ -113,6 +99,9 @@ subjects:
   namespace: {{ .Release.Namespace }}
 - kind: ServiceAccount
   name: eirini-rootfs-patcher
+  namespace: {{ .Release.Namespace }}
+- kind: ServiceAccount
+  name: eirini-secret-smuggler
   namespace: {{ .Release.Namespace }}
 ---
 apiVersion: policy/v1beta1
