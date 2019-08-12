@@ -246,4 +246,4 @@ kubectl exec -n <scf-namespace> blobstore-0 -c blobstore -- \
 
 * [Security](./docs/security-overview.md)
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
-* [Eirini Continuous Integration Pipeline](https://ci.flintstone.cf.cloud.ibm.com/teams/eirini/pipelines/ci)
+* [Eirini Continuous Integration Pipeline](https://ci.eirini.cf-app.com/teams/main/pipelines/eirini-release)
