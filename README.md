@@ -35,6 +35,7 @@ of resource of the applications that you will be deploying. To make staging of a
      ```bash
     helm repo add bits https://cloudfoundry-incubator.github.io/bits-service-release/helm
     ```
+
 1. Install UAA:
 
     ```bash
@@ -53,7 +54,7 @@ of resource of the applications that you will be deploying. To make staging of a
 1. Install CF:
 
     ```bash
-    helm install eirini/cf --namespace scf --name scf --values <your-values.yaml> --set "secrets.UAA_CA_CERT=${CA_CERT}" --set "eirini.secrets.BITS_TLS_KEY=${BITS_TLS_KEY}" --set "eirini.secrets.BITS_TLS_CRT=${BITS_TLS_CRT}" 
+    helm install eirini/cf --namespace scf --name scf --values <your-values.yaml> --set "secrets.UAA_CA_CERT=${CA_CERT}" --set "eirini.secrets.BITS_TLS_KEY=${BITS_TLS_KEY}" --set "eirini.secrets.BITS_TLS_CRT=${BITS_TLS_CRT}"
     ```
 
     **NOTICE**
@@ -64,9 +65,10 @@ of resource of the applications that you will be deploying. To make staging of a
     --set "global.rootfs_version=vx.x.x"
     ```
 
-This will download the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
+    This will download the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
 
-Additionally, if you want to override eirini images, please follow instructions in [Overriding Eirini Images](#overriding-eirini-images)
+    Additionally, if you want to override eirini images, please follow instructions in [Overriding Eirini Images](#overriding-eirini-images)
+
 1. Use the following command to verify that every CF control plane pod is `running` and `ready`:
 
     ```bash
@@ -78,7 +80,6 @@ Additionally, if you want to override eirini images, please follow instructions 
 ### Overriding Eirini Images
 
 Eirini has a few images which are deployed by the helm chart. By default these come from the eirini Docker Hub account and the versions of them are located in [the versions directory](helm/eirini/versions). These versions are sha256 sums of the images that will be installed by default. If you want to override any of these images please follow this table:
-
 
 | Image               | Property                               | Default                      |
 |---------------------|----------------------------------------|------------------------------|
@@ -93,8 +94,8 @@ By default, this is will install the `latest` tag of any image that was override
 
 ### Diego staging
 
-By default, Eirini now stages applications using Kubernetes pods. This currently breaks some [CATS](https://github.com/cloudfoundry/cf-acceptance-tests). For list of CATS that 
-are breaking in our pipeline you can check our [CI config](https://github.com/cloudfoundry-incubator/eirini-ci/blob/master/pipelines/modules/opi-skipped-cats.yml). 
+By default, Eirini now stages applications using Kubernetes pods. This currently breaks some [CATS](https://github.com/cloudfoundry/cf-acceptance-tests). For list of CATS that
+are breaking in our pipeline you can check our [CI config](https://github.com/cloudfoundry-incubator/eirini-ci/blob/master/pipelines/modules/opi-skipped-cats.yml).
 You can enable staging using Diego by add `ENABLE_OPI_STAGING: false` in `env` section of your values.yaml. This will use more resources.
 
 ### Storage Class
