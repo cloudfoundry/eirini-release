@@ -4,6 +4,27 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 
 **NOTE**: This is an **_experimental_** release and is still considered _work in progress_.
 
+## Table of contents
+
+* [Prerequisites](#prerequisites)
+  * [Minimum cluster requirements](#minimum-cluster-requirements)
+* [Installation](#installation)
+* [Notes](#notes)
+  * [Overriding Eirini Images](#overriding-eirini-images)
+  * [Diego staging](#diego-staging)
+  * [Storage Class](#storage-class)
+    * [Using the HostPath Provisioner](#using-the-hostpath-provisioner)
+    * [Production Deployment](#production-deployment)
+    * [IBMCloud Kubernetes Service (IKS)](#ibmcloud-kubernetes-service-iks)
+  * [Certificates](#certificates)
+  * [Service Account](#service-account)
+  * [Network policies](#network-policies)
+    * [Securing SCF endpoints](#securing-scf-endpoints)
+    * [Securing Kubernetes API Endpoint](#securing-kubernetes-api-endpoint)
+* [Troubleshooting](#troubleshooting)
+  * [Disk full on blobstore](#disk-full-on-blobstore)
+* [Resources](#resources)
+
 ## Prerequisites
 
 * Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
@@ -223,5 +244,6 @@ kubectl exec -n <scf-namespace> blobstore-0 -c blobstore -- \
 
 ## Resources
 
+* [Security](./docs/security-overview.md)
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
 * [Eirini Continuous Integration Pipeline](https://ci.flintstone.cf.cloud.ibm.com/teams/eirini/pipelines/ci)
