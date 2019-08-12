@@ -30,5 +30,4 @@ spec:
         {{- end }}
         imagePullPolicy: IfNotPresent
       restartPolicy: OnFailure
-      serviceAccount: opi
-      serviceAccountName: opi
+      serviceAccountName: eirini-rootfs-patcher

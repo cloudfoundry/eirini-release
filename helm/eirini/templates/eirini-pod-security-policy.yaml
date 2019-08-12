@@ -89,12 +89,6 @@ rules:
   verbs:
   - get
 - apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - list
-- apiGroups:
   - policy
   resources:
   - podsecuritypolicies
@@ -104,7 +98,6 @@ rules:
   - {{ .Release.Namespace }}-eirini
 
 ---
-# Bind to the default service account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -118,7 +111,9 @@ subjects:
 - kind: ServiceAccount
   name: opi
   namespace: {{ .Release.Namespace }}
-
+- kind: ServiceAccount
+  name: eirini-rootfs-patcher
+  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
