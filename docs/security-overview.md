@@ -15,7 +15,7 @@ Table last updated 12/08/19. [Link to spreadsheet](https://docs.google.com/sprea
 * Seccomp - True, runtime default is applied
 * AppArmor - True, runtime default is applied
 * Root Capability Dropping - True, runtime default is applied
-* No New Privileges - True, [`allowPrivilegedEscalation` is set to `false`](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
+* No New Privileges - True, [`allowPrivilegeEscalation` is set to `false`](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 * Cgroups - True if container processes' access to physical resources restricted by Cgroups
 * Disk Quotas - True, using [ephemeral storage limits](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#requests-and-limits-setting-for-local-ephemeral-storage).
 * Procfs/Sysfs limits - True, runtime default is applied
