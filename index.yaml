@@ -1,14 +1,14 @@
 apiVersion: v1
 entries:
   cf:
-  - apiVersion: 2.16.4+cf6.10.0.183.g0a62733
+  - apiVersion: 2.16.4+cf6.10.0.188.gea5be5e
     appVersion: "1.4"
-    created: "2019-08-01T08:50:07.052634968Z"
+    created: "2019-08-13T08:40:21.795476159Z"
     description: A Helm chart for SUSE Cloud Foundry
-    digest: b19b99a66295b4271130e004785254f313b0fd9ec359eedde9055e315fba37a9
+    digest: bb3f72adf1ec56df419aa3420ad216f86b957eb21e6795cc0ccf32ca0ac95e98
     name: cf
     urls:
-    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.15.0/eirini-cf.tgz
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.16.0/eirini-cf.tgz
     version: 2.16.4
   - apiVersion: 2.15.2+cf3.6.0.17.g5631c48
     appVersion: 1.13.1
@@ -28,6 +28,15 @@ entries:
     - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.11.0/eirini-cf.tgz
     version: 2.14.5
   eirini:
+  - apiVersion: v1
+    appVersion: 0.3.0
+    created: "2019-08-13T08:40:21.796863405Z"
+    description: A Helm chart for CloudFoundry/Eirini
+    digest: 17b818a8e01c9302e54585aba91c94391d6898657789a34487a1c6784345583b
+    name: eirini
+    urls:
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.16.0/eirini.tgz
+    version: 0.16.0
   - apiVersion: v1
     appVersion: 0.3.0
     created: "2019-08-01T08:50:07.05391396Z"
@@ -94,12 +103,12 @@ entries:
   uaa:
   - apiVersion: 2.17.1+cf7.11.0.4.ga6c993eb
     appVersion: 1.4.1
-    created: "2019-08-01T08:50:07.053416912Z"
+    created: "2019-08-13T08:40:21.796314629Z"
     description: A Helm chart for SUSE UAA
-    digest: a7925354f36174d7bd2575747054258255770378697f716ab199d9fb066eab3c
+    digest: 9e291d35e2b8179aa1db06264aca065d860cc8745b0c26064c73a87c68e22e92
     name: uaa
     urls:
-    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.15.0/eirini-uaa.tgz
+    - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.16.0/eirini-uaa.tgz
     version: 2.17.1
   - apiVersion: 2.14.5+cf2.7.0.3.gbc13ddc
     created: "2019-06-05T10:13:32.198231853Z"
@@ -109,4 +118,4 @@ entries:
     urls:
     - https://github.com/cloudfoundry-incubator/eirini-release/releases/download/v0.13.0/eirini-uaa.tgz
     version: 2.14.5
-generated: "2019-08-01T08:50:07.0452665Z"
+generated: "2019-08-13T08:40:21.787864299Z"
