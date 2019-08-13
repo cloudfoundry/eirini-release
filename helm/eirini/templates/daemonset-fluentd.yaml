@@ -14,7 +14,7 @@ spec:
       labels:
         name: loggregator-fluentd
     spec:
-      serviceAccountName: "opi"
+      serviceAccountName: fluentd
       initContainers:
       - name: config-copier
         image: alpine:latest
