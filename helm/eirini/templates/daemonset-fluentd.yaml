@@ -36,12 +36,6 @@ spec:
         env:
         - name: FLUENT_UID
           value: "0"
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
         volumeMounts:
         - name: vardata
           mountPath: /var/data
