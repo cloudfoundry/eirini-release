@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: eirini-logging-extension
+  labels:
+    app: eirini-logging-extension
+spec:
+  serviceAccountName: "opi"
+  volumes:
+  - name: config
+  - name: cf-secrets
+    secret:
+      secretName: secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}
+      items:
+      - key: doppler-cert
+        path: doppler.crt
+      - key: doppler-cert-key
+        path: doppler.key
+      - key: internal-ca-cert
+        path: doppler.ca
+  initContainers:
+  - name: create-eirini-loggregator-bridge-config
+    volumeMounts:
+    - name: config
+      mountPath: /config
+    image: splatform/eirini-loggregator-bridge
+    command: [ "/bin/bash" ]
+    args:
+    - "-c"
+    - |
+      cat <<EOF > /config/eirini-loggregator-bridge.yaml
+      loggregator-ca-path: /certs/doppler.ca
+      loggregator-cert-path: /certs/doppler.crt
+      loggregator-key-path: /certs/doppler.key
+      loggregator-endpoint: "doppler-doppler-set.{{ .Release.Namespace }}.svc.cluster.local:8082"
+      namespace: {{ .Values.opi.namespace }}
+      EOF
+  containers:
+  - name: eirini-logging-extension
+    args:
+      - "--config"
+      - "/config/eirini-loggregatore-bridge.yaml"
+    volumeMounts:
+    - name: config
+      mountPath: /config
+    - name: cf-secrets
+      mountPath: /certs
+    image: splatform/eirini-loggregator-bridge
+    imagePullPolicy: Always
+  restartPolicy: Always
