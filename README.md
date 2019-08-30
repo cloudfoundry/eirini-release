@@ -109,7 +109,6 @@ Eirini has a few images which are deployed by the helm chart. By default these c
 | secret-smuggler     | `eirini.opi.secret_smuggler_image`     | `eirini/secret-smuggler`     |
 | bits-waiter         | `eirini.opi.bits_waiter`               | `eirini/bit-waiter`          |
 | rootfs-patcher      | `eirini.opi.rootfs_patcher`            | `eirini/rootfs-patcher`      |
-| loggregator-fluentd | `eirini.opi.loggregator_fluentd_image` | `eirini/loggregator-fluentd` |
 
 By default, this is will install the `latest` tag of any image that was overriden. To change that, you'd have to set `eirini.opi.image_tag` as well. As of now, all the overriden images need to have same tag.
 
