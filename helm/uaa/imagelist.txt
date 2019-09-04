@@ -1,0 +1,3 @@
+uaa-mysql:705fa1d13cd57b97ca4f7bf8ef684a01d8a15929
+uaa-secret-generation:7de00c968eb10069de353a76768dc595d45beb13
+uaa-uaa:ffbfb8ac5867fc25a375442f27577c490850d2a1

@@ -2,29 +2,26 @@ opi:
   # set ingress endoint when 'use_registry_ingress' is set to true
   ingress_endpoint: no-ingress-set
   use_registry_ingress: false
-  use_docker: false
 
-  namespace: eirini
-  version: 0.0.0
-  init_image: eirini/opi-init
-  image: eirini/opi
+  disk_limit_mb: 2048
   image_tag: latest
-  rootfs_version: v66.0.0
-  rootfs_patcher_timeout: 2m
+  namespace: eirini
   registry_secret_name: registry-credentials
+  rootfs_patcher_timeout: 2m
+  version: 0.0.0
   stager:
     downloader_image: eirini/recipe-downloader
-    downloader_image_tag: 0.2.0
+    downloader_image_tag: 0.3.0
     executor_image: eirini/recipe-executor
-    executor_image_tag: 0.2.0
+    executor_image_tag: 0.3.0
     uploader_image: eirini/recipe-uploader
-    uploader_image_tag: 0.2.0
+    uploader_image_tag: 0.3.0
 kube:
   external_ips: []
 
 scf:
   version: 2.16.4
-  secrets_generation_counter: 1
+  secrets_generation_counter: 2
 
 services:
   loadbalanced: false
@@ -44,3 +41,5 @@ env:
   # Base domain of the SCF cluster.
   # Example: "my-scf-cluster.com"
   DOMAIN: ~
+global:
+  rootfs_version: v75.0.0

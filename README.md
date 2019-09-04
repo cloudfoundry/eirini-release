@@ -4,6 +4,27 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 
 **NOTE**: This is an **_experimental_** release and is still considered _work in progress_.
 
+## Table of contents
+
+* [Prerequisites](#prerequisites)
+  * [Minimum cluster requirements](#minimum-cluster-requirements)
+* [Installation](#installation)
+* [Notes](#notes)
+  * [Overriding Eirini Images](#overriding-eirini-images)
+  * [Diego staging](#diego-staging)
+  * [Storage Class](#storage-class)
+    * [Using the HostPath Provisioner](#using-the-hostpath-provisioner)
+    * [Production Deployment](#production-deployment)
+    * [IBMCloud Kubernetes Service (IKS)](#ibmcloud-kubernetes-service-iks)
+  * [Certificates](#certificates)
+  * [Service Account](#service-account)
+  * [Network policies](#network-policies)
+    * [Securing SCF endpoints](#securing-scf-endpoints)
+    * [Securing Kubernetes API Endpoint](#securing-kubernetes-api-endpoint)
+* [Troubleshooting](#troubleshooting)
+  * [Disk full on blobstore](#disk-full-on-blobstore)
+* [Resources](#resources)
+
 ## Prerequisites
 
 * Make sure your Kubernetes cluster meets all [SCF related Kubernetes Requirements](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#requirements-for-kubernetes).
@@ -35,6 +56,7 @@ of resource of the applications that you will be deploying. To make staging of a
      ```bash
     helm repo add bits https://cloudfoundry-incubator.github.io/bits-service-release/helm
     ```
+
 1. Install UAA:
 
     ```bash
@@ -53,7 +75,7 @@ of resource of the applications that you will be deploying. To make staging of a
 1. Install CF:
 
     ```bash
-    helm install eirini/cf --namespace scf --name scf --values <your-values.yaml> --set "secrets.UAA_CA_CERT=${CA_CERT}" --set "eirini.secrets.BITS_TLS_KEY=${BITS_TLS_KEY}" --set "eirini.secrets.BITS_TLS_CRT=${BITS_TLS_CRT}" 
+    helm install eirini/cf --namespace scf --name scf --values <your-values.yaml> --set "secrets.UAA_CA_CERT=${CA_CERT}" --set "eirini.secrets.BITS_TLS_KEY=${BITS_TLS_KEY}" --set "eirini.secrets.BITS_TLS_CRT=${BITS_TLS_CRT}"
     ```
 
     **NOTICE**
@@ -61,12 +83,13 @@ of resource of the applications that you will be deploying. To make staging of a
     The above command will take the default value for `rootfs_version`. In case you want to specify a rootfs_version at deploy time use
 
     ```bash
-    --set "bits.opi.rootfs_version=vx.x.x" \
-    --set "eirini.opi.rootfs_version=vx.x.x"
+    --set "global.rootfs_version=vx.x.x"
     ```
-    _Note: Both versions should be the same!_
 
-This will download the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
+    This will download the mentioned version of `eirinifs.tar`. (see [eirinifs releases](https://github.com/cloudfoundry-incubator/eirinifs/releases))
+
+    Additionally, if you want to override eirini images, please follow instructions in [Overriding Eirini Images](#overriding-eirini-images)
+
 1. Use the following command to verify that every CF control plane pod is `running` and `ready`:
 
     ```bash
@@ -74,6 +97,27 @@ This will download the mentioned version of `eirinifs.tar`. (see [eirinifs relea
     ```
 
 ## Notes
+
+### Overriding Eirini Images
+
+Eirini has a few images which are deployed by the helm chart. By default these come from the eirini Docker Hub account and the versions of them are located in [the versions directory](helm/eirini/versions). These versions are sha256 sums of the images that will be installed by default. If you want to override any of these images please follow this table:
+
+| Image               | Property                               | Default                      |
+|---------------------|----------------------------------------|------------------------------|
+| opi                 | `eirini.opi.image`                     | `eirini/opi`                 |
+| opi-init            | `eirini.opi.init_image`                | `eirini/opi-init`            |
+| secret-smuggler     | `eirini.opi.secret_smuggler_image`     | `eirini/secret-smuggler`     |
+| bits-waiter         | `eirini.opi.bits_waiter`               | `eirini/bit-waiter`          |
+| rootfs-patcher      | `eirini.opi.rootfs_patcher`            | `eirini/rootfs-patcher`      |
+| loggregator-fluentd | `eirini.opi.loggregator_fluentd_image` | `eirini/loggregator-fluentd` |
+
+By default, this is will install the `latest` tag of any image that was overriden. To change that, you'd have to set `eirini.opi.image_tag` as well. As of now, all the overriden images need to have same tag.
+
+### Diego staging
+
+By default, Eirini now stages applications using Kubernetes pods. This currently breaks some [CATS](https://github.com/cloudfoundry/cf-acceptance-tests). For list of CATS that
+are breaking in our pipeline you can check our [CI config](https://github.com/cloudfoundry-incubator/eirini-ci/blob/master/pipelines/modules/opi-skipped-cats.yml).
+You can enable staging using Diego by add `ENABLE_OPI_STAGING: false` in `env` section of your values.yaml. This will use more resources.
 
 ### Storage Class
 
@@ -147,18 +191,59 @@ spec:
   - Egress
   egress:
   - action: Deny
+    source:
+      selector: source_type == 'APP'
     destination:
       namespaceSelector: name == 'scf'
   - action: Allow
 EOF
 ```
 
-You can use [this](https://www.ibm.com/cloud/blog/configure-calicoctl-for-ibm-cloud-kubernetes-service) guide to export `$CALICOCNF` on IBM Cloud. 
+You can use [this](https://www.ibm.com/cloud/blog/configure-calicoctl-for-ibm-cloud-kubernetes-service) guide to export `$CALICOCNF` on IBM Cloud.
 
 Note that GKE does not currently support creating custom Calico network policies.
 
+#### Securing Kubernetes API Endpoint
+
+The Kubernetes API is available in all pods by default at `https://kubernetes.default`. Eirini does not mount
+service account credentials to the pod and uses default service account in the namespace. This prevents Eirini pods from using Kubernetes API.
+To completely disallow access to this from application instances, you'd need to apply this network policy:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  name: eirini-egress-policy
+  namespace: eirini
+spec:
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - <API IP Address>/32
+  podSelector: {}
+  policyTypes:
+  - Egress
+```
+
+You can get IP address of the master by running `kubectl get endpoints` command. If there are multiple Kubernetes API nodes, IP address
+of each of them would need to be specified in the `except` array.
+
+## Troubleshooting
+
+### Disk full on blobstore
+
+If all the CF apps are running, it is safe to delete all files in `/var/vcap/store/shared/cc-droplets/sh/a2/` directory on the `blobstore-0` pod.
+To do so, you can run this command:
+
+```bash
+kubectl exec -n <scf-namespace> blobstore-0 -c blobstore -- \
+  /bin/sh -c 'rm -rf /var/vcap/store/shared/cc-droplets/sh/a2/sha256:*'
+```
 
 ## Resources
 
+* [Security](./docs/security-overview.md)
 * [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
-* [Eirini Continuous Integration Pipeline](https://ci.flintstone.cf.cloud.ibm.com/teams/eirini/pipelines/ci)
+* [Eirini Continuous Integration Pipeline](https://ci.eirini.cf-app.com/teams/main/pipelines/eirini-release)

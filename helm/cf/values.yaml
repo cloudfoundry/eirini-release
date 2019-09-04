@@ -21,7 +21,7 @@ kube:
     password: ""
 
   # Increment this counter to rotate all generated secrets
-  secrets_generation_counter: 1
+  secrets_generation_counter: 2
 
   storage_class:
     persistent: "persistent"
@@ -283,6 +283,13 @@ secrets:
 
   # PEM-encoded key.
   DOPPLER_CERT_KEY: ~
+
+  # The PEM-encoded Eirini client certificate
+  # This value uses a generated default.
+  EIRINI_CLIENT_CRT: ~
+
+  # The PEM-encoded Eirini client certificate key
+  EIRINI_CLIENT_CRT_KEY: ~
 
   # Basic auth password for access to the Cloud Controller's internal API.
   # This value uses a generated default.
@@ -898,7 +905,7 @@ env:
   DROPLET_MAX_STAGED_STORED: "5"
 
   # Stage apps in Eirini <3
-  ENABLE_OPI_STAGING: "false"
+  ENABLE_OPI_STAGING: "true"
 
   # By default, Cloud Foundry does not enable Cloud Controller request logging.
   # To enable this feature, you must set this property to "true". You can learn
@@ -2149,3 +2156,5 @@ ingress:
   # ingress.tls.crt and ingress.tls.key, when specified, are used by the TLS
   # secret for the Ingress resource.
   tls: {}
+global:
+  rootfs_version: 'v89.0.0'
