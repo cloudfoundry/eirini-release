@@ -1,8 +1,8 @@
 {{- if not .Values.bits.useExistingSecret }}
-{{- if not hasKey .Values.secrets "BITS_TLS_CRT" }}
+{{- if not (hasKey .Values.secrets "BITS_TLS_CRT") }}
 _needsTlsCrt: {{ fail "secrets.BITS_TLS_CRT must be set" }}
 {{- end }}
-{{- if not hasKey .Values.secrets "BITS_TLS_KEY" }}
+{{- if not (hasKey .Values.secrets "BITS_TLS_KEY") }}
 _needsTlsKey: {{ fail "secrets.BITS_TLS_KEY must be set" }}
 {{- end }}
 # Certificate
