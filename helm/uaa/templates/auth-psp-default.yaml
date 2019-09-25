@@ -14,13 +14,8 @@ metadata:
     app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
     helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
 spec:
-  allowPrivilegeEscalation: true
-  allowedCapabilities:
-  - "*"
-  defaultAllowPrivilegeEscalation: true
   fsGroup:
     rule: "RunAsAny"
-  privileged: true
   runAsUser:
     rule: "RunAsAny"
   seLinux:

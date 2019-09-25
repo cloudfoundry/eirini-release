@@ -10,11 +10,11 @@ kube:
     nproc:
       hard: ""
       soft: ""
-  organization: "splatform"
+  organization: "cap"
   psp:
     default: ~
   registry:
-    hostname: "staging.registry.howdoi.website"
+    hostname: "registry.suse.com"
     username: ""
     password: ""
 
@@ -27,9 +27,6 @@ kube:
 config:
   # Flag to activate high-availability mode
   HA: false
-
-  # Flag to verify instance counts against HA minimums
-  HA_strict: true
 
   # Global memory configuration
   memory:
@@ -55,13 +52,6 @@ bosh:
 services:
   loadbalanced: false
 secrets:
-  # A PEM-encoded TLS certificate for the Galera server.
-  # This value uses a generated default.
-  GALERA_SERVER_CERT: ~
-
-  # A PEM-encoded TLS key for the Galera server.
-  GALERA_SERVER_CERT_KEY: ~
-
   # PEM-encoded CA certificate used to sign the TLS certificate used by all
   # components to secure their communications.
   # This value uses a generated default.
@@ -89,20 +79,13 @@ secrets:
   # This value uses a generated default.
   MYSQL_CLUSTER_HEALTH_PASSWORD: ~
 
-  # Password used to authenticate to the MySQL Galera healthcheck endpoint.
+  # The password used to contact the sidecar endpoints via Basic Auth.
   # This value uses a generated default.
   MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD: ~
 
   # The password for Basic Auth used to secure the MySQL proxy API.
   # This value uses a generated default.
   MYSQL_PROXY_ADMIN_PASSWORD: ~
-
-  # A PEM-encoded TLS certificate for the MySQL server.
-  # This value uses a generated default.
-  MYSQL_SERVER_CERT: ~
-
-  # A PEM-encoded TLS key for the MySQL server.
-  MYSQL_SERVER_CERT_KEY: ~
 
   # PEM-encoded certificate
   # This value uses a generated default.
@@ -190,15 +173,14 @@ sizing:
   # - patch-properties: Dummy BOSH job used to host parameters that are used in
   #   SCF patches for upstream bugs
   #
-  # Also: pxc-mysql, galera-agent, gra-log-purger, cluster-health-logger,
-  # bootstrap, mysql, and bpm
+  # Also: mysql and proxy
   mysql:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The mysql instance group can scale between 1 and 7 instances.
-    # For high availability it needs at least 3 instances.
-    count: ~
+    # The mysql instance group can scale between 1 and 3 instances.
+    # For high availability it needs at least 2 instances.
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -210,31 +192,7 @@ sizing:
 
     # Unit [MiB]
     memory:
-      request: 2500
-      limit: ~
-
-  # The mysql-proxy instance group contains the following jobs:
-  #
-  # - global-uaa-properties: Dummy BOSH job used to host global parameters that
-  #   are required to configure SCF / fissile
-  #
-  # Also: proxy and bpm
-  mysql_proxy:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The mysql_proxy instance group can scale between 1 and 5 instances.
-    # For high availability it needs at least 2 instances.
-    count: ~
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 2500
+      request: 1400
       limit: ~
 
   # The secret-generation instance group contains the following jobs:
@@ -245,7 +203,7 @@ sizing:
     affinity: {}
 
     # The secret_generation instance group cannot be scaled.
-    count: ~
+    count: 1
 
     # Unit [millicore]
     cpu:
@@ -281,7 +239,7 @@ sizing:
 
     # The uaa instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
-    count: ~
+    count: 1
 
     # Unit [millicore]
     cpu:
