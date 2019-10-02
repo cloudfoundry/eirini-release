@@ -140,15 +140,15 @@ kind: "List"
 #   managing user accounts and for registering OAuth2 clients, as well as
 #   various other management functions.
 
-{{- if gt (int .Values.sizing.uaa.count) 65535 }}
+{{- if and (ne (typeOf .Values.sizing.uaa.count) "<nil>") (gt (int .Values.sizing.uaa.count) 65535) }}
 _maxReplicas: {{ fail "uaa cannot have more than 65535 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.uaa.count) 1) (lt (int .Values.sizing.uaa.count) 2)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.uaa.count) "<nil>") (lt (int .Values.sizing.uaa.count) 2) }}
 _minHAReplicas: {{ fail "uaa must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.uaa.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.uaa.count) "<nil>") (lt (int .Values.sizing.uaa.count) 1) }}
 _minReplicas: {{ fail "uaa must have at least 1 instances" }}
 {{- end }}
 
@@ -195,7 +195,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.uaa.count) 1) }}{{ 2 }}{{ else }}{{ .Values.sizing.uaa.count }}{{ end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.uaa.count) "<nil>") }}{{ .Values.sizing.uaa.count }}{{ else }}{{ if .Values.config.HA }}{{ 2 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "uaa"
@@ -442,7 +442,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:ffbfb8ac5867fc25a375442f27577c490850d2a1"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:8fb9cbf2ab5b0dbe580259a83c45c6ad539ed20c"
         lifecycle:
           preStop:
             exec:
