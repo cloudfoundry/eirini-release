@@ -23,8 +23,6 @@ spec:
             items:
             - key: opi.yaml
               path: opi.yml
-        - name: config-volume
-          emptyDir: {}
         - name: cf-secrets
           secret:
             secretName: secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}
@@ -47,25 +45,6 @@ spec:
               path: eirini-server.key
             - key: internal-ca-cert
               path: eirini-client-ca.crt
-      initContainers:
-      - name: configure-opi-yaml
-        {{- if .Values.opi.init_image }}
-        image: {{ .Values.opi.init_image }}:{{ .Values.opi.image_tag }}
-        {{- else }}
-        image: eirini/opi-init@{{ .Files.Get "versions/opi-init" }}
-        {{- end }}
-        env:
-        - name: "NATS_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "nats-password"
-              name: "secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}"
-        volumeMounts:
-        - name: config-map-volume
-          mountPath: /configs
-        - name: config-volume
-          mountPath: /output
-          readOnly: false
       containers:
       - name: opi
         {{- if .Values.opi.image }}
@@ -74,8 +53,14 @@ spec:
         image: eirini/opi@{{ .Files.Get "versions/opi" }}
         {{- end }}
         imagePullPolicy: Always
+        env:
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}"
         volumeMounts:
-        - name: config-volume
+        - name: config-map-volume
           mountPath: /workspace/jobs/opi/config
         - name: cf-secrets
           mountPath: /workspace/jobs/opi/secrets
