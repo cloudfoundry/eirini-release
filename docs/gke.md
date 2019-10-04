@@ -46,9 +46,9 @@ See [more](https://cloud.google.com/compute/docs/ip-addresses/reserve-static-ext
 Create a DNS zone in GKE.
 Create the following 3 DNS records in the zone:
 
-- <environment>.<zone>
-- *.<environment>.<zone>
-- *.uaa.<environment>.<zone>
+- `<environment>.<zone>`
+- `*.<environment>.<zone>`
+- `*.uaa.<environment>.<zone>`
 
 Then attach them to the static IP address you created.
 
@@ -97,8 +97,8 @@ You can also take a look at the
 
 You need to create 2 certificates:
 
-- UAA (uaa.<domain>, *.uaa.<domain>)
-- Gorouter (*.<domain>)
+- UAA (`uaa.<domain>`, `*.uaa.<domain>`)
+- Gorouter (`*.<domain>`)
 
 The certificate for the bits service will be created using cert-manager ingress annotation.
 SCF works on supporting annotations as well. See [the issue](https://github.com/SUSE/scf/issues/2856)
