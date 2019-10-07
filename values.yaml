@@ -42,10 +42,10 @@ bits:
   env:
     DOMAIN: *DOMAIN
   services: *services
-  opi:
-    use_registry_ingress: false
-    # Enable if use_registry_ingress is set to 'true'
-    # ingress_endpoint: kubernetes-cluster-ingress-endpoint
+  ingress:
+    use: false
+    # Enable if use is set to 'true'
+    # endpoint: kubernetes-cluster-ingress-endpoint
 
   secrets:
     BLOBSTORE_PASSWORD: *BLOBSTORE_PASSWORD
