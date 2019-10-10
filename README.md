@@ -140,7 +140,7 @@ As part of our development process we continuously test against the [Cloud Found
 * routing
 * services
 
-We additionally skip the [apps/buildpack-cache](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/apps/buildpack_cache.go#L125) and [apps/reverse-log-proxy](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/apps/loggregator.go#L130) tests. The test suites that are currently skipped are:
+The services suite is disabled in main ci due to flaking often. We additionally skip the [apps/buildpack-cache](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/apps/buildpack_cache.go#L125) and [apps/reverse-log-proxy](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/apps/loggregator.go#L130) tests. The test suites that are currently skipped are:
 * ssh
 * v3
 * service instance sharing
