@@ -13,7 +13,7 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
   * [Overriding Eirini Images](#overriding-eirini-images)
   * [Diego staging](#diego-staging)
   * [CF acceptance tests](#cf-acceptance-tests)
-  * [Running CATs against Eirini](#running-cats-against-eirini)
+    * [Running CATs against Eirini](#running-cats-against-eirini)
   * [Storage Class](#storage-class)
     * [Using the HostPath Provisioner](#using-the-hostpath-provisioner)
     * [Production Deployment](#production-deployment)
