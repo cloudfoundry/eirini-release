@@ -12,6 +12,8 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 * [Notes](#notes)
   * [Overriding Eirini Images](#overriding-eirini-images)
   * [Diego staging](#diego-staging)
+  * [CF acceptance tests](#cf-acceptance-tests)
+  * [Running CATs against Eirini](#running-cats-against-eirini)
   * [Storage Class](#storage-class)
     * [Using the HostPath Provisioner](#using-the-hostpath-provisioner)
     * [Production Deployment](#production-deployment)
@@ -128,6 +130,80 @@ If a staging image needs to be updated, all the staging images must be updated.
 By default, Eirini now stages applications using Kubernetes pods. This currently breaks some [CATS](https://github.com/cloudfoundry/cf-acceptance-tests). For list of CATS that
 are breaking in our pipeline you can check our [CI config](https://github.com/cloudfoundry-incubator/eirini-ci/blob/master/pipelines/modules/opi-skipped-cats.yml).
 You can enable staging using Diego by add `ENABLE_OPI_STAGING: false` in `env` section of your values.yaml. This will use more resources.
+
+### CF acceptance tests
+
+As part of our development process we continuously test against the [Cloud Foundry Acceptance Tests](https://github.com/cloudfoundry/cf-acceptance-tests). Currently Eirini (with OPI staging enabled) passes `110 tests`. The test suites that we currently have enabled are:
+* apps
+* detect
+* internet_dependent
+* routing
+* services
+
+We additionally skip the [apps/buildpack-cache](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/apps/buildpack_cache.go#L125) and [apps/reverse-log-proxy](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/apps/loggregator.go#L130) tests. The test suites that are currently skipped are:
+* ssh
+* v3
+* service instance sharing
+* service discovery
+* tcp routing
+* internetless
+* security groups
+* backend_compatibility
+* route_services
+* internetless
+* isolation_segments
+* tasks
+* windows
+* routing_isolation_segments
+* docker
+* credhub
+* volume servicess
+
+#### Running CATs against Eirini
+
+To run cats follow the instructions on the [cf-acceptance-tests repository](https://github.com/cloudfoundry/cf-acceptance-tests#test-execution). Use the following config and skip the aforementioned cats with the `-skip=uses the buildpack cache after first staging|reverse log proxy streams logs` flag for [./bin/test](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/bin/test): 
+
+```
+    {
+      "api": "api.yourdomain.com",
+      "apps_domain": "yourdomain.com",
+      "admin_user": "admin",
+      "skip_ssl_validation": true,
+      "use_http": true,
+      "use_log_cache": false,
+      "include_apps": true,
+      "include_backend_compatibility": false,
+      "include_capi_experimental": true,
+      "include_capi_no_bridge": true,
+      "include_container_networking": true,
+      "include_credhub" : false,
+      "include_detect": true,
+      "include_docker": false,
+      "include_deployments": true,
+      "include_internet_dependent": true,
+      "include_internetless": false,
+      "include_isolation_segments": false,
+      "include_private_docker_registry": false,
+      "include_route_services": false,
+      "include_routing": true,
+      "include_routing_isolation_segments": false,
+      "include_security_groups": false,
+      "include_service_discovery": false,
+      "include_services": true,
+      "include_service_instance_sharing": false,
+      "include_ssh": false,
+      "include_sso": true,
+      "include_tasks": false,
+      "include_tcp_routing": false,
+      "include_v3": false,
+      "include_zipkin": true,
+      "use_http": true,
+      "include_volume_services": false,
+      "stacks": [
+        "cflinuxfs3"
+      ]
+    }
+```
 
 ### Storage Class
 
