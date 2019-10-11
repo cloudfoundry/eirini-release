@@ -405,7 +405,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-routing-api:0884ac61682aae3bfd8b91d0af8deed2be58b8bd"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-routing-api:73ac2f5b343a3787682e0c1e4f60fd0cbbbfd46e"
         lifecycle:
           preStop:
             exec:
@@ -573,7 +573,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:60ba64ccec10973524eca1b30364d8c2666da38a"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:499c7f3bb221a875482cf054b06cd252add0404d"
         lifecycle:
           preStop:
             exec:
