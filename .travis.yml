@@ -17,6 +17,5 @@ install:
 
 before_script:
   - helm init --client-only
-      - 
 script:
   - ./scripts/helm-lint.sh
