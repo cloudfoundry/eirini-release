@@ -141,23 +141,22 @@ As part of our development process we continuously test against the [Cloud Found
 * services
 
 The services suite is disabled in main ci due to flaking often. We additionally skip the [apps/buildpack-cache](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/apps/buildpack_cache.go#L125) and [apps/reverse-log-proxy](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/apps/loggregator.go#L130) tests. The test suites that are currently skipped are:
-* ssh
-* v3
-* service instance sharing
-* service discovery
-* tcp routing
-* internetless
-* security groups
 * backend_compatibility
-* route_services
+* credhub
+* docker
 * internetless
 * isolation_segments
-* tasks
-* windows
+* route_services
 * routing_isolation_segments
-* docker
-* credhub
+* security groups
+* service discovery
+* service instance sharing
+* ssh
+* tasks
+* tcp routing
+* v3
 * volume servicess
+* windows
 
 #### Running CATs against Eirini
 
