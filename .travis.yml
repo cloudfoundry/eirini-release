@@ -17,5 +17,6 @@ install:
 
 before_script:
   - helm init --client-only
+  - helm repo add bits https://cloudfoundry-incubator.github.io/bits-service-release/helm
 script:
   - ./scripts/helm-lint.sh
