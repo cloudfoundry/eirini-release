@@ -178,7 +178,7 @@ To run cats follow the instructions on the [cf-acceptance-tests repository](http
       "include_credhub" : false,
       "include_detect": true,
       "include_docker": false,
-      "include_deployments": true,
+      "include_deployments": false,
       "include_internet_dependent": true,
       "include_internetless": false,
       "include_isolation_segments": false,
