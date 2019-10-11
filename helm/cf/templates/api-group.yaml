@@ -666,7 +666,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:cdbe7d6065d091a39acb5d17c8d5c83c8b395fcb"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:14be94c284c4af191ac5b17507d1359024ae673a"
         lifecycle:
           preStop:
             exec:
