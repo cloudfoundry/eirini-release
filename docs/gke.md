@@ -57,7 +57,7 @@ Then attach them to the static IP address you created.
 In order to generate valid certificate your components need to be able to create TXT DNS records in your zone.
 Create a service account with the following permissions:
 
-```
+```text
   dns.changes.create
   dns.changes.get
   dns.managedZones.list
@@ -73,18 +73,19 @@ Generate a private key for it.
 
 Deploy [Nginx ingress controller](https://hub.helm.sh/charts/stable/nginx-ingress) with the following properties:
 
-```
+```text
   rbac.create=true
   controller.service.loadBalancerIP=<static-ip-address>
 ```
 
-Deploy [CertManager](https://hub.helm.sh/charts/jetstack/cert-manager)
+Deploy [CertManager](https://hub.helm.sh/charts/jetstack/cert-manager).
+The documentation below is valid only for cert-manager v0.11.
 
 ### Create a certificate issuer
 
 Create a secret with service account key in cert-manager namespace:
 
-```
+```bash
 kubectl create secret generic -n cert-manager <secret-name> --from-literal=service-account.json="$DNS_SERVICE_ACCOUNT"
 ```
 
@@ -92,17 +93,6 @@ This is required for DNS validation. See more
 [in official documentation](https://docs.cert-manager.io/en/latest/tutorials/acme/dns-validation.html).
 You can also take a look at the
 [issuer that is deployed in Eirini CI environments](https://raw.githubusercontent.com/cloudfoundry-incubator/eirini-ci/master/cert-manager/letsencrypt-dns-issuer.yaml).
-
-### Create certificates
-
-You need to create 2 certificates:
-
-- UAA (`uaa.<domain>`, `*.uaa.<domain>`)
-- Gorouter (`*.<domain>`)
-
-The certificate for the bits service will be created using cert-manager ingress annotation.
-SCF works on supporting annotations as well. See [the issue](https://github.com/SUSE/scf/issues/2856)
-See the reference in [Eirini CI](https://github.com/cloudfoundry-incubator/eirini-ci/tree/master/cert-manager)
 
 ## Values.yaml
 
@@ -114,9 +104,9 @@ bits:
     endpoint: <domain>
     use: true
     annotations:
-      certmanager.k8s.io/cluster-issuer: "<lets-encrypt-issuer-name>"
+      cert-manager.io/cluster-issuer: "<lets-encrypt-issuer-name>"
       # use the following line instead if you are using regular issuer
-      # certmanager.k8s.io/issuer: "<lets-encrypt-issuer-name>"
+      # cert-manager.io/issuer: "<lets-encrypt-issuer-name>"
   secrets:
     BITS_SERVICE_SECRET: $BITS_SECRET
     BITS_SERVICE_SIGNING_USER_PASSWORD: $BITS_SECRET
@@ -144,6 +134,9 @@ ingress:
   enabled: true
   annotations:
     "nginx.ingress.kubernetes.io/proxy-body-size": "100m"
+    cert-manager.io/cluster-issuer: "<lets-encrypt-issuer-name>"
+    # use the following line instead if you are using regular issuer
+    # cert-manager.io/issuer: "<lets-encrypt-issuer-name>"
 
 eirini:
   opi:
@@ -154,27 +147,12 @@ eirini:
     BLOBSTORE_PASSWORD: $BITS_SECRET
 ```
 
-## Deploying UAA
-
-### Get UAA certificates
-
-You need to wait for certificates to be issued. Then you will be able to get them from the Kubernetes secret that has been specified.
-
-If you are using Eirini-ci templates, you can run the following command:
-
-```bash
-    UAA_TLS_CRT="$(kubectl get secret uaa-ingress --namespace cert-manager -o jsonpath="{.data['tls\.crt']}" | base64 --decode -)"
-    UAA_TLS_KEY="$(kubectl get secret uaa-ingress --namespace cert-manager -o jsonpath="{.data['tls\.key']}" | base64 --decode -)"
-```
-
-### Deploy UAA
+## Deploy UAA
 
 ```bash
   helm upgrade --install "uaa" \
     "uaa" \
     --namespace "uaa" \
-    --set "ingress.tls.crt=${UAA_TLS_CRT}" \
-    --set "ingress.tls.key=${UAA_TLS_KEY}" \
     --values your-values.yaml
 ```
 
@@ -194,17 +172,6 @@ ${INTERMEDIATE_CA}"
 
 For more information about LetsEncrypt chain of trust see [here](https://letsencrypt.org/certificates/).
 
-### Get certificates for Gorouter
-
-You need to get certificate for Gorouter following the same procedures as [certificates for UAA](#get-uaa-certificates) for the gorouter Kubernetes secret.
-
-If you are using eirini-ci templates, you can use the following commands:
-
-```bash
-    INGRESS_CRT="$(kubectl get secret router-ingress --namespace cert-manager -o jsonpath="{.data['tls\.crt']}" | base64 --decode -)"
-    INGRESS_KEY="$(kubectl get secret router-ingress --namespace cert-manager -o jsonpath="{.data['tls\.key']}" | base64 --decode -)"
-```
-
 ### Deploy SCF
 
 ```bash
@@ -212,9 +179,7 @@ If you are using eirini-ci templates, you can use the following commands:
     cf \
     --namespace "scf" \
     --values your-values.yaml \
-    --set "secrets.UAA_CA_CERT=${CA_CERT}" \
-    --set "ingress.tls.crt=${INGRESS_CRT}" \
-    --set "ingress.tls.key=${INGRESS_KEY}"
+    --set "secrets.UAA_CA_CERT=${CA_CERT}"
 ```
 
 ## Certificate rotation
