@@ -1,5 +1,4 @@
 ---
-{{ if not .Values.env.ENABLE_OPI_STAGING  }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -170,15 +169,15 @@ kind: "List"
 #
 # Also: ssh_proxy and file_server
 
-{{- if gt (int .Values.sizing.diego_ssh.count) 3 }}
+{{- if and (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") (gt (int .Values.sizing.diego_ssh.count) 3) }}
 _maxReplicas: {{ fail "diego_ssh cannot have more than 3 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_ssh.count) 1) (lt (int .Values.sizing.diego_ssh.count) 2)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") (lt (int .Values.sizing.diego_ssh.count) 2) }}
 _minHAReplicas: {{ fail "diego_ssh must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.diego_ssh.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") (lt (int .Values.sizing.diego_ssh.count) 1) }}
 _minReplicas: {{ fail "diego_ssh must have at least 1 instances" }}
 {{- end }}
 
@@ -202,7 +201,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "diego-ssh"
@@ -225,7 +224,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_ssh.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.diego_ssh.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") }}{{ .Values.sizing.diego_ssh.count }}{{ else }}{{ if .Values.config.HA }}{{ 2 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-ssh"
@@ -441,7 +440,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-ssh:50288facfbd5d40bd456e5de51eac65b47fdfe32"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-ssh:3de2a9cee4ad41cd2a6313407878472bcd9f911d"
         lifecycle:
           preStop:
             exec:
@@ -481,20 +480,10 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.diego_ssh.capabilities }}
-          privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.diego_ssh.capabilities) }}
+          allowPrivilegeEscalation: false
           capabilities:
             add:
             - "SYS_RESOURCE"
-            {{- range .Values.sizing.diego_ssh.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -624,7 +613,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:499c7f3bb221a875482cf054b06cd252add0404d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:b1310bc2f47041a0d1a3151d546e8dc2f82a9e56"
         lifecycle:
           preStop:
             exec:
@@ -654,18 +643,27 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "privileged"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
@@ -678,4 +676,3 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
-{{- end}}

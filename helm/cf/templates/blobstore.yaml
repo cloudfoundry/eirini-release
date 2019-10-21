@@ -95,11 +95,15 @@ kind: "List"
 #
 # Also: blobstore and bpm
 
-{{- if gt (int .Values.sizing.blobstore.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.blobstore.count) "<nil>") (gt (int .Values.sizing.blobstore.count) 1) }}
 _maxReplicas: {{ fail "blobstore cannot have more than 1 instances" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.blobstore.count) 1 }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.blobstore.count) "<nil>") (lt (int .Values.sizing.blobstore.count) 1) }}
+_minHAReplicas: {{ fail "blobstore must have at least 1 instances for HA" }}
+{{- end }}
+
+{{- if and (ne (typeOf .Values.sizing.blobstore.count) "<nil>") (lt (int .Values.sizing.blobstore.count) 1) }}
 _minReplicas: {{ fail "blobstore must have at least 1 instances" }}
 {{- end }}
 
@@ -123,7 +127,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "blobstore"
@@ -146,7 +150,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ .Values.sizing.blobstore.count }}
+  replicas: {{ if (ne (typeOf .Values.sizing.blobstore.count) "<nil>") }}{{ .Values.sizing.blobstore.count }}{{ else }}{{ if .Values.config.HA }}{{ 1 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "blobstore"
@@ -284,7 +288,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
+          value: {{ if (ne (typeOf .Values.sizing.nats.count) "<nil>") }}{{ .Values.sizing.nats.count | quote }}{{ else }}{{ if .Values.config.HA }}{{ 2 | quote }}{{ else }}{{ 1 | quote }}{{ end }}{{ end }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -330,7 +334,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-blobstore:7c69b10bf0216f29cf72f27537887b140d82d836"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-blobstore:cf708e6ffca26d81a684c7aaa9702b17ebf86fbf"
         lifecycle:
           preStop:
             exec:
@@ -369,7 +373,10 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/var/vcap/store"
           name: "blobstore-data"
@@ -502,7 +509,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:499c7f3bb221a875482cf054b06cd252add0404d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:b1310bc2f47041a0d1a3151d546e8dc2f82a9e56"
         lifecycle:
           preStop:
             exec:
@@ -532,18 +539,27 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
       {{- end }}
+
+      restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

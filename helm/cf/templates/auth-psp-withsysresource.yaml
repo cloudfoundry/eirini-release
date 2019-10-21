@@ -1,7 +1,7 @@
 ---
 # Pod security policy "withsysresource"
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (not .Values.kube.psp.withsysresource) }}
-apiVersion: "extensions/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "policy/v1beta1") }}policy/v1beta1{{ else }}extensions/v1beta1{{ end }}
 kind: "PodSecurityPolicy"
 metadata:
   name: {{ template "fissile.SanitizeName" (printf "%s-psp-withsysresource" .Release.Namespace) }}

@@ -86,11 +86,15 @@ kind: "List"
 # Also: credhub and bpm
 {{- if .Values.enable.credhub }}
 
-{{- if gt (int .Values.sizing.credhub_user.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.credhub_user.count) "<nil>") (gt (int .Values.sizing.credhub_user.count) 1) }}
 _maxReplicas: {{ fail "credhub_user cannot have more than 1 instances" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.credhub_user.count) 1 }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.credhub_user.count) "<nil>") (lt (int .Values.sizing.credhub_user.count) 1) }}
+_minHAReplicas: {{ fail "credhub_user must have at least 1 instances for HA" }}
+{{- end }}
+
+{{- if and (ne (typeOf .Values.sizing.credhub_user.count) "<nil>") (lt (int .Values.sizing.credhub_user.count) 1) }}
 _minReplicas: {{ fail "credhub_user must have at least 1 instances" }}
 {{- end }}
 
@@ -114,7 +118,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "credhub-user"
@@ -137,7 +141,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ .Values.sizing.credhub_user.count }}
+  replicas: {{ if (ne (typeOf .Values.sizing.credhub_user.count) "<nil>") }}{{ .Values.sizing.credhub_user.count }}{{ else }}{{ if .Values.config.HA }}{{ 1 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "credhub-user"
@@ -244,7 +248,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
+          value: {{ if (ne (typeOf .Values.sizing.nats.count) "<nil>") }}{{ .Values.sizing.nats.count | quote }}{{ else }}{{ if .Values.config.HA }}{{ 2 | quote }}{{ else }}{{ 1 | quote }}{{ end }}{{ end }}
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
@@ -317,7 +321,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:eb920186209233e428b1270a1e94d58d4aed7ddc"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:531be22650f536cdae82e3f8a05863bcb47bc68c"
         lifecycle:
           preStop:
             exec:
@@ -353,18 +357,27 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
       {{- end }}
+
+      restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

@@ -21,7 +21,7 @@ kube:
     password: ""
 
   # Increment this counter to rotate all generated secrets
-  secrets_generation_counter: 2
+  secrets_generation_counter: 1
 
   storage_class:
     persistent: "persistent"
@@ -29,6 +29,9 @@ kube:
 config:
   # Flag to activate high-availability mode
   HA: false
+
+  # Flag to verify instance counts against HA minimums
+  HA_strict: true
 
   # Global memory configuration
   memory:
@@ -1132,7 +1135,7 @@ sizing:
 
     # The adapter instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1172,7 +1175,7 @@ sizing:
 
     # The api_group instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1200,7 +1203,7 @@ sizing:
     # feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1224,14 +1227,11 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The autoscaler_eventgenerator instance group can be enabled by the
     # autoscaler feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1255,14 +1255,11 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The autoscaler_metrics instance group can be enabled by the autoscaler
     # feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1286,14 +1283,11 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The autoscaler_operator instance group can be enabled by the autoscaler
     # feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1317,13 +1311,10 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The autoscaler_postgres instance group can be enabled by the autoscaler
     # feature.
     # It cannot be scaled.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1350,14 +1341,11 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The autoscaler_scalingengine instance group can be enabled by the
     # autoscaler feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1381,14 +1369,11 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The autoscaler_scheduler instance group can be enabled by the autoscaler
     # feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1418,7 +1403,7 @@ sizing:
     # autoscaler feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1443,7 +1428,7 @@ sizing:
     affinity: {}
 
     # The blobstore instance group cannot be scaled.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1480,7 +1465,7 @@ sizing:
 
     # The cc_clock instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1506,7 +1491,7 @@ sizing:
 
     # The cc_uploader instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1535,7 +1520,7 @@ sizing:
 
     # The cc_worker instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1564,7 +1549,7 @@ sizing:
     # The cf_usb_group instance group is enabled by the cf_usb feature.
     # It can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1590,7 +1575,7 @@ sizing:
 
     # The credhub_user instance group can be enabled by the credhub feature.
     # It cannot be scaled.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1617,12 +1602,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The diego_api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1649,12 +1631,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The diego_brain instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1690,7 +1669,7 @@ sizing:
 
     # The diego_cell instance group can scale between 1 and 254 instances.
     # For high availability it needs at least 3 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1717,12 +1696,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The diego_ssh instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1751,7 +1727,7 @@ sizing:
 
     # The doppler instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1778,12 +1754,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The locket instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1811,7 +1784,7 @@ sizing:
 
     # The log_api instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1841,7 +1814,7 @@ sizing:
     # The log_cache_scheduler instance group can scale between 1 and 65535
     # instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1865,7 +1838,7 @@ sizing:
 
     # The loggregator_agent instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1890,12 +1863,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The mysql instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1925,7 +1895,7 @@ sizing:
 
     # The nats instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1951,7 +1921,7 @@ sizing:
 
     # The nfs_broker instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -1978,11 +1948,8 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The post_deployment_setup instance group cannot be scaled.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -2014,7 +1981,7 @@ sizing:
 
     # The router instance group can scale between 1 and 65535 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -2040,7 +2007,7 @@ sizing:
 
     # The routing_api instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -2059,11 +2026,8 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # Additional privileges can be specified here
-    capabilities: []
-
     # The secret_generation instance group cannot be scaled.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -2087,7 +2051,7 @@ sizing:
 
     # The syslog_scheduler instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -2115,7 +2079,7 @@ sizing:
 
     # The tcp_router instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
-    count: 1
+    count: ~
 
     # Unit [millicore]
     cpu:
@@ -2156,5 +2120,3 @@ ingress:
   # ingress.tls.crt and ingress.tls.key, when specified, are used by the TLS
   # secret for the Ingress resource.
   tls: {}
-global:
-  rootfs_version: 'v106.0.0'

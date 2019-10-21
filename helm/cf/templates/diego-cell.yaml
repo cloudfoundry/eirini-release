@@ -1,5 +1,4 @@
 ---
-{{ if not .Values.env.ENABLE_OPI_STAGING  }}
 # Service account "garden-runc" is used by the following instance groups:
 # - diego-cell
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
@@ -271,15 +270,15 @@ kind: "List"
 # Also: rep, cfdot, route_emitter, garden, groot-btrfs, cflinuxfs3-rootfs-setup,
 # cf-sle12-setup, sle15-rootfs-setup, nfsv3driver, and mapfs
 
-{{- if gt (int .Values.sizing.diego_cell.count) 254 }}
+{{- if and (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") (gt (int .Values.sizing.diego_cell.count) 254) }}
 _maxReplicas: {{ fail "diego_cell cannot have more than 254 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_cell.count) 1) (lt (int .Values.sizing.diego_cell.count) 3)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") (lt (int .Values.sizing.diego_cell.count) 3) }}
 _minHAReplicas: {{ fail "diego_cell must have at least 3 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.diego_cell.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") (lt (int .Values.sizing.diego_cell.count) 1) }}
 _minReplicas: {{ fail "diego_cell must have at least 1 instances" }}
 {{- end }}
 
@@ -303,7 +302,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "diego-cell"
@@ -326,7 +325,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_cell.count) 1) -}} 3 {{- else -}} {{ .Values.sizing.diego_cell.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") }}{{ .Values.sizing.diego_cell.count }}{{ else }}{{ if .Values.config.HA }}{{ 3 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-cell"
@@ -500,7 +499,7 @@ spec:
         - name: "KUBE_AZ"
           value: "z1"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
+          value: {{ if (ne (typeOf .Values.sizing.nats.count) "<nil>") }}{{ .Values.sizing.nats.count | quote }}{{ else }}{{ if .Values.config.HA }}{{ 2 | quote }}{{ else }}{{ 1 | quote }}{{ end }}{{ end }}
 
         {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
         - name: "LOGGREGATOR_CLIENT_CERT"
@@ -671,7 +670,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:8b560db0d6f91375c8881f1ae6b5c85c20e395fe"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:7403ab5881a0753c42430b0a3511690d17b6d4e2"
         lifecycle:
           preStop:
             exec:
@@ -713,7 +712,10 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/var/vcap/data/grootfs"
           name: "grootfs-data"
@@ -851,7 +853,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:499c7f3bb221a875482cf054b06cd252add0404d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:b1310bc2f47041a0d1a3151d546e8dc2f82a9e56"
         lifecycle:
           preStop:
             exec:
@@ -881,18 +883,27 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "garden-runc"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       {{- if .Values.kube.hostpath_available }}
@@ -924,4 +935,3 @@ spec:
       resources:
         requests:
           storage: "{{ .Values.sizing.diego_cell.disk_sizes.grootfs_data }}G"
-{{- end}}

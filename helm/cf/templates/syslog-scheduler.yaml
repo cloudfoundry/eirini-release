@@ -81,15 +81,15 @@ kind: "List"
 #
 # Also: scheduler and bpm
 
-{{- if gt (int .Values.sizing.syslog_scheduler.count) 3 }}
+{{- if and (ne (typeOf .Values.sizing.syslog_scheduler.count) "<nil>") (gt (int .Values.sizing.syslog_scheduler.count) 3) }}
 _maxReplicas: {{ fail "syslog_scheduler cannot have more than 3 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.syslog_scheduler.count) 1) (lt (int .Values.sizing.syslog_scheduler.count) 2)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.syslog_scheduler.count) "<nil>") (lt (int .Values.sizing.syslog_scheduler.count) 2) }}
 _minHAReplicas: {{ fail "syslog_scheduler must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.syslog_scheduler.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.syslog_scheduler.count) "<nil>") (lt (int .Values.sizing.syslog_scheduler.count) 1) }}
 _minReplicas: {{ fail "syslog_scheduler must have at least 1 instances" }}
 {{- end }}
 
@@ -113,7 +113,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "syslog-scheduler"
@@ -136,7 +136,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.syslog_scheduler.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.syslog_scheduler.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.syslog_scheduler.count) "<nil>") }}{{ .Values.sizing.syslog_scheduler.count }}{{ else }}{{ if .Values.config.HA }}{{ 2 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "syslog-scheduler"
@@ -275,7 +275,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-syslog-scheduler:fc3cef5d277ae096096aeeac92c65434d15fde28"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-syslog-scheduler:f3a2822608c3c414c5206e6aed342ab1757c2c44"
         lifecycle:
           preStop:
             exec:
@@ -312,7 +312,10 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -442,7 +445,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:499c7f3bb221a875482cf054b06cd252add0404d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:b1310bc2f47041a0d1a3151d546e8dc2f82a9e56"
         lifecycle:
           preStop:
             exec:
@@ -472,18 +475,27 @@ spec:
             {{- end }}
 
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - "ALL"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
       {{- end }}
+
+      restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

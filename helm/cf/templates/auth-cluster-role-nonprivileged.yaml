@@ -1,7 +1,6 @@
 ---
 # Cluster role "nonprivileged" used by accounts:
 # - default
-# - default-privileged
 # - secret-generator
 # - tests
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
