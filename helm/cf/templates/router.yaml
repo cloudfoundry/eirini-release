@@ -434,7 +434,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:847b85d28bd1ae088c0f572a7ce093360fc66a5b"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:902814a4c42509cb36c3835fb80a7903bfce02c7"
         lifecycle:
           preStop:
             exec:
@@ -477,8 +477,8 @@ spec:
           allowPrivilegeEscalation: true
           capabilities:
             add:
-            - "SYS_RESOURCE"
             - "ALL"
+            - "SYS_RESOURCE"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -608,7 +608,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:b1310bc2f47041a0d1a3151d546e8dc2f82a9e56"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:88d2c88b07c55e97220f17406cc88dbdbf8e076d"
         lifecycle:
           preStop:
             exec:
