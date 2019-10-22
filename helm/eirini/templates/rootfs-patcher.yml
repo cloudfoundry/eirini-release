@@ -15,7 +15,7 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
         - /bits-waiter
-        - --namespace=scf
+        - --namespace={{ .Release.Namespace }}
         - --timeout={{ .Values.opi.rootfs_patcher_timeout }}
       containers:
       - name: patch
