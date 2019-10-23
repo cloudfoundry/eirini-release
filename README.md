@@ -248,7 +248,7 @@ It is recommended to deploy Eirini with ingress and use that certificate in IKS.
 
 ### Service Account
 
-When an app is pushed with Eirini, the pods are assigned the default Service Account in `opi.namespace`. By default, when the cluster is deployed with `RBAC` authentication method, that Service Account should not have any read/write permissions to the Kubernetes API. Since `RBAC` is preffered to `ABAC`, we recommend using the former.
+When an app is pushed with Eirini, the pods are assigned the default Service Account in `opi.namespace`. By default, when the cluster is deployed with `RBAC` authentication method, that Service Account should not have any read/write permissions to the Kubernetes API. Since `RBAC` is preferred to `ABAC`, we recommend using the former.
 
 ### Network policies
 
