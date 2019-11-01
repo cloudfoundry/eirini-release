@@ -33,6 +33,7 @@ data:
 
     <filter kubernetes.**>
       @type kubernetes_metadata
+      de_dot false
     </filter>
 
     <match **>
