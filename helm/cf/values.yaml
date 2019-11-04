@@ -2122,3 +2122,5 @@ ingress:
   tls: {}
 global:
   rootfs_version: 'v111.0.0'
+global:
+  rootfs_version: 'v111.0.0'
