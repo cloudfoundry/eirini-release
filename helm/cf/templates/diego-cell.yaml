@@ -1,5 +1,4 @@
 ---
-{{ if not .Values.env.ENABLE_OPI_STAGING  }}
 # Service account "garden-runc" is used by the following instance groups:
 # - diego-cell
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
@@ -671,7 +670,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:3fd4336cde4dda929e35d206c527d9b7f9cfe8fa"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:6c4cb568283800f6d6c055753bfc11fbccd13948"
         lifecycle:
           preStop:
             exec:
@@ -854,7 +853,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:88d2c88b07c55e97220f17406cc88dbdbf8e076d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:497a35e37b38ba4ce41bd6b0acf6d971610d87a8"
         lifecycle:
           preStop:
             exec:
@@ -936,4 +935,3 @@ spec:
       resources:
         requests:
           storage: "{{ .Values.sizing.diego_cell.disk_sizes.grootfs_data }}G"
-{{- end}}
