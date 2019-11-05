@@ -321,7 +321,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:a508bf786d6dcb9f9994f268949d9eb4e27a558d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:78fb9ac61a1d4bdb517bf10b15908b1a52e3787c"
         lifecycle:
           preStop:
             exec:
@@ -358,9 +358,7 @@ spec:
 
         securityContext:
           allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"

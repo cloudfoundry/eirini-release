@@ -1,5 +1,4 @@
 ---
-{{ if not .Values.env.ENABLE_OPI_STAGING  }}
 # Service account "garden-runc" is used by the following instance groups:
 # - diego-cell
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
@@ -40,16 +39,15 @@ roleRef:
   name: "configgin-role"
 {{- end }}
 ---
-# Cluster role binding for service account "garden-runc" and cluster role
-# "privileged"
+# Role binding for service account "garden-runc" and role "psp-role"
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "rbac.authorization.k8s.io/v1"
-kind: "ClusterRoleBinding"
+kind: "RoleBinding"
 metadata:
-  name: {{ template "fissile.SanitizeName" (printf "%s-garden-runc-privileged-cluster-binding" .Release.Namespace) }}
+  name: "garden-runc-psp-role-binding"
   labels:
-    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-garden-runc-privileged-cluster-binding" .Release.Namespace) }}
-    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-garden-runc-privileged-cluster-binding" .Release.Namespace) }}
+    app.kubernetes.io/component: "garden-runc-psp-role-binding"
+    skiff-role-name: "garden-runc-psp-role-binding"
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -58,11 +56,10 @@ metadata:
 subjects:
 - kind: "ServiceAccount"
   name: "garden-runc"
-  namespace: {{ .Release.Namespace }}
 roleRef:
-  kind: "ClusterRole"
   apiGroup: "rbac.authorization.k8s.io"
-  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-privileged" .Release.Namespace) }}
+  kind: "Role"
+  name: "psp-role"
 {{- end }}
 ---
 # Cluster role "node-reader-role" only used by account "[garden-runc]"
@@ -671,7 +668,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:6c4cb568283800f6d6c055753bfc11fbccd13948"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:840de38af41c49f1bb0335dd8561f3951fb0c49d"
         lifecycle:
           preStop:
             exec:
@@ -714,9 +711,7 @@ spec:
 
         securityContext:
           allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/var/vcap/data/grootfs"
           name: "grootfs-data"
@@ -854,7 +849,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:497a35e37b38ba4ce41bd6b0acf6d971610d87a8"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:429f9bd75d6de072480a55ec4e98afb130ea5ec4"
         lifecycle:
           preStop:
             exec:
@@ -885,9 +880,7 @@ spec:
 
         securityContext:
           allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - "ALL"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -936,4 +929,3 @@ spec:
       resources:
         requests:
           storage: "{{ .Values.sizing.diego_cell.disk_sizes.grootfs_data }}G"
-{{- end}}

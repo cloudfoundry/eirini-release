@@ -22,16 +22,15 @@ roleRef:
   name: "configgin-role"
 {{- end }}
 ---
-# Cluster role binding for service account "default" and cluster role
-# "nonprivileged"
+# Role binding for service account "default" and role "psp-role"
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "rbac.authorization.k8s.io/v1"
-kind: "ClusterRoleBinding"
+kind: "RoleBinding"
 metadata:
-  name: {{ template "fissile.SanitizeName" (printf "%s-default-nonprivileged-cluster-binding" .Release.Namespace) }}
+  name: "default-psp-role-binding"
   labels:
-    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-default-nonprivileged-cluster-binding" .Release.Namespace) }}
-    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-default-nonprivileged-cluster-binding" .Release.Namespace) }}
+    app.kubernetes.io/component: "default-psp-role-binding"
+    skiff-role-name: "default-psp-role-binding"
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -40,9 +39,8 @@ metadata:
 subjects:
 - kind: "ServiceAccount"
   name: "default"
-  namespace: {{ .Release.Namespace }}
 roleRef:
-  kind: "ClusterRole"
   apiGroup: "rbac.authorization.k8s.io"
-  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-nonprivileged" .Release.Namespace) }}
+  kind: "Role"
+  name: "psp-role"
 {{- end }}
