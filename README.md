@@ -240,8 +240,9 @@ However, containerd requires the signing authority for the registry certificate 
 IKS provides ingress with a globally trusted certificate. The certificate is stored in a secret in the `default` namespace and has the same name as your cluster. You can use the following commands to export the certificates in the required environment variables:
 
 ```bash
-BITS_TLS_CRT="$(kubectl get secret "$(kubectl config current-context)" --namespace default -o jsonpath="{.data['tls\.crt']}" | base64 --decode -)"
-BITS_TLS_KEY="$(kubectl get secret "$(kubectl config current-context)" --namespace default -o jsonpath="{.data['tls\.key']}" | base64 --decode -)"
+CLUSTER_NAME=$(kubectl config current-context | cut -d / -f 1)
+BITS_TLS_CRT="$(kubectl get secret "$CLUSTER_NAME" --namespace default -o jsonpath="{.data['tls\.crt']}" | base64 --decode -)"
+BITS_TLS_KEY="$(kubectl get secret "$CLUSTER_NAME" --namespace default -o jsonpath="{.data['tls\.key']}" | base64 --decode -)"
 ```
 
 It is recommended to deploy Eirini with ingress and use that certificate in IKS.
