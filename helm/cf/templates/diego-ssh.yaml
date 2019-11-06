@@ -170,15 +170,15 @@ kind: "List"
 #
 # Also: ssh_proxy and file_server
 
-{{- if gt (int .Values.sizing.diego_ssh.count) 3 }}
+{{- if and (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") (gt (int .Values.sizing.diego_ssh.count) 3) }}
 _maxReplicas: {{ fail "diego_ssh cannot have more than 3 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_ssh.count) 1) (lt (int .Values.sizing.diego_ssh.count) 2)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") (lt (int .Values.sizing.diego_ssh.count) 2) }}
 _minHAReplicas: {{ fail "diego_ssh must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.diego_ssh.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") (lt (int .Values.sizing.diego_ssh.count) 1) }}
 _minReplicas: {{ fail "diego_ssh must have at least 1 instances" }}
 {{- end }}
 
@@ -202,7 +202,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "diego-ssh"
@@ -225,7 +225,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_ssh.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.diego_ssh.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.diego_ssh.count) "<nil>") }}{{ .Values.sizing.diego_ssh.count }}{{ else }}{{ if .Values.config.HA }}{{ 2 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-ssh"
@@ -441,7 +441,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-ssh:573d29c188734ab2459b0be066ceb00fbdce069f"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-ssh:7b0db8da40462be00a9e10601dec4bc2de97b29b"
         lifecycle:
           preStop:
             exec:
@@ -481,20 +481,10 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.diego_ssh.capabilities }}
-          privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.diego_ssh.capabilities) }}
+          allowPrivilegeEscalation: false
           capabilities:
             add:
             - "SYS_RESOURCE"
-            {{- range .Values.sizing.diego_ssh.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
@@ -624,7 +614,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:60ba64ccec10973524eca1b30364d8c2666da38a"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:429f9bd75d6de072480a55ec4e98afb130ea5ec4"
         lifecycle:
           preStop:
             exec:
@@ -654,18 +644,25 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "privileged"
       {{- end }}
+
+      restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

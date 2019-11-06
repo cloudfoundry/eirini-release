@@ -481,7 +481,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:02f140006d6e870daa6ba389ab8cac1a4f45f954"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:41b921badde1d80122e51713aa4c1687318e1446"
         lifecycle:
           preStop:
             exec:
@@ -511,30 +511,24 @@ spec:
             {{- end }}
 
         securityContext:
-          {{- if has "ALL" .Values.sizing.post_deployment_setup.capabilities }}
-          privileged: true
-          {{- end }}
-
-          {{- if not (has "ALL" .Values.sizing.post_deployment_setup.capabilities) }}
-          capabilities:
-            add:
-            {{- range .Values.sizing.post_deployment_setup.capabilities }}
-            - {{ . | upper }}
-            {{- end }}
-          {{- end }}
-
-          allowPrivilegeEscalation: {{ if has "ALL" .Values.sizing.post_deployment_setup.capabilities -}} true {{- else -}} false {{- end }}
+          allowPrivilegeEscalation: false
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "OnFailure"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "eirini"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

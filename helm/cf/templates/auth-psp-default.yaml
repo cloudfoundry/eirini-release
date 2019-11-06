@@ -1,13 +1,13 @@
 ---
-# Pod security policy "privileged"
-{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (not .Values.kube.psp.privileged) }}
-apiVersion: "extensions/v1beta1"
+# Pod security policy "default"
+{{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (not .Values.kube.psp.default) }}
+apiVersion: {{ if (.Capabilities.APIVersions.Has "policy/v1beta1") }}policy/v1beta1{{ else }}extensions/v1beta1{{ end }}
 kind: "PodSecurityPolicy"
 metadata:
-  name: {{ template "fissile.SanitizeName" (printf "%s-psp-privileged" .Release.Namespace) }}
+  name: {{ template "fissile.SanitizeName" (printf "%s-psp-default" .Release.Namespace) }}
   labels:
-    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-psp-privileged" .Release.Namespace) }}
-    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-psp-privileged" .Release.Namespace) }}
+    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-psp-default" .Release.Namespace) }}
+    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-psp-default" .Release.Namespace) }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}

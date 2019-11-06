@@ -100,15 +100,15 @@ kind: "List"
 # Also: cf-usb and bpm
 {{- if .Values.enable.cf_usb }}
 
-{{- if gt (int .Values.sizing.cf_usb_group.count) 3 }}
+{{- if and (ne (typeOf .Values.sizing.cf_usb_group.count) "<nil>") (gt (int .Values.sizing.cf_usb_group.count) 3) }}
 _maxReplicas: {{ fail "cf_usb_group cannot have more than 3 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.cf_usb_group.count) 1) (lt (int .Values.sizing.cf_usb_group.count) 2)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.cf_usb_group.count) "<nil>") (lt (int .Values.sizing.cf_usb_group.count) 2) }}
 _minHAReplicas: {{ fail "cf_usb_group must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.cf_usb_group.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.cf_usb_group.count) "<nil>") (lt (int .Values.sizing.cf_usb_group.count) 1) }}
 _minReplicas: {{ fail "cf_usb_group must have at least 1 instances" }}
 {{- end }}
 
@@ -132,7 +132,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "cf-usb-group"
@@ -155,7 +155,7 @@ metadata:
 
 spec:
   podManagementPolicy: "OrderedReady"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cf_usb_group.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.cf_usb_group.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.cf_usb_group.count) "<nil>") }}{{ .Values.sizing.cf_usb_group.count }}{{ else }}{{ if .Values.config.HA }}{{ 2 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "cf-usb-group"
@@ -284,7 +284,7 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
+          value: {{ if (ne (typeOf .Values.sizing.nats.count) "<nil>") }}{{ .Values.sizing.nats.count | quote }}{{ else }}{{ if .Values.config.HA }}{{ 2 | quote }}{{ else }}{{ 1 | quote }}{{ end }}{{ end }}
 
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
@@ -372,7 +372,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:b1fff49a747d8dbf90a0b78681b730748658a9b1"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:6b0fdc3dffeb5cb7a7b126a6393a00df95e19895"
         lifecycle:
           preStop:
             exec:
@@ -411,18 +411,25 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
       {{- end }}
+
+      restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

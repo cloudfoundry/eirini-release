@@ -40,16 +40,15 @@ roleRef:
   name: "configgin-role"
 {{- end }}
 ---
-# Cluster role binding for service account "garden-runc" and cluster role
-# "privileged"
+# Role binding for service account "garden-runc" and role "psp-role"
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "rbac.authorization.k8s.io/v1"
-kind: "ClusterRoleBinding"
+kind: "RoleBinding"
 metadata:
-  name: {{ template "fissile.SanitizeName" (printf "%s-garden-runc-privileged-cluster-binding" .Release.Namespace) }}
+  name: "garden-runc-psp-role-binding"
   labels:
-    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-garden-runc-privileged-cluster-binding" .Release.Namespace) }}
-    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-garden-runc-privileged-cluster-binding" .Release.Namespace) }}
+    app.kubernetes.io/component: "garden-runc-psp-role-binding"
+    skiff-role-name: "garden-runc-psp-role-binding"
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -58,11 +57,10 @@ metadata:
 subjects:
 - kind: "ServiceAccount"
   name: "garden-runc"
-  namespace: {{ .Release.Namespace }}
 roleRef:
-  kind: "ClusterRole"
   apiGroup: "rbac.authorization.k8s.io"
-  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-privileged" .Release.Namespace) }}
+  kind: "Role"
+  name: "psp-role"
 {{- end }}
 ---
 # Cluster role "node-reader-role" only used by account "[garden-runc]"
@@ -271,15 +269,15 @@ kind: "List"
 # Also: rep, cfdot, route_emitter, garden, groot-btrfs, cflinuxfs3-rootfs-setup,
 # cf-sle12-setup, sle15-rootfs-setup, nfsv3driver, and mapfs
 
-{{- if gt (int .Values.sizing.diego_cell.count) 254 }}
+{{- if and (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") (gt (int .Values.sizing.diego_cell.count) 254) }}
 _maxReplicas: {{ fail "diego_cell cannot have more than 254 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.diego_cell.count) 1) (lt (int .Values.sizing.diego_cell.count) 3)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") (lt (int .Values.sizing.diego_cell.count) 3) }}
 _minHAReplicas: {{ fail "diego_cell must have at least 3 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.diego_cell.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") (lt (int .Values.sizing.diego_cell.count) 1) }}
 _minReplicas: {{ fail "diego_cell must have at least 1 instances" }}
 {{- end }}
 
@@ -303,7 +301,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "diego-cell"
@@ -326,7 +324,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.diego_cell.count) 1) -}} 3 {{- else -}} {{ .Values.sizing.diego_cell.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.diego_cell.count) "<nil>") }}{{ .Values.sizing.diego_cell.count }}{{ else }}{{ if .Values.config.HA }}{{ 3 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "diego-cell"
@@ -500,7 +498,7 @@ spec:
         - name: "KUBE_AZ"
           value: "z1"
         - name: "KUBE_SIZING_NATS_COUNT"
-          value: {{ .Values.sizing.nats.count | quote }}
+          value: {{ if (ne (typeOf .Values.sizing.nats.count) "<nil>") }}{{ .Values.sizing.nats.count | quote }}{{ else }}{{ if .Values.config.HA }}{{ 2 | quote }}{{ else }}{{ 1 | quote }}{{ end }}{{ end }}
 
         {{- if .Values.secrets.LOGGREGATOR_CLIENT_CERT }}
         - name: "LOGGREGATOR_CLIENT_CERT"
@@ -671,7 +669,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:f2c35370b8e85cb9a73824e82e32dcb292c7130f"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-diego-cell:840de38af41c49f1bb0335dd8561f3951fb0c49d"
         lifecycle:
           preStop:
             exec:
@@ -713,6 +711,7 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/var/vcap/data/grootfs"
@@ -851,7 +850,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:60ba64ccec10973524eca1b30364d8c2666da38a"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:429f9bd75d6de072480a55ec4e98afb130ea5ec4"
         lifecycle:
           preStop:
             exec:
@@ -881,18 +880,25 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
+      {{- end }}
+
       restartPolicy: "Always"
+
       {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
       serviceAccountName: "garden-runc"
       {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       {{- if .Values.kube.hostpath_available }}

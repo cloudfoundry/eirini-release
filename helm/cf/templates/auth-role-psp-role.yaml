@@ -1,15 +1,18 @@
 ---
-# Cluster role "withsysresource" used by accounts:
-# - withsysresource
-# - withsysresource-privileged
+# Role "psp-role" used by accounts:
+# - default
+# - garden-runc
+# - secret-generator
+# - tests-brain
+# - tests-sits
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "rbac.authorization.k8s.io/v1"
-kind: "ClusterRole"
+kind: "Role"
 metadata:
-  name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-withsysresource" .Release.Namespace) }}
+  name: "psp-role"
   labels:
-    app.kubernetes.io/component: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-withsysresource" .Release.Namespace) }}
-    skiff-role-name: {{ template "fissile.SanitizeName" (printf "%s-cluster-role-withsysresource" .Release.Namespace) }}
+    app.kubernetes.io/component: "psp-role"
+    skiff-role-name: "psp-role"
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -19,7 +22,7 @@ rules:
 - apiGroups:
   - "extensions"
   resourceNames:
-  - {{ if .Values.kube.psp.withsysresource }}{{ .Values.kube.psp.withsysresource }}{{ else }}{{ template "fissile.SanitizeName" (printf "%s-psp-withsysresource" .Release.Namespace) }}{{ end }}
+  - {{ if .Values.kube.psp.default }}{{ .Values.kube.psp.default }}{{ else }}{{ template "fissile.SanitizeName" (printf "%s-psp-default" .Release.Namespace) }}{{ end }}
   resources:
   - "podsecuritypolicies"
   verbs:

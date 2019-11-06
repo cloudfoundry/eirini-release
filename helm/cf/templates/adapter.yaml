@@ -93,15 +93,15 @@ kind: "List"
 #
 # Also: adapter and bpm
 
-{{- if gt (int .Values.sizing.adapter.count) 65535 }}
+{{- if and (ne (typeOf .Values.sizing.adapter.count) "<nil>") (gt (int .Values.sizing.adapter.count) 65535) }}
 _maxReplicas: {{ fail "adapter cannot have more than 65535 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.adapter.count) 1) (lt (int .Values.sizing.adapter.count) 2)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.adapter.count) "<nil>") (lt (int .Values.sizing.adapter.count) 2) }}
 _minHAReplicas: {{ fail "adapter must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.adapter.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.adapter.count) "<nil>") (lt (int .Values.sizing.adapter.count) 1) }}
 _minReplicas: {{ fail "adapter must have at least 1 instances" }}
 {{- end }}
 
@@ -125,7 +125,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "adapter"
@@ -148,7 +148,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.adapter.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.adapter.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.adapter.count) "<nil>") }}{{ .Values.sizing.adapter.count }}{{ else }}{{ if .Values.config.HA }}{{ 2 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "adapter"
@@ -287,7 +287,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-adapter:8157af7e763466f01c11be9fde825767b5921e84"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-adapter:ae4a9d587c99f618dcf2f08ed81b1f1f1f7c3d80"
         lifecycle:
           preStop:
             exec:
@@ -327,6 +327,7 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
@@ -457,7 +458,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:60ba64ccec10973524eca1b30364d8c2666da38a"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:429f9bd75d6de072480a55ec4e98afb130ea5ec4"
         lifecycle:
           preStop:
             exec:
@@ -487,18 +488,25 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
       {{- end }}
+
+      restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"

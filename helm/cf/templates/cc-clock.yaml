@@ -15,15 +15,15 @@
 #
 # Also: statsd_injector and bpm
 
-{{- if gt (int .Values.sizing.cc_clock.count) 3 }}
+{{- if and (ne (typeOf .Values.sizing.cc_clock.count) "<nil>") (gt (int .Values.sizing.cc_clock.count) 3) }}
 _maxReplicas: {{ fail "cc_clock cannot have more than 3 instances" }}
 {{- end }}
 
-{{- if and .Values.config.HA (and (ne (int .Values.sizing.cc_clock.count) 1) (lt (int .Values.sizing.cc_clock.count) 2)) }}
+{{- if and .Values.config.HA .Values.config.HA_strict (ne (typeOf .Values.sizing.cc_clock.count) "<nil>") (lt (int .Values.sizing.cc_clock.count) 2) }}
 _minHAReplicas: {{ fail "cc_clock must have at least 2 instances for HA" }}
 {{- end }}
 
-{{- if lt (int .Values.sizing.cc_clock.count) 1 }}
+{{- if and (ne (typeOf .Values.sizing.cc_clock.count) "<nil>") (lt (int .Values.sizing.cc_clock.count) 1) }}
 _minReplicas: {{ fail "cc_clock must have at least 1 instances" }}
 {{- end }}
 
@@ -47,7 +47,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1beta1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "cc-clock"
@@ -70,7 +70,7 @@ metadata:
 
 spec:
   podManagementPolicy: "Parallel"
-  replicas: {{ if and .Values.config.HA (eq (int .Values.sizing.cc_clock.count) 1) -}} 2 {{- else -}} {{ .Values.sizing.cc_clock.count }} {{- end }}
+  replicas: {{ if (ne (typeOf .Values.sizing.cc_clock.count) "<nil>") }}{{ .Values.sizing.cc_clock.count }}{{ else }}{{ if .Values.config.HA }}{{ 2 }}{{ else }}{{ 1 }}{{ end }}{{ end }}
   selector:
     matchLabels:
       skiff-role-name: "cc-clock"
@@ -198,8 +198,6 @@ spec:
           value: {{if ne (typeOf .Values.env.DEFAULT_STACK) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_STACK) (list "map" "slice")}}{{.Values.env.DEFAULT_STACK | toJson | quote}}{{else}}{{.Values.env.DEFAULT_STACK | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
           value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
-        - name: "ENABLE_OPI_STAGING"
-          value: {{if ne (typeOf .Values.env.ENABLE_OPI_STAGING) "<nil>"}}{{if has (kindOf .Values.env.ENABLE_OPI_STAGING) (list "map" "slice")}}{{.Values.env.ENABLE_OPI_STAGING | toJson | quote}}{{else}}{{.Values.env.ENABLE_OPI_STAGING | quote}}{{end}}{{else}}""{{end}}
         - name: "GARDEN_ROOTFS_DRIVER"
           value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
 
@@ -355,7 +353,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:65d8366730bdd1f046ea84b2ed7c59126f13bd6e"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cc-clock:a190ef225857743297b5c5b3cababb975530d5b1"
         lifecycle:
           preStop:
             exec:
@@ -388,6 +386,7 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
@@ -518,7 +517,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:499c7f3bb221a875482cf054b06cd252add0404d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:429f9bd75d6de072480a55ec4e98afb130ea5ec4"
         lifecycle:
           preStop:
             exec:
@@ -548,18 +547,25 @@ spec:
             {{- end }}
 
         securityContext:
+          allowPrivilegeEscalation: true
           privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
       dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
       imagePullSecrets:
       - name: "registry-credentials"
-      restartPolicy: "Always"
-      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
-      serviceAccountName: "default-privileged"
       {{- end }}
+
+      restartPolicy: "Always"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
       terminationGracePeriodSeconds: 600
       volumes:
       - name: "deployment-manifest"
