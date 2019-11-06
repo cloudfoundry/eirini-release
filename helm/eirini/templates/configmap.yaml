@@ -10,7 +10,7 @@ data:
       nats_ip: "nats-nats.{{ .Release.Namespace }}.svc.cluster.local"
       nats_port: 4222
       cc_internal_api: "https://api.{{ .Release.Namespace }}.svc.cluster.local:9023"
-      cc_certs_secret_name: "secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}"
+      cc_certs_secret_name: "{{ .Values.scfSecretName }}"
       {{- if .Values.opi.use_registry_ingress }}
       registry_address: "registry.{{ .Values.opi.ingress_endpoint }}:443"
       {{- else if .Values.services.loadbalanced }}

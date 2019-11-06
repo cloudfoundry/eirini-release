@@ -12,9 +12,7 @@ opi:
 kube:
   external_ips: []
 
-scf:
-  version: 2.16.4
-  secrets_generation_counter: 2
+scfSecretName: "secrets-2.16.4-2"
 
 services:
   loadbalanced: false

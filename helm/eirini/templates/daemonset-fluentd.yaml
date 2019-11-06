@@ -92,7 +92,7 @@ spec:
             path: fluent.conf
       - name: loggregator-tls-certs
         secret:
-          secretName: secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}
+          secretName: "{{ .Values.scfSecretName }}"
           items:
             - key: loggregator-agent-cert
               path: agent.crt
