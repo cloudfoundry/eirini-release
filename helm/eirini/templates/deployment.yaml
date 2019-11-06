@@ -25,7 +25,7 @@ spec:
               path: opi.yml
         - name: cf-secrets
           secret:
-            secretName: secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}
+            secretName: "{{ .Values.scfSecretName }}"
             items:
             - key: doppler-cert
               path: doppler.crt
@@ -58,7 +58,7 @@ spec:
           valueFrom:
             secretKeyRef:
               key: "nats-password"
-              name: "secrets-{{ .Values.scf.version }}-{{ .Values.scf.secrets_generation_counter }}"
+              name: "{{ .Values.scfSecretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /workspace/jobs/opi/config
