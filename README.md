@@ -2,8 +2,6 @@
 
 This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eirini).
 
-**NOTE**: This is an **_experimental_** release and is still considered _work in progress_.
-
 ## Table of contents
 
 * [Prerequisites](#prerequisites)
@@ -35,7 +33,7 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 * To be able to use the [bits service](https://github.com/cloudfoundry-incubator/bits-service) private registry in your Kubernetes cluster,
 you need to have a signed TLS certificate, with a CA that the docker or containerd daemon on the nodes trust, and a CN that is pointing to the bits service.
 
-**Note**: Eirini is currently being tested with HELM > 2.14.1, Kubernetes 1.13, and containerd as the container runtime.
+**Note**: Eirini is currently being tested with HELM > 2.15.2, Kubernetes 1.14, and containerd as the container runtime.
 
 ### Minimum cluster requirements
 
@@ -136,6 +134,7 @@ You can enable staging using Diego by add `ENABLE_OPI_STAGING: false` in `env` s
 As part of our development process we continuously test against the [Cloud Foundry Acceptance Tests](https://github.com/cloudfoundry/cf-acceptance-tests). Currently Eirini (with OPI staging enabled) passes `110 tests`. The test suites that we currently have enabled are:
 * apps
 * detect
+* docker
 * internet_dependent
 * routing
 * services
@@ -143,7 +142,6 @@ As part of our development process we continuously test against the [Cloud Found
 The services suite is disabled in main ci due to flaking often. We additionally skip the [apps/buildpack-cache](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/apps/buildpack_cache.go#L125) and [apps/reverse-log-proxy](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/apps/loggregator.go#L130) tests. The test suites that are currently skipped are:
 * backend_compatibility
 * credhub
-* docker
 * internetless
 * isolation_segments
 * route_services
@@ -177,7 +175,7 @@ To run cats follow the instructions on the [cf-acceptance-tests repository](http
       "include_container_networking": true,
       "include_credhub" : false,
       "include_detect": true,
-      "include_docker": false,
+      "include_docker": true,
       "include_deployments": false,
       "include_internet_dependent": true,
       "include_internetless": false,
