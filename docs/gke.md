@@ -41,16 +41,26 @@ helm repo add bits https://cloudfoundry-incubator.github.io/bits-service-release
 
 See [more](https://cloud.google.com/compute/docs/ip-addresses/reserve-static-external-ip-address)
 
+*Note*: After you create the static ip you may notice that it is not connected to
+any backend. This is expected. Later on when we install the nginx ingress
+controller it will automatically create a backend and attach the static ip to
+it.
+
 ### Configure DNS
 
-Create a DNS zone in GKE.
-Create the following 3 DNS records in the zone:
+Create a DNS zone in GKE and add the following A records:
 
-- `<environment>.<zone>`
-- `*.<environment>.<zone>`
-- `*.uaa.<environment>.<zone>`
+- `<environment>.<zone>: <static-ip-address>`
+- `*.<environment>.<zone>: <static-ip-address>`
+- `uaa.<environment>.<zone>: <static-ip-address>`
+- `*.uaa.<environment>.<zone>: <static-ip-address>`
 
-Then attach them to the static IP address you created.
+*Note*: It is easier to reuse an existing DNS zone if you happen to have one
+configured. If you create a new zone you need to configure your domain to
+use the google cloud nameservers that your zone is mapped to. These are listed
+as an NS record in your cloud DNS zone. If you do not do this your domain will
+not resolve to the static ip in the google cloud but will rather use the default
+nameservers of your domain provider.
 
 ### Create service account with right access
 
@@ -73,13 +83,17 @@ Create a gcloud service-account, attaching it to the Role that you created.
 
 Deploy [Nginx ingress controller](https://hub.helm.sh/charts/stable/nginx-ingress) with the following properties:
 
-```text
-  rbac.create=true
-  controller.service.loadBalancerIP=<static-ip-address>
+```
+helm install stable/nginx-ingress --set rbac.create=true,controller.service.loadBalancerIP=<static-ip-address>
 ```
 
 Deploy [CertManager](https://hub.helm.sh/charts/jetstack/cert-manager).
 The documentation below is valid only for cert-manager v0.11.
+
+```
+helm repo add jetstack https://charts.jetstack.io
+helm install jetstack/cert-manager --version v0.11.0
+```
 
 ### Create a certificate issuer
 
@@ -94,9 +108,13 @@ kubectl create secret generic -n cert-manager <secret-name> --from-literal=servi
 
 This is required for DNS validation. See more
 [in official documentation](https://docs.cert-manager.io/en/latest/tutorials/acme/dns-validation.html).
-You can also take a look at the
-[issuer that is deployed in Eirini CI environments](https://raw.githubusercontent.com/cloudfoundry-incubator/eirini-ci/master/cert-manager/letsencrypt-dns-issuer.yaml).
 
+Now create the cluster issuer
+
+```
+kubectl apply -f https://raw.githubusercontent.com/cloudfoundry-incubator/eirini-ci/master/cert-manager/letsencrypt-dns-issuer.yaml
+```
+`
 ## Values.yaml
 
 ```yaml
