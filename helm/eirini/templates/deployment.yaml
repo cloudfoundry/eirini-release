@@ -21,7 +21,7 @@ spec:
           configMap:
             name: "eirini"
             items:
-            - key: opi.yaml
+            - key: opi.yml
               path: opi.yml
         - name: cf-secrets
           secret:
@@ -53,12 +53,6 @@ spec:
         image: eirini/opi@{{ .Files.Get "versions/opi" }}
         {{- end }}
         imagePullPolicy: Always
-        env:
-        - name: "NATS_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "nats-password"
-              name: "{{ .Values.scfSecretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /workspace/jobs/opi/config
