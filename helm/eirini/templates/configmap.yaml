@@ -6,7 +6,7 @@ metadata:
 data:
   opi.yml: |
     opi:
-      kube_namespace: {{ .Values.opi.namespace }}
+      app_namespace: {{ .Values.opi.namespace }}
       cc_internal_api: "https://api.{{ .Release.Namespace }}.svc.cluster.local:9023"
       cc_certs_secret_name: "{{ .Values.scfSecretName }}"
       {{- if .Values.opi.use_registry_ingress }}
@@ -41,6 +41,6 @@ data:
       tls_port: 8085
       disk_limit_mb: {{ .Values.opi.disk_limit_mb }}
   routing.yml: |
-    kube_namespace: {{ .Values.opi.namespace }}
+    app_namespace: {{ .Values.opi.namespace }}
     nats_ip: "nats-nats.{{ .Release.Namespace }}.svc.cluster.local"
     nats_port: 4222
