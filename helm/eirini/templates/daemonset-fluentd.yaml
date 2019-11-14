@@ -50,6 +50,10 @@ spec:
         - name: loggregator-tls-certs
           mountPath: /fluentd/certs
           readOnly: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 120Mi
       - name: loggregator-agent
         image: loggregator/agent
         imagePullPolicy: Always
@@ -71,6 +75,10 @@ spec:
         - name: loggregator-tls-certs
           mountPath: /srv/certs
           readOnly: true
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
       terminationGracePeriodSeconds: 30
       volumes:
       - name: vardata
