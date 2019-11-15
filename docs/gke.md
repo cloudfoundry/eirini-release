@@ -110,12 +110,8 @@ kubectl create secret generic -n cert-manager <secret-name> --from-literal=servi
 This is required for DNS validation. See more
 [in official documentation](https://docs.cert-manager.io/en/latest/tutorials/acme/dns-validation.html).
 
-Now create the cluster issuer
+Now create the cluster issuer with `dns01` solver. Read more about it [in official documentation](https://docs.cert-manager.io/en/latest/tasks/issuers/index.html). [Here is an example](https://raw.githubusercontent.com/cloudfoundry-incubator/eirini-ci/master/cert-manager/letsencrypt-dns-issuer.yaml) from our CI.
 
-```
-kubectl apply -f https://raw.githubusercontent.com/cloudfoundry-incubator/eirini-ci/master/cert-manager/letsencrypt-dns-issuer.yaml
-```
-`
 ## Values.yaml
 
 ```yaml
