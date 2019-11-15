@@ -91,8 +91,9 @@ Deploy [CertManager](https://hub.helm.sh/charts/jetstack/cert-manager).
 The documentation below is valid only for cert-manager v0.11.
 
 ```
+kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml --validate=false 
 helm repo add jetstack https://charts.jetstack.io
-helm install jetstack/cert-manager --version v0.11.0
+helm install --namespace cert-manager jetstack/cert-manager --version v0.11.0
 ```
 
 ### Create a certificate issuer
