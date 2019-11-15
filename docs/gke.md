@@ -171,9 +171,9 @@ eirini:
 ## Deploy UAA
 
 ```bash
-  helm upgrade --install "uaa" \
-    "uaa" \
-    --namespace "uaa" \
+  helm upgrade --install uaa \
+    eirini/uaa \
+    --namespace uaa \
     --values your-values.yaml
 ```
 
@@ -196,9 +196,9 @@ For more information about LetsEncrypt chain of trust see [here](https://letsenc
 ### Deploy SCF
 
 ```bash
-  helm upgrade --install "scf" \
-    cf \
-    --namespace "scf" \
+  helm upgrade --install scf \
+    eirini/cf \
+    --namespace scf \
     --values your-values.yaml \
     --set "secrets.UAA_CA_CERT=${CA_CERT}"
 ```
