@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "eirini-metrics"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "eirini-metrics"
+  template:
+    metadata:
+      labels:
+        name: "eirini-metrics"
+    spec:
+      dnsPolicy: "ClusterFirst"
+      serviceAccountName: "opi" # Change this to lower permissions
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: "eirini"
+            items:
+            - key: metrics.yml
+              path: metrics.yml
+        - name: cf-secrets
+          secret:
+            secretName: "{{ .Values.scfSecretName }}"
+            items:
+            - key: doppler-cert
+              path: doppler.crt
+            - key: doppler-cert-key
+              path: doppler.key
+            - key: internal-ca-cert
+              path: doppler.ca
+      containers:
+      - name: metrics-collector
+        {{- if .Values.opi.metrics_collector_image }}
+        image: {{ .Values.opi.metrics_collector_image }}:{{ .Values.opi.image_tag }}
+        {{- else }}
+        image: eirini/metrics-collector@{{ .Files.Get "versions/metrics-collector" }}
+        {{- end }}
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-map-volume
+           mountPath: /etc/eirini/config
+        - name: cf-secrets
+          mountPath: /etc/eirini/secrets
