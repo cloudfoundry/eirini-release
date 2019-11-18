@@ -41,6 +41,6 @@ spec:
         imagePullPolicy: Always
         volumeMounts:
         - name: config-map-volume
-           mountPath: /etc/eirini/config
+          mountPath: /etc/eirini/config
         - name: cf-secrets
           mountPath: /etc/eirini/secrets
