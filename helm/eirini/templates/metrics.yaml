@@ -44,3 +44,7 @@ spec:
           mountPath: /etc/eirini/config
         - name: cf-secrets
           mountPath: /etc/eirini/secrets
+        resources:
+          requests:
+            cpu: 15m
+            memory: 15Mi
