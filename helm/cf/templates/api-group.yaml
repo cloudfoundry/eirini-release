@@ -239,35 +239,10 @@ spec:
           value: {{if ne (typeOf .Values.env.ALLOWED_CORS_DOMAINS) "<nil>"}}{{if has (kindOf .Values.env.ALLOWED_CORS_DOMAINS) (list "map" "slice")}}{{.Values.env.ALLOWED_CORS_DOMAINS | toJson | quote}}{{else}}{{.Values.env.ALLOWED_CORS_DOMAINS | quote}}{{end}}{{else}}{{fail "env.ALLOWED_CORS_DOMAINS has not been set"}}{{end}}
         - name: "ALLOW_APP_SSH_ACCESS"
           value: {{if ne (typeOf .Values.env.ALLOW_APP_SSH_ACCESS) "<nil>"}}{{if has (kindOf .Values.env.ALLOW_APP_SSH_ACCESS) (list "map" "slice")}}{{.Values.env.ALLOW_APP_SSH_ACCESS | toJson | quote}}{{else}}{{.Values.env.ALLOW_APP_SSH_ACCESS | quote}}{{end}}{{else}}{{fail "env.ALLOW_APP_SSH_ACCESS has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.APP_SSH_KEY_FINGERPRINT }}
-        - name: "APP_SSH_KEY_FINGERPRINT"
-          valueFrom:
-            secretKeyRef:
-              key: "app-ssh-key-fingerprint"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
-        {{- if .Values.secrets.APP_SSH_KEY_FINGERPRINT }}
-        - name: "APP_SSH_KEY_FINGERPRINT"
-          valueFrom:
-            secretKeyRef:
-              key: "app-ssh-key-fingerprint"
-              name: "secrets"
-        {{- end }}
-
         - name: "APP_TOKEN_UPLOAD_GRACE_PERIOD"
           value: {{if ne (typeOf .Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD) "<nil>"}}{{if has (kindOf .Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD) (list "map" "slice")}}{{.Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD | toJson | quote}}{{else}}{{.Values.env.APP_TOKEN_UPLOAD_GRACE_PERIOD | quote}}{{end}}{{else}}{{fail "env.APP_TOKEN_UPLOAD_GRACE_PERIOD has not been set"}}{{end}}
         - name: "AZ_LABEL_NAME"
           value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if not .Values.secrets.BLOBSTORE_PASSWORD }}
-        - name: "BLOBSTORE_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "blobstore-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if .Values.secrets.BLOBSTORE_PASSWORD }}
         - name: "BLOBSTORE_PASSWORD"
@@ -275,6 +250,14 @@ spec:
             secretKeyRef:
               key: "blobstore-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.BLOBSTORE_PASSWORD }}
+        - name: "BLOBSTORE_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "blobstore-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "BROKER_CLIENT_TIMEOUT_SECONDS"
@@ -391,8 +374,6 @@ spec:
           value: {{if ne (typeOf .Values.env.DEFAULT_APP_MEMORY) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_APP_MEMORY) (list "map" "slice")}}{{.Values.env.DEFAULT_APP_MEMORY | toJson | quote}}{{else}}{{.Values.env.DEFAULT_APP_MEMORY | quote}}{{end}}{{else}}{{fail "env.DEFAULT_APP_MEMORY has not been set"}}{{end}}
         - name: "DEFAULT_APP_SSH_ACCESS"
           value: {{if ne (typeOf .Values.env.DEFAULT_APP_SSH_ACCESS) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_APP_SSH_ACCESS) (list "map" "slice")}}{{.Values.env.DEFAULT_APP_SSH_ACCESS | toJson | quote}}{{else}}{{.Values.env.DEFAULT_APP_SSH_ACCESS | quote}}{{end}}{{else}}{{fail "env.DEFAULT_APP_SSH_ACCESS has not been set"}}{{end}}
-        - name: "DEFAULT_STACK"
-          value: {{if ne (typeOf .Values.env.DEFAULT_STACK) "<nil>"}}{{if has (kindOf .Values.env.DEFAULT_STACK) (list "map" "slice")}}{{.Values.env.DEFAULT_STACK | toJson | quote}}{{else}}{{.Values.env.DEFAULT_STACK | quote}}{{end}}{{else}}""{{end}}
         - name: "DISABLE_CUSTOM_BUILDPACKS"
           value: {{if ne (typeOf .Values.env.DISABLE_CUSTOM_BUILDPACKS) "<nil>"}}{{if has (kindOf .Values.env.DISABLE_CUSTOM_BUILDPACKS) (list "map" "slice")}}{{.Values.env.DISABLE_CUSTOM_BUILDPACKS | toJson | quote}}{{else}}{{.Values.env.DISABLE_CUSTOM_BUILDPACKS | quote}}{{end}}{{else}}{{fail "env.DISABLE_CUSTOM_BUILDPACKS has not been set"}}{{end}}
         - name: "DOMAIN"
@@ -416,14 +397,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.EIRINI_CLIENT_CRT_KEY }}
-        - name: "EIRINI_CLIENT_CRT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "eirini-client-crt-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.EIRINI_CLIENT_CRT_KEY }}
         - name: "EIRINI_CLIENT_CRT_KEY"
           valueFrom:
@@ -432,22 +405,18 @@ spec:
               name: "secrets"
         {{- end }}
 
-        - name: "ENABLE_OPI_STAGING"
-          value: {{if ne (typeOf .Values.env.ENABLE_OPI_STAGING) "<nil>"}}{{if has (kindOf .Values.env.ENABLE_OPI_STAGING) (list "map" "slice")}}{{.Values.env.ENABLE_OPI_STAGING | toJson | quote}}{{else}}{{.Values.env.ENABLE_OPI_STAGING | quote}}{{end}}{{else}}""{{end}}
-        - name: "ENABLE_SECURITY_EVENT_LOGGING"
-          value: {{if ne (typeOf .Values.env.ENABLE_SECURITY_EVENT_LOGGING) "<nil>"}}{{if has (kindOf .Values.env.ENABLE_SECURITY_EVENT_LOGGING) (list "map" "slice")}}{{.Values.env.ENABLE_SECURITY_EVENT_LOGGING | toJson | quote}}{{else}}{{.Values.env.ENABLE_SECURITY_EVENT_LOGGING | quote}}{{end}}{{else}}""{{end}}
-        - name: "GARDEN_ROOTFS_DRIVER"
-          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
-        - name: "INSECURE_DOCKER_REGISTRIES"
-          value: {{if ne (typeOf .Values.env.INSECURE_DOCKER_REGISTRIES) "<nil>"}}{{if has (kindOf .Values.env.INSECURE_DOCKER_REGISTRIES) (list "map" "slice")}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | toJson | quote}}{{else}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if .Values.secrets.INTERNAL_API_PASSWORD }}
-        - name: "INTERNAL_API_PASSWORD"
+        {{- if not .Values.secrets.EIRINI_CLIENT_CRT_KEY }}
+        - name: "EIRINI_CLIENT_CRT_KEY"
           valueFrom:
             secretKeyRef:
-              key: "internal-api-password"
-              name: "secrets"
+              key: "eirini-client-crt-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
+
+        - name: "ENABLE_SECURITY_EVENT_LOGGING"
+          value: {{if ne (typeOf .Values.env.ENABLE_SECURITY_EVENT_LOGGING) "<nil>"}}{{if has (kindOf .Values.env.ENABLE_SECURITY_EVENT_LOGGING) (list "map" "slice")}}{{.Values.env.ENABLE_SECURITY_EVENT_LOGGING | toJson | quote}}{{else}}{{.Values.env.ENABLE_SECURITY_EVENT_LOGGING | quote}}{{end}}{{else}}""{{end}}
+        - name: "INSECURE_DOCKER_REGISTRIES"
+          value: {{if ne (typeOf .Values.env.INSECURE_DOCKER_REGISTRIES) "<nil>"}}{{if has (kindOf .Values.env.INSECURE_DOCKER_REGISTRIES) (list "map" "slice")}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | toJson | quote}}{{else}}{{.Values.env.INSECURE_DOCKER_REGISTRIES | quote}}{{end}}{{else}}""{{end}}
 
         {{- if not .Values.secrets.INTERNAL_API_PASSWORD }}
         - name: "INTERNAL_API_PASSWORD"
@@ -457,12 +426,12 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
-        - name: "INTERNAL_CA_CERT"
+        {{- if .Values.secrets.INTERNAL_API_PASSWORD }}
+        - name: "INTERNAL_API_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "internal-ca-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+              key: "internal-api-password"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.INTERNAL_CA_CERT }}
@@ -471,6 +440,14 @@ spec:
             secretKeyRef:
               key: "internal-ca-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "KUBERNETES_CLUSTER_DOMAIN"
@@ -566,20 +543,20 @@ spec:
         - name: "STAGING_TIMEOUT"
           value: {{if ne (typeOf .Values.env.STAGING_TIMEOUT) "<nil>"}}{{if has (kindOf .Values.env.STAGING_TIMEOUT) (list "map" "slice")}}{{.Values.env.STAGING_TIMEOUT | toJson | quote}}{{else}}{{.Values.env.STAGING_TIMEOUT | quote}}{{end}}{{else}}{{fail "env.STAGING_TIMEOUT has not been set"}}{{end}}
 
-        {{- if not .Values.secrets.STAGING_UPLOAD_PASSWORD }}
-        - name: "STAGING_UPLOAD_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "staging-upload-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.STAGING_UPLOAD_PASSWORD }}
         - name: "STAGING_UPLOAD_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "staging-upload-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.STAGING_UPLOAD_PASSWORD }}
+        - name: "STAGING_UPLOAD_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "staging-upload-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "SUPPORT_ADDRESS"
@@ -590,20 +567,20 @@ spec:
               key: "uaa-ca-cert"
               name: "secrets"
 
-        {{- if .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
-        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-cc-routing-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
         - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-cc-routing-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
+        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-routing-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
@@ -638,20 +615,20 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET }}
-        - name: "UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-cloud-controller-username-lookup-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET }}
         - name: "UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-cloud-controller-username-lookup-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET }}
+        - name: "UAA_CLIENTS_CLOUD_CONTROLLER_USERNAME_LOOKUP_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cloud-controller-username-lookup-secret"
+              name: "secrets"
         {{- end }}
 
         - name: "UAA_HOST"
@@ -666,7 +643,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:73b2a53ab7dde2c9548f019b9bce1fb6568d9c85"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-api-group:b05333fd1b4daec8d613445f1775fa1a4d2a2e8e"
         lifecycle:
           preStop:
             exec:
@@ -723,8 +700,6 @@ spec:
           value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
-        - name: "GARDEN_ROOTFS_DRIVER"
-          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -843,7 +818,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:429f9bd75d6de072480a55ec4e98afb130ea5ec4"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:7a9630b0e6f0387e5f92264265d96c7d6743e486"
         lifecycle:
           preStop:
             exec:
