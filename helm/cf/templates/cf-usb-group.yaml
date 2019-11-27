@@ -240,14 +240,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.CF_USB_PASSWORD }}
-        - name: "CF_USB_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "cf-usb-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.CF_USB_PASSWORD }}
         - name: "CF_USB_PASSWORD"
           valueFrom:
@@ -256,10 +248,16 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
+        {{- if .Values.secrets.CF_USB_PASSWORD }}
+        - name: "CF_USB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "cf-usb-password"
+              name: "secrets"
+        {{- end }}
+
         - name: "DOMAIN"
           value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
-        - name: "GARDEN_ROOTFS_DRIVER"
-          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -372,7 +370,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:6b0fdc3dffeb5cb7a7b126a6393a00df95e19895"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:68fa81077bc9152dece3d4776791550501b5b3de"
         lifecycle:
           preStop:
             exec:

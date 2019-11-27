@@ -55,28 +55,6 @@ bosh:
 services:
   loadbalanced: false
 secrets:
-  # PEM encoded RSA private key used to identify host.
-  # This value uses a generated default.
-  APP_SSH_KEY: ~
-
-  # MD5 fingerprint of the host key of the SSH proxy that brokers connections to
-  # application instances.
-  APP_SSH_KEY_FINGERPRINT: ~
-
-  # PEM-encoded certificate
-  # This value uses a generated default.
-  AUCTIONEER_REP_CERT: ~
-
-  # PEM-encoded key
-  AUCTIONEER_REP_CERT_KEY: ~
-
-  # PEM-encoded server certificate
-  # This value uses a generated default.
-  AUCTIONEER_SERVER_CERT: ~
-
-  # PEM-encoded server key
-  AUCTIONEER_SERVER_CERT_KEY: ~
-
   # A PEM-encoded TLS certificate for clients to connect to the Autoscaler API.
   # This includes the Autoscaler ApiServer and the Service Broker.
   # This value uses a generated default.
@@ -174,33 +152,12 @@ secrets:
   # This value uses a generated default.
   AUTOSCALER_UAA_CLIENT_SECRET: ~
 
-  # PEM-encoded certificate
-  # This value uses a generated default.
-  BBS_AUCTIONEER_CERT: ~
-
-  # PEM-encoded key
-  BBS_AUCTIONEER_CERT_KEY: ~
-
   # PEM-encoded client certificate.
   # This value uses a generated default.
   BBS_CLIENT_CRT: ~
 
   # PEM-encoded client key.
   BBS_CLIENT_CRT_KEY: ~
-
-  # PEM-encoded certificate
-  # This value uses a generated default.
-  BBS_REP_CERT: ~
-
-  # PEM-encoded key
-  BBS_REP_CERT_KEY: ~
-
-  # PEM-encoded client certificate.
-  # This value uses a generated default.
-  BBS_SERVER_CRT: ~
-
-  # PEM-encoded client key.
-  BBS_SERVER_CRT_KEY: ~
 
   # The basic auth password that Cloud Controller uses to connect to the
   # blobstore server. Auto-generated if not provided. Passwords must be
@@ -395,16 +352,6 @@ secrets:
   # Basic auth password to verify on incoming Service Broker requests
   # This value uses a generated default.
   PERSI_NFS_BROKER_PASSWORD: ~
-
-  # LDAP service account password (required for LDAP integration only)
-  PERSI_NFS_DRIVER_LDAP_PASSWORD: "-"
-
-  # PEM-encoded server certificate
-  # This value uses a generated default.
-  REP_SERVER_CERT: ~
-
-  # PEM-encoded server key
-  REP_SERVER_CERT_KEY: ~
 
   # Support for route services is disabled when no value is configured. A robust
   # passphrase is recommended.
@@ -873,26 +820,6 @@ env:
   # default.
   DEFAULT_APP_SSH_ACCESS: "true"
 
-  # The default stack to use if no custom stack is specified by an app.
-  DEFAULT_STACK: "cflinuxfs3"
-
-  # The container disk capacity the cell should manage. If this capacity is
-  # larger than the actual disk quota of the cell component, over-provisioning
-  # will occur.
-  DIEGO_CELL_DISK_CAPACITY_MB: "auto"
-
-  # The memory capacity the cell should manage. If this capacity is larger than
-  # the actual memory of the cell component, over-provisioning will occur.
-  DIEGO_CELL_MEMORY_CAPACITY_MB: "auto"
-
-  # Maximum network transmission unit length in bytes for application
-  # containers.
-  DIEGO_CELL_NETWORK_MTU: "1400"
-
-  # A CIDR subnet mask specifying the range of subnets available to be assigned
-  # to containers.
-  DIEGO_CELL_SUBNET: "10.38.0.0/16"
-
   # Disable external buildpacks. Only admin buildpacks and system buildpacks
   # will be available to users.
   DISABLE_CUSTOM_BUILDPACKS: "false"
@@ -904,9 +831,6 @@ env:
   # The number of versions of an application to keep. You will be able to
   # rollback to this amount of versions.
   DROPLET_MAX_STAGED_STORED: "5"
-
-  # Stage apps in Eirini <3
-  ENABLE_OPI_STAGING: "true"
 
   # By default, Cloud Foundry does not enable Cloud Controller request logging.
   # To enable this feature, you must set this property to "true". You can learn
@@ -920,21 +844,6 @@ env:
   # value set to false, the gorouter sets the header X-Forwarded-Proto to the
   # protocol of the incoming request.
   FORCE_FORWARDED_PROTO_AS_HTTPS: "false"
-
-  # AppArmor profile name for garden-runc; set this to empty string to disable
-  # AppArmor support
-  GARDEN_APPARMOR_PROFILE: "garden-default"
-
-  # URL pointing to the Docker registry used for fetching Docker images. If not
-  # set, the Docker service default is used.
-  GARDEN_DOCKER_REGISTRY: "registry-1.docker.io"
-
-  # Override DNS servers to be used in containers; defaults to the same as the
-  # host.
-  GARDEN_LINUX_DNS_SERVER: ""
-
-  # The filesystem driver to use (btrfs or overlay-xfs).
-  GARDEN_ROOTFS_DRIVER: "btrfs"
 
   # Location of the proxy to use for secure web access.
   HTTPS_PROXY: ~
@@ -984,60 +893,10 @@ env:
   # "uid,gid,allow_root,allow_other,nfs_uid,nfs_gid,auto_cache,fsname,username,password"
   PERSI_NFS_ALLOWED_OPTIONS: "uid,gid,auto_cache,username,password"
 
-  # Comma separated list of default values for nfs mount options. If a default
-  # is specified with an option not included in PERSI_NFS_ALLOWED_OPTIONS, then
-  # this default value will be set and it won't be overridable.
-  PERSI_NFS_DEFAULT_OPTIONS: ~
-
-  # Comma separated list of white-listed options that may be accepted in the
-  # mount_config options. Note a specific 'sloppy_mount:true' volume option
-  # tells the driver to ignore non-white-listed options, while a
-  # 'sloppy_mount:false' tells the driver to fail fast instead when receiving a
-  # non-white-listed option."
-  #
-  # Example:
-  # "allow_root,allow_other,nfs_uid,nfs_gid,auto_cache,sloppy_mount,fsname"
-  PERSI_NFS_DRIVER_ALLOWED_IN_MOUNT: "auto_cache"
-
   # Comma separated list of white-listed options that may be configured in
   # supported in the mount_config.source URL query params.
   # Example: "uid,gid,auto-traverse-mounts,dircache"
-  PERSI_NFS_DRIVER_ALLOWED_IN_SOURCE: "uid,gid"
-
-  # Comma separated list default values for options that may be configured in
-  # the mount_config options, formatted as 'option:default'. If an option is not
-  # specified in the volume mount, or the option is not white-listed, then the
-  # specified default value will be used instead.
-  #
-  # Example:
-  # "allow_root:false,nfs_uid:2000,nfs_gid:2000,auto_cache:true,sloppy_mount:true"
-  PERSI_NFS_DRIVER_DEFAULT_IN_MOUNT: "auto_cache:true"
-
-  # Comma separated list of default values for options in the source URL query
-  # params, formatted as 'option:default'. If an option is not specified in the
-  # volume mount, or the option is not white-listed, then the specified default
-  # value will be applied.
-  PERSI_NFS_DRIVER_DEFAULT_IN_SOURCE: ~
-
-  # Disable Persi NFS driver
-  PERSI_NFS_DRIVER_DISABLE: "false"
-
-  # LDAP server host name or ip address (required for LDAP integration only)
-  PERSI_NFS_DRIVER_LDAP_HOST: ""
-
-  # LDAP server port (required for LDAP integration only)
-  PERSI_NFS_DRIVER_LDAP_PORT: "389"
-
-  # LDAP server protocol (required for LDAP integration only)
-  PERSI_NFS_DRIVER_LDAP_PROTOCOL: "tcp"
-
-  # LDAP service account user name (required for LDAP integration only)
-  PERSI_NFS_DRIVER_LDAP_USER: ""
-
-  # LDAP fqdn for user records we will search against when looking up user uids
-  # (required for LDAP integration only)
-  # Example: "cn=Users,dc=corp,dc=test,dc=com"
-  PERSI_NFS_DRIVER_LDAP_USER_FQDN: ""
+  PERSI_NFS_DEFAULT_OPTIONS: "uid,gid"
 
   # The name of the metadata label to query on worker nodes to get placement tag
   # information, also known as isolation segments. When set, the cells will
@@ -1045,10 +904,6 @@ env:
   # cloudfoundry via the KUBE_PZ parameter. When left to the default no custom
   # placement processing is done.
   PZ_LABEL_NAME: ""
-
-  # Certficates to add to the rootfs trust store. Multiple certs are possible by
-  # concatenating their definitions into one big block of text.
-  ROOTFS_TRUSTED_CERTS: ""
 
   # The algorithm used by the router to distribute requests for a route across
   # backends. Supported values are round-robin and least-connection.
@@ -1083,25 +938,9 @@ env:
   # Support contact information for the cluster
   SUPPORT_ADDRESS: "support@example.com"
 
-  # Regex for which SITS tests the test runner should focus on executing.
-  SYNC_INTEGRATION_TESTS_FOCUS: ~
-
-  # The number of parallel test executors to spawn for Cloud Foundry sync
-  # integration tests.
-  SYNC_INTEGRATION_TESTS_NODES: "4"
-
-  # Regex for which SITS tests the test runner should skip.
-  SYNC_INTEGRATION_TESTS_SKIP: ~
-
-  # Whether the output of the sync integration tests should be verbose or not.
-  SYNC_INTEGRATION_TESTS_VERBOSE: "false"
-
   # TCP routing domain of the SCF cluster; only used for testing;
   # Example: "tcp.my-scf-cluster.com"
   TCP_DOMAIN: ~
-
-  # Concatenation of trusted CA certificates to be made available on the cell.
-  TRUSTED_CERTS: ~
 
   # The host name of the UAA server (root zone)
   UAA_HOST: ~
@@ -1583,129 +1422,6 @@ sizing:
     # Unit [MiB]
     memory:
       request: 2000
-      limit: ~
-
-  # The diego-api instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # - patch-properties: Dummy BOSH job used to host parameters that are used in
-  #   SCF patches for upstream bugs
-  #
-  # Also: bbs and cfdot
-  diego_api:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The diego_api instance group can scale between 1 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: ~
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 128
-      limit: ~
-
-  # The diego-brain instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # - patch-properties: Dummy BOSH job used to host parameters that are used in
-  #   SCF patches for upstream bugs
-  #
-  # Also: auctioneer and cfdot
-  diego_brain:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The diego_brain instance group can scale between 1 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: ~
-
-    # Unit [millicore]
-    cpu:
-      request: 4000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 128
-      limit: ~
-
-  # The diego-cell instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # - get-kubectl: This job exists only to ensure the presence of the kubectl
-  #   binary in the role referencing it.
-  #
-  # - wait-for-uaa: Wait for UAA to be ready before starting any jobs
-  #
-  # - patch-properties: Dummy BOSH job used to host parameters that are used in
-  #   SCF patches for upstream bugs
-  #
-  # Also: rep, cfdot, route_emitter, garden, groot-btrfs,
-  # cflinuxfs3-rootfs-setup, cf-sle12-setup, sle15-rootfs-setup, nfsv3driver,
-  # and mapfs
-  diego_cell:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The diego_cell instance group can scale between 1 and 254 instances.
-    # For high availability it needs at least 3 instances.
-    count: ~
-
-    # Unit [millicore]
-    cpu:
-      request: 4000
-      limit: ~
-
-    disk_sizes:
-      grootfs_data: 50
-
-    # Unit [MiB]
-    memory:
-      request: 2800
-      limit: ~
-
-  # The diego-ssh instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # Also: ssh_proxy and file_server
-  diego_ssh:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The diego_ssh instance group can scale between 1 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: ~
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 128
       limit: ~
 
   # The doppler instance group contains the following jobs:

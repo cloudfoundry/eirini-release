@@ -258,8 +258,6 @@ spec:
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
         - name: "FORCE_FORWARDED_PROTO_AS_HTTPS"
           value: {{if ne (typeOf .Values.env.FORCE_FORWARDED_PROTO_AS_HTTPS) "<nil>"}}{{if has (kindOf .Values.env.FORCE_FORWARDED_PROTO_AS_HTTPS) (list "map" "slice")}}{{.Values.env.FORCE_FORWARDED_PROTO_AS_HTTPS | toJson | quote}}{{else}}{{.Values.env.FORCE_FORWARDED_PROTO_AS_HTTPS | quote}}{{end}}{{else}}{{fail "env.FORCE_FORWARDED_PROTO_AS_HTTPS has not been set"}}{{end}}
-        - name: "GARDEN_ROOTFS_DRIVER"
-          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -288,14 +286,6 @@ spec:
         - name: "LOG_LEVEL"
           value: {{if ne (typeOf .Values.env.LOG_LEVEL) "<nil>"}}{{if has (kindOf .Values.env.LOG_LEVEL) (list "map" "slice")}}{{.Values.env.LOG_LEVEL | toJson | quote}}{{else}}{{.Values.env.LOG_LEVEL | quote}}{{end}}{{else}}{{fail "env.LOG_LEVEL has not been set"}}{{end}}
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -304,12 +294,12 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if not .Values.secrets.NATS_PASSWORD }}
-        - name: "NATS_PASSWORD"
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+              key: "monit-password"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.NATS_PASSWORD }}
@@ -318,6 +308,14 @@ spec:
             secretKeyRef:
               key: "nats-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.NATS_PASSWORD }}
+        - name: "NATS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "nats-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "PZ_LABEL_NAME"
@@ -345,20 +343,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.ROUTER_SSL_CERT }}
-        - name: "ROUTER_SSL_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "router-ssl-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.ROUTER_SSL_CERT }}
         - name: "ROUTER_SSL_CERT"
           valueFrom:
             secretKeyRef:
               key: "router-ssl-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.ROUTER_SSL_CERT }}
+        - name: "ROUTER_SSL_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "router-ssl-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.ROUTER_SSL_CERT_KEY }}
@@ -377,20 +375,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.ROUTER_STATUS_PASSWORD }}
-        - name: "ROUTER_STATUS_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "router-status-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.ROUTER_STATUS_PASSWORD }}
         - name: "ROUTER_STATUS_PASSWORD"
           valueFrom:
             secretKeyRef:
               key: "router-status-password"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.ROUTER_STATUS_PASSWORD }}
+        - name: "ROUTER_STATUS_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "router-status-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "ROUTER_TLS_PEM"
@@ -410,20 +408,20 @@ spec:
               key: "uaa-ca-cert"
               name: "secrets"
 
-        {{- if not .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
-        - name: "UAA_CLIENTS_GOROUTER_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-gorouter-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
         - name: "UAA_CLIENTS_GOROUTER_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-gorouter-secret"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
+        - name: "UAA_CLIENTS_GOROUTER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-gorouter-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "UAA_HOST"
@@ -434,7 +432,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:5d61dbefaef931924d4991a613c4cab63dd44849"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-router:221d82e622459952c887481ff4437de6e5456759"
         lifecycle:
           preStop:
             exec:
@@ -488,8 +486,6 @@ spec:
           value: {{if ne (typeOf .Values.env.AZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.AZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.AZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.AZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "CATS_SUITES"
           value: {{if ne (typeOf .Values.env.CATS_SUITES) "<nil>"}}{{if has (kindOf .Values.env.CATS_SUITES) (list "map" "slice")}}{{.Values.env.CATS_SUITES | toJson | quote}}{{else}}{{.Values.env.CATS_SUITES | quote}}{{end}}{{else}}""{{end}}
-        - name: "GARDEN_ROOTFS_DRIVER"
-          value: {{if ne (typeOf .Values.env.GARDEN_ROOTFS_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.GARDEN_ROOTFS_DRIVER) (list "map" "slice")}}{{.Values.env.GARDEN_ROOTFS_DRIVER | toJson | quote}}{{else}}{{.Values.env.GARDEN_ROOTFS_DRIVER | quote}}{{end}}{{else}}{{fail "env.GARDEN_ROOTFS_DRIVER has not been set"}}{{end}}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -608,7 +604,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:429f9bd75d6de072480a55ec4e98afb130ea5ec4"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-loggregator-agent:1c24f69dca2a801272e4139355ab5f1e3264abfc"
         lifecycle:
           preStop:
             exec:
