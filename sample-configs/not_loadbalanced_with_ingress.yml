@@ -1,10 +1,10 @@
 bits:
-  kube:
-    external_ips:
-    - 1.2.3.4
   secrets:
     BITS_TLS_CRT: certificate
     BITS_TLS_KEY: key
+  ingress:
+    use: true
+    endpoint: ingress.end.point
 eirini:
   kube:
     external_ips:
