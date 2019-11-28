@@ -34,7 +34,7 @@ config:
   # Global memory configuration
   memory:
     # Flag to activate memory requests
-    requests: true
+    requests: false
 
     # Flag to activate memory limits
     limits: false
@@ -42,7 +42,7 @@ config:
   # Global CPU configuration
   cpu:
     # Flag to activate cpu requests
-    requests: true
+    requests: false
 
     # Flag to activate cpu limits
     limits: false
