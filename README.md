@@ -9,7 +9,6 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 * [Installation](#installation)
 * [Notes](#notes)
   * [Overriding Eirini Images](#overriding-eirini-images)
-  * [Diego staging](#diego-staging)
   * [CF acceptance tests](#cf-acceptance-tests)
     * [Running CATs against Eirini](#running-cats-against-eirini)
   * [Storage Class](#storage-class)
@@ -39,7 +38,7 @@ you need to have a signed TLS certificate, with a CA that the docker or containe
 
 We have validated that the deployment can start with a single-node 4 core 16GB cluster, although the initial startup will be very slow with this setup.
 We recommend at least 8 cores and 16GB of RAM for the SCF control plane and at least two additional nodes that you can scale relative to the average consumption
-of resource of the applications that you will be deploying. To make staging of applications faster with Diego, operators should scale the Diego cells to the number of additional nodes.
+of resource of the applications that you will be deploying.
 
 ## Installation
 
@@ -123,15 +122,10 @@ Eirini has a few images which are deployed by the helm chart. By default these c
 By default, this is will install the `latest` tag of any image that was overriden. To change that, you'd have to set `eirini.opi.image_tag` as well. As of now, all the overriden images need to have same tag.
 If a staging image needs to be updated, all the staging images must be updated.
 
-### Diego staging
-
-By default, Eirini now stages applications using Kubernetes pods. This currently breaks some [CATS](https://github.com/cloudfoundry/cf-acceptance-tests). For list of CATS that
-are breaking in our pipeline you can check our [CI config](https://github.com/cloudfoundry-incubator/eirini-ci/blob/master/pipelines/modules/opi-skipped-cats.yml).
-You can enable staging using Diego by add `ENABLE_OPI_STAGING: false` in `env` section of your values.yaml. This will use more resources.
-
 ### CF acceptance tests
 
-As part of our development process we continuously test against the [Cloud Foundry Acceptance Tests](https://github.com/cloudfoundry/cf-acceptance-tests). Currently Eirini (with OPI staging enabled) passes `110 tests`. The test suites that we currently have enabled are:
+As part of our development process we continuously test against the [Cloud Foundry Acceptance Tests](https://github.com/cloudfoundry/cf-acceptance-tests). Currently Eirini passes `110 tests`. The test suites that we currently have enabled are:
+
 * apps
 * detect
 * docker
@@ -140,6 +134,7 @@ As part of our development process we continuously test against the [Cloud Found
 * services
 
 The services suite is disabled in main ci due to flaking often. We additionally skip the [apps/buildpack-cache](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/apps/buildpack_cache.go#L125) and [apps/reverse-log-proxy](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/apps/loggregator.go#L130) tests. The test suites that are currently skipped are:
+
 * backend_compatibility
 * credhub
 * internetless

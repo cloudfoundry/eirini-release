@@ -1,7 +1,5 @@
 env:
   DOMAIN: &DOMAIN <worker-node-ip>.nip.io
-  # Uncomment if you want to use Diego to stage applications
-  # ENABLE_OPI_STAGING: false
   UAA_HOST: uaa.<worker-node-ip>.nip.io
   UAA_PORT: 2793
 

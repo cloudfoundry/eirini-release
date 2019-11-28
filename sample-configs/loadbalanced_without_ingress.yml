@@ -20,7 +20,6 @@ eirini:
     loadbalanced: true
 env:
   DOMAIN: cool.nice.io
-  ENABLE_OPI_STAGING: false
   UAA_HOST: uaa.cool.nice.io
   UAA_PORT: 2793
 kube:
