@@ -55,6 +55,12 @@ bosh:
 services:
   loadbalanced: false
 secrets:
+  # Administrator password for an external database server; this is required to
+  # create the necessary databases. Only used if DB_EXTERNAL_HOST is set.
+  #
+  # This value is immutable and must not be changed once set.
+  DB_EXTERNAL_PASSWORD: ~
+
   # A PEM-encoded TLS certificate for the Galera server.
   # This value uses a generated default.
   GALERA_SERVER_CERT: ~
@@ -131,6 +137,28 @@ env:
   # Expiration for generated certificates (in days)
   CERT_EXPIRATION: "10950"
 
+  # Database driver to use for the external database server used to manage the
+  # UAA-internal database. Only used if DB_EXTERNAL_HOST is set. Currently only
+  # `mysql` is valid.
+  DB_EXTERNAL_DRIVER: "mysql"
+
+  # Hostname for an external database server to use for the UAA-internal
+  # database If not set, the internal database is used.
+  DB_EXTERNAL_HOST: ~
+
+  # Port for an external database server to use for the UAA-internal database.
+  # Only used if DB_EXTERNAL_HOST is set.
+  DB_EXTERNAL_PORT: "3306"
+
+  # TLS configuration for the external database server to use for the
+  # UAA-internal database. Only used if DB_EXTERNAL_HOST is set. Valid values
+  # depend on which database driver is in use.
+  DB_EXTERNAL_SSL_MODE: ~
+
+  # Administrator user name for an external database server; this is required to
+  # create the necessary databases. Only used if DB_EXTERNAL_HOST is set.
+  DB_EXTERNAL_USER: ~
+
   # Base domain name of the UAA endpoint; `uaa.${DOMAIN}` must be correctly
   # configured to point to this UAA instance.
   DOMAIN: ~
@@ -196,7 +224,9 @@ sizing:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The mysql instance group can scale between 1 and 7 instances.
+    # The mysql instance group is enabled by the mysql feature.
+    # It can scale between 1 and 7 instances.
+    # The instance count must be an odd number (not divisible by 2).
     # For high availability it needs at least 3 instances.
     count: ~
 
@@ -218,12 +248,16 @@ sizing:
   # - global-uaa-properties: Dummy BOSH job used to host global parameters that
   #   are required to configure SCF / fissile
   #
-  # Also: proxy and bpm
+  # - switchboard-leader: Job to host the active/passive probe for mysql
+  #   switchboard and leader election
+  #
+  # Also: bpm and proxy
   mysql_proxy:
     # Node affinity rules can be specified here
     affinity: {}
 
-    # The mysql_proxy instance group can scale between 1 and 5 instances.
+    # The mysql_proxy instance group is enabled by the mysql feature.
+    # It can scale between 1 and 5 instances.
     # For high availability it needs at least 2 instances.
     count: ~
 
@@ -235,6 +269,30 @@ sizing:
     # Unit [MiB]
     memory:
       request: 2500
+      limit: ~
+
+  # The post-deployment-setup instance group contains the following jobs:
+  #
+  # - global-uaa-properties: Dummy BOSH job used to host global parameters that
+  #   are required to configure SCF / fissile
+  #
+  # - database-seeder: When using an external database server, seed it with the
+  #   necessary databases.
+  post_deployment_setup:
+    # Node affinity rules can be specified here
+    affinity: {}
+
+    # The post_deployment_setup instance group cannot be scaled.
+    count: ~
+
+    # Unit [millicore]
+    cpu:
+      request: 1000
+      limit: ~
+
+    # Unit [MiB]
+    memory:
+      request: 256
       limit: ~
 
   # The secret-generation instance group contains the following jobs:
@@ -293,7 +351,9 @@ sizing:
       request: 2100
       limit: ~
 
-enable: {}
+enable:
+  # The mysql feature enables these instance groups: mysql and mysql_proxy
+  mysql: true
 ingress:
   # ingress.annotations allows specifying custom ingress annotations that gets
   # merged to the default annotations.

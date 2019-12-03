@@ -1,0 +1,169 @@
+---
+# The post-deployment-setup instance group contains the following jobs:
+#
+# - global-uaa-properties: Dummy BOSH job used to host global parameters that
+#   are required to configure SCF / fissile
+#
+# - database-seeder: When using an external database server, seed it with the
+#   necessary databases.
+apiVersion: "batch/v1"
+kind: "Job"
+metadata:
+  name: "post-deployment-setup-{{ .Release.Revision }}"
+  labels:
+    app.kubernetes.io/component: "post-deployment-setup-{{ .Release.Revision }}"
+    skiff-role-name: "post-deployment-setup-{{ .Release.Revision }}"
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+    app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+spec:
+  template:
+    metadata:
+      name: "post-deployment-setup"
+      labels:
+        app.kubernetes.io/component: "post-deployment-setup"
+        skiff-role-name: "post-deployment-setup"
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
+        app.kubernetes.io/version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name (.Chart.Version | replace "+" "_") | quote }}
+
+        {{- if .Values.config.use_istio }}
+        app: "post-deployment-setup"
+        {{- end }}
+
+        {{- if .Values.config.use_istio }}
+        version: {{ default .Chart.Version .Chart.AppVersion | quote }}
+        {{- end }}
+
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+    spec:
+      containers:
+      - env:
+        - name: "DB_EXTERNAL_DRIVER"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_DRIVER) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_DRIVER | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_DRIVER | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_HOST"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_HOST) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_HOST) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_HOST | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "db-external-password"
+              name: "secrets"
+        - name: "DB_EXTERNAL_PORT"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_PORT) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_PORT) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_PORT | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_SSL_MODE"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_SSL_MODE) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_SSL_MODE) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_SSL_MODE | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_SSL_MODE | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_USER"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_USER) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_USER) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_USER | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_USER | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_CLUSTER_DOMAIN"
+          value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_CONTAINER_NAME"
+          value: "post-deployment-setup"
+        - name: "KUBERNETES_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+
+        {{- if not .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "monit-password"
+              name: "secrets"
+        {{- end }}
+
+        - name: "SCF_LOG_HOST"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_HOST) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_HOST) (list "map" "slice")}}{{.Values.env.SCF_LOG_HOST | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PORT"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PORT) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PORT) (list "map" "slice")}}{{.Values.env.SCF_LOG_PORT | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "SCF_LOG_PROTOCOL"
+          value: {{if ne (typeOf .Values.env.SCF_LOG_PROTOCOL) "<nil>"}}{{if has (kindOf .Values.env.SCF_LOG_PROTOCOL) (list "map" "slice")}}{{.Values.env.SCF_LOG_PROTOCOL | toJson | quote}}{{else}}{{.Values.env.SCF_LOG_PROTOCOL | quote}}{{end}}{{else}}{{fail "env.SCF_LOG_PROTOCOL has not been set"}}{{end}}
+
+        {{- if not .Values.secrets.UAADB_PASSWORD }}
+        - name: "UAADB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "uaadb-password"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAADB_PASSWORD }}
+        - name: "UAADB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "uaadb-password"
+              name: "secrets"
+        {{- end }}
+
+        - name: "VCAP_HARD_NPROC"
+          value: {{ .Values.kube.limits.nproc.hard | quote }}
+        - name: "VCAP_SOFT_NPROC"
+          value: {{ .Values.kube.limits.nproc.soft | quote }}
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-post-deployment-setup:48eeccb84133be6e3a935c14a098c133ab9b127c"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - "/opt/fissile/pre-stop.sh"
+        livenessProbe: ~
+        name: "post-deployment-setup"
+        ports: ~
+        readinessProbe: ~
+        resources:
+          requests:
+            {{- if and .Values.config.memory.requests .Values.sizing.post_deployment_setup.memory.request }}
+            memory: "{{ int .Values.sizing.post_deployment_setup.memory.request }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.requests .Values.sizing.post_deployment_setup.cpu.request }}
+            cpu: "{{ int .Values.sizing.post_deployment_setup.cpu.request }}m"
+            {{- end }}
+
+          limits:
+            {{- if and .Values.config.memory.limits .Values.sizing.post_deployment_setup.memory.limit }}
+            memory: "{{ int .Values.sizing.post_deployment_setup.memory.limit }}Mi"
+            {{- end }}
+
+            {{- if and .Values.config.cpu.limits .Values.sizing.post_deployment_setup.cpu.limit }}
+            cpu: "{{ int .Values.sizing.post_deployment_setup.cpu.limit }}m"
+            {{- end }}
+
+        securityContext:
+          allowPrivilegeEscalation: false
+        volumeMounts:
+        - mountPath: "/opt/fissile/config"
+          name: "deployment-manifest"
+          readOnly: true
+      dnsPolicy: "ClusterFirst"
+
+      {{- if ne .Values.kube.registry.username "" }}
+      imagePullSecrets:
+      - name: "registry-credentials"
+      {{- end }}
+
+      restartPolicy: "OnFailure"
+
+      {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+      serviceAccountName: "default"
+      {{- end }}
+
+      terminationGracePeriodSeconds: 600
+      volumes:
+      - name: "deployment-manifest"
+        secret:
+          secretName: "deployment-manifest"
+          items:
+          - key: "deployment-manifest"
+            path: "deployment-manifest.yml"

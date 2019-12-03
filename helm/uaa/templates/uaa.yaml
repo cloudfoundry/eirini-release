@@ -172,7 +172,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "uaa"
@@ -237,6 +237,19 @@ spec:
             secretKeyRef:
               key: "aek-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        - name: "DB_EXTERNAL_DRIVER"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_DRIVER) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_DRIVER | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_DRIVER | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_HOST"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_HOST) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_HOST) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_HOST | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_HOST | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "db-external-password"
+              name: "secrets"
+        - name: "DB_EXTERNAL_PORT"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_PORT) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_PORT) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_PORT | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_PORT | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_USER"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_USER) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_USER) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_USER | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_USER | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
           value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
 
@@ -306,6 +319,8 @@ spec:
 
         - name: "KUBERNETES_CLUSTER_DOMAIN"
           value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_CONTAINER_NAME"
+          value: "uaa"
         - name: "KUBERNETES_NAMESPACE"
           valueFrom:
             fieldRef:
@@ -345,20 +360,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
-        - name: "SAML_SERVICEPROVIDER_CERT_KEY"
-          valueFrom:
-            secretKeyRef:
-              key: "saml-serviceprovider-cert-key"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
         - name: "SAML_SERVICEPROVIDER_CERT_KEY"
           valueFrom:
             secretKeyRef:
               key: "saml-serviceprovider-cert-key"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
+        - name: "SAML_SERVICEPROVIDER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "saml-serviceprovider-cert-key"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "SCF_LOG_HOST"
@@ -442,7 +457,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:8fb9cbf2ab5b0dbe580259a83c45c6ad539ed20c"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:d4f21e1a7c902cbfbc9881eebd736c8395cf110d"
         lifecycle:
           preStop:
             exec:
@@ -483,6 +498,9 @@ spec:
 
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - "AUDIT_WRITE"
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"

@@ -30,6 +30,8 @@ rules:
   - "services"
   verbs:
   - "get"
+  - "list"
+  - "patch"
 - apiGroups:
   - "apps"
   resources:
@@ -37,4 +39,12 @@ rules:
   verbs:
   - "get"
   - "patch"
+- apiGroups:
+  - ""
+  resources:
+  - "secrets"
+  verbs:
+  - "create"
+  - "get"
+  - "delete"
 {{- end }}

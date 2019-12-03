@@ -1,4 +1,5 @@
 ---
+{{- if .Values.enable.mysql }}
 apiVersion: "v1"
 items:
 - apiVersion: "v1"
@@ -33,6 +34,7 @@ items:
       targetPort: 0
     selector:
       app.kubernetes.io/component: "mysql-proxy"
+      skiff-role-active: "true"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
@@ -65,6 +67,7 @@ items:
       targetPort: 0
     selector:
       app.kubernetes.io/component: "mysql-proxy"
+      skiff-role-active: "true"
 - apiVersion: "v1"
   kind: "Service"
   metadata:
@@ -96,14 +99,20 @@ items:
       targetPort: 1936
     selector:
       app.kubernetes.io/component: "mysql-proxy"
+      skiff-role-active: "true"
 kind: "List"
+{{- end }}
 ---
 # The mysql-proxy instance group contains the following jobs:
 #
 # - global-uaa-properties: Dummy BOSH job used to host global parameters that
 #   are required to configure SCF / fissile
 #
-# Also: proxy and bpm
+# - switchboard-leader: Job to host the active/passive probe for mysql
+#   switchboard and leader election
+#
+# Also: bpm and proxy
+{{- if .Values.enable.mysql }}
 
 {{- if and (ne (typeOf .Values.sizing.mysql_proxy.count) "<nil>") (gt (int .Values.sizing.mysql_proxy.count) 5) }}
 _maxReplicas: {{ fail "mysql_proxy cannot have more than 5 instances" }}
@@ -137,7 +146,7 @@ _moved_sizing_memory_limits: {{ if .Values.sizing.memory.limits }} {{ fail "Bad 
 _moved_sizing_memory_requests: {{ if .Values.sizing.memory.requests }} {{ fail "Bad use of moved variable sizing.memory.requests. The new name to use is config.memory.requests" }} {{else}} ok {{end}}
 {{- end }}
 
-apiVersion: "apps/v1"
+apiVersion: {{ if (.Capabilities.APIVersions.Has "apps/v1") }}apps/v1{{ else }}apps/v1beta1{{ end }}
 kind: "StatefulSet"
 metadata:
   name: "mysql-proxy"
@@ -210,6 +219,8 @@ spec:
       - env:
         - name: "KUBERNETES_CLUSTER_DOMAIN"
           value: {{if ne (typeOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.KUBERNETES_CLUSTER_DOMAIN) (list "map" "slice")}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | toJson | quote}}{{else}}{{.Values.env.KUBERNETES_CLUSTER_DOMAIN | quote}}{{end}}{{else}}""{{end}}
+        - name: "KUBERNETES_CONTAINER_NAME"
+          value: "mysql-proxy"
         - name: "KUBERNETES_NAMESPACE"
           valueFrom:
             fieldRef:
@@ -259,7 +270,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-mysql-proxy:b5894215a07f91c97a85d8ee3425c9ab04440799"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-mysql-proxy:52be661625cae036927a9ba2fafee76bcd087372"
         lifecycle:
           preStop:
             exec:
@@ -280,6 +291,8 @@ spec:
         readinessProbe:
           exec:
             command:
+            - "/usr/bin/env"
+            - "FISSILE_ACTIVE_PASSIVE_PROBE=/var/vcap/jobs/switchboard-leader/bin/readiness/switchboard"
             - "/opt/fissile/readiness-probe.sh"
             - "curl --silent --fail --head http://${HOSTNAME}:1936/"
         resources:
@@ -333,3 +346,4 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   {{- end }}
+{{- end }}
