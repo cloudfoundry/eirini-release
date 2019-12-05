@@ -1,0 +1,59 @@
+config:
+  cpu:
+    requests: true
+
+sizing:
+  adapter:
+    cpu:
+      request: 250m
+  api_group:
+    cpu:
+      request: 2000m
+  blobstore:
+    cpu:
+      request: 350m
+  cc_clock:
+    cpu:
+      request: 2000m
+  cc_uploader:
+    cpu:
+      request: 80m
+  cc_worker:
+    cpu:
+      request: 180m
+  cf_usb_group:
+    cpu:
+      request: 15m
+  doppler:
+    cpu:
+      request: 1000m
+  locket:
+    cpu:
+      request: 45m
+  log_api:
+    cpu:
+      request: 120m
+  log_cache_scheduler:
+    cpu:
+      request: 20m
+  mysql:
+    cpu:
+      request: 300m
+  nats:
+    cpu:
+      request: 250m
+  nfs_broker:
+    cpu:
+      request: 10m
+  router:
+    cpu:
+      request: 150m
+  routing_api:
+    cpu:
+      request: 30m
+  syslog_scheduler:
+    cpu:
+      request: 250m
+  tcp_router:
+    cpu:
+      request: 300m
