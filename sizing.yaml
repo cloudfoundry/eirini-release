@@ -14,7 +14,7 @@ sizing:
       request: 350
   cc_clock:
     cpu:
-      request: 2000
+      request: 100
   cc_uploader:
     cpu:
       request: 80
@@ -57,3 +57,7 @@ sizing:
   tcp_router:
     cpu:
       request: 300
+  post_deployment_setup:
+    cpu:
+      request: 50
+
