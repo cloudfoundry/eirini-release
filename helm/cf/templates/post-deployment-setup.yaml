@@ -136,20 +136,20 @@ spec:
     spec:
       containers:
       - env:
-        {{- if .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
-        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "autoscaler-uaa-client-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
         - name: "AUTOSCALER_UAA_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
               key: "autoscaler-uaa-client-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.AUTOSCALER_UAA_CLIENT_SECRET }}
+        - name: "AUTOSCALER_UAA_CLIENT_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "autoscaler-uaa-client-secret"
+              name: "secrets"
         {{- end }}
 
         - name: "AZ_LABEL_NAME"
@@ -211,23 +211,6 @@ spec:
 
         - name: "NO_PROXY"
           value: {{if ne (typeOf .Values.env.NO_PROXY) "<nil>"}}{{if has (kindOf .Values.env.NO_PROXY) (list "map" "slice")}}{{.Values.env.NO_PROXY | toJson | quote}}{{else}}{{.Values.env.NO_PROXY | quote}}{{end}}{{else}}""{{end}}
-
-        {{- if .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
-        - name: "PERSI_NFS_BROKER_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "persi-nfs-broker-password"
-              name: "secrets"
-        {{- end }}
-
-        {{- if not .Values.secrets.PERSI_NFS_BROKER_PASSWORD }}
-        - name: "PERSI_NFS_BROKER_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "persi-nfs-broker-password"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         - name: "PZ_LABEL_NAME"
           value: {{if ne (typeOf .Values.env.PZ_LABEL_NAME) "<nil>"}}{{if has (kindOf .Values.env.PZ_LABEL_NAME) (list "map" "slice")}}{{.Values.env.PZ_LABEL_NAME | toJson | quote}}{{else}}{{.Values.env.PZ_LABEL_NAME | quote}}{{end}}{{else}}""{{end}}
         - name: "SCF_LOG_HOST"
@@ -263,20 +246,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
-        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-cc-routing-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
         - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-cc-routing-secret"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_CC_ROUTING_SECRET }}
+        - name: "UAA_CLIENTS_CC_ROUTING_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-cc-routing-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_CC_SERVICE_DASHBOARDS_CLIENT_SECRET }}
@@ -343,20 +326,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_CREDHUB_USER_CLI_SECRET }}
-        - name: "UAA_CLIENTS_CREDHUB_USER_CLI_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-credhub-user-cli-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_CREDHUB_USER_CLI_SECRET }}
         - name: "UAA_CLIENTS_CREDHUB_USER_CLI_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-credhub-user-cli-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_CREDHUB_USER_CLI_SECRET }}
+        - name: "UAA_CLIENTS_CREDHUB_USER_CLI_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-credhub-user-cli-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_DIEGO_SSH_PROXY_SECRET }}
@@ -375,20 +358,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.UAA_CLIENTS_DOPPLER_SECRET }}
-        - name: "UAA_CLIENTS_DOPPLER_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-doppler-secret"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.UAA_CLIENTS_DOPPLER_SECRET }}
         - name: "UAA_CLIENTS_DOPPLER_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-doppler-secret"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.UAA_CLIENTS_DOPPLER_SECRET }}
+        - name: "UAA_CLIENTS_DOPPLER_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-doppler-secret"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.UAA_CLIENTS_GOROUTER_SECRET }}
@@ -407,20 +390,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
-        - name: "UAA_CLIENTS_LOGIN_SECRET"
-          valueFrom:
-            secretKeyRef:
-              key: "uaa-clients-login-secret"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
         - name: "UAA_CLIENTS_LOGIN_SECRET"
           valueFrom:
             secretKeyRef:
               key: "uaa-clients-login-secret"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.UAA_CLIENTS_LOGIN_SECRET }}
+        - name: "UAA_CLIENTS_LOGIN_SECRET"
+          valueFrom:
+            secretKeyRef:
+              key: "uaa-clients-login-secret"
+              name: "secrets"
         {{- end }}
 
         {{- if .Values.secrets.UAA_CLIENTS_SCF_AUTO_CONFIG_SECRET }}
@@ -479,7 +462,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:66f6723789aa523284de351b463f35478880bbc5"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-post-deployment-setup:1f89ae16facd4aa62d14996657cfa686fe12f58c"
         lifecycle:
           preStop:
             exec:

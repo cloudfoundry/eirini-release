@@ -349,10 +349,6 @@ secrets:
   # This value uses a generated default.
   NATS_PASSWORD: ~
 
-  # Basic auth password to verify on incoming Service Broker requests
-  # This value uses a generated default.
-  PERSI_NFS_BROKER_PASSWORD: ~
-
   # Support for route services is disabled when no value is configured. A robust
   # passphrase is recommended.
   # This value uses a generated default.
@@ -886,17 +882,6 @@ env:
   # Comma separated list of IP addresses and domains which should not be
   # directoed through a proxy, if any.
   NO_PROXY: ~
-
-  # Comma separated list of white-listed options that may be set during create
-  # or bind operations.
-  # Example:
-  # "uid,gid,allow_root,allow_other,nfs_uid,nfs_gid,auto_cache,fsname,username,password"
-  PERSI_NFS_ALLOWED_OPTIONS: "uid,gid,auto_cache,username,password"
-
-  # Comma separated list of white-listed options that may be configured in
-  # supported in the mount_config.source URL query params.
-  # Example: "uid,gid,auto-traverse-mounts,dircache"
-  PERSI_NFS_DEFAULT_OPTIONS: "uid,gid"
 
   # The name of the metadata label to query on worker nodes to get placement tag
   # information, also known as isolation segments. When set, the cells will
@@ -1608,32 +1593,6 @@ sizing:
     affinity: {}
 
     # The nats instance group can scale between 1 and 3 instances.
-    # For high availability it needs at least 2 instances.
-    count: ~
-
-    # Unit [millicore]
-    cpu:
-      request: 2000
-      limit: ~
-
-    # Unit [MiB]
-    memory:
-      request: 128
-      limit: ~
-
-  # The nfs-broker instance group contains the following jobs:
-  #
-  # - global-properties: Dummy BOSH job used to host global parameters that are
-  #   required to configure SCF
-  #
-  # - authorize-internal-ca: Install both internal and UAA CA certificates
-  #
-  # Also: nfsbroker
-  nfs_broker:
-    # Node affinity rules can be specified here
-    affinity: {}
-
-    # The nfs_broker instance group can scale between 1 and 3 instances.
     # For high availability it needs at least 2 instances.
     count: ~
 
