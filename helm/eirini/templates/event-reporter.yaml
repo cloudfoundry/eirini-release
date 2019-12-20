@@ -19,8 +19,8 @@ spec:
           configMap:
             name: "eirini"
             items:
-            - key: event-reporter.yml
-              path: event-reporter.yml
+            - key: events.yml
+              path: events.yml
         - name: cf-secrets
           secret:
             secretName: "{{ .Values.scfSecretName }}"

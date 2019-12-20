@@ -45,5 +45,8 @@ data:
     loggergator_cert_path: "/etc/eirini/secrets/doppler.crt"
     loggregator_key_path: "/etc/eirini/secrets/doppler.key"
     loggregator_ca_path: "/etc/eirini/secrets/doppler.ca"
-  event-reporter.yml: |
+  events.yml: |
     cc_internal_api: "https://api.{{ .Release.Namespace }}.svc.cluster.local:9023"
+    cc_cert_path: "/etc/eirini/secrets/cc.crt"
+    cc_key_path: "/etc/eirini/secrets/cc.key"
+    cc_ca_path: "/etc/eirini/secrets/cc.ca"
