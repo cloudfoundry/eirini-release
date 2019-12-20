@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "event-reporter"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "event-reporter"
+  template:
+    metadata:
+      labels:
+        name: "event-reporter"
+    spec:
+      dnsPolicy: "ClusterFirst"
+      serviceAccountName: "opi"
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: "eirini"
+            items:
+            - key: event-reporter.yml
+              path: event-reporter.yml
+        - name: cf-secrets
+          secret:
+            secretName: "{{ .Values.scfSecretName }}"
+            items:
+            - key: cc-server-crt
+              path: cc.crt
+            - key: cc-server-crt-key
+              path: cc.key
+            - key: internal-ca-cert
+              path: cc.ca
+      containers:
+      - name: event-reporter
+        {{- if .Values.opi.event_reporter_image }}
+        image: {{ .Values.opi.event_reporter_image }}:{{ .Values.opi.event_reporter_image_tag }}
+        {{- else }}
+        image: eirini/event-reporter@{{ .Files.Get "versions/event-reporter" }}
+        {{- end }}
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/config
+        - name: cf-secrets
+          mountPath: /etc/eirini/secrets
+        resources:
+          requests:
+            cpu: 15m
+            memory: 15Mi
