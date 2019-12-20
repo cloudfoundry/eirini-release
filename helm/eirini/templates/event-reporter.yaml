@@ -13,7 +13,7 @@ spec:
         name: "event-reporter"
     spec:
       dnsPolicy: "ClusterFirst"
-      serviceAccountName: "opi"
+      serviceAccountName: "eirini-events"
       volumes:
         - name: config-map-volume
           configMap:
