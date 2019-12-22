@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "event-reporter"
+  name: "eirini-events"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: "event-reporter"
+      name: "eirini-events"
   template:
     metadata:
       labels:
-        name: "event-reporter"
+        name: "eirini-events"
     spec:
       dnsPolicy: "ClusterFirst"
       serviceAccountName: "eirini-events"
