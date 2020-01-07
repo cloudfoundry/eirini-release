@@ -31,6 +31,8 @@ spec:
               path: doppler.key
             - key: internal-ca-cert
               path: doppler.ca
+      securityContext:
+        runAsNonRoot: false
       containers:
       - name: metrics-collector
         {{- if .Values.opi.metrics_collector_image }}

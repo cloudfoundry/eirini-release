@@ -17,6 +17,8 @@ spec:
         - /bits-waiter
         - --namespace={{ .Release.Namespace }}
         - --timeout={{ .Values.opi.rootfs_patcher_timeout }}
+      securityContext:
+        runAsNonRoot: false
       containers:
       - name: patch
         command:

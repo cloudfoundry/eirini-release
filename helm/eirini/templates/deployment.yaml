@@ -45,6 +45,8 @@ spec:
               path: eirini-server.key
             - key: internal-ca-cert
               path: eirini-client-ca.crt
+      securityContext:
+        runAsNonRoot: false
       containers:
       - name: opi
         {{- if .Values.opi.image }}

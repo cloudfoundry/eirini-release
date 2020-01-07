@@ -31,6 +31,8 @@ spec:
               path: cc.key
             - key: internal-ca-cert
               path: cc.ca
+      securityContext:
+        runAsNonRoot: false
       containers:
       - name: event-reporter
         {{- if .Values.opi.event_reporter_image }}

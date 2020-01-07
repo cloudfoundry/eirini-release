@@ -25,6 +25,8 @@ spec:
         - name: config-volume
           mountPath: /output
           readOnly: false
+      securityContext:
+        runAsNonRoot: false
       containers:
       - name: loggregator-fluentd
         {{- if .Values.opi.loggregator_fluentd_image }}
