@@ -10,6 +10,6 @@ spec:
   ports:
     - port: 8085
       protocol: TCP
-      name: opi
+      name: https
   selector:
     name: "eirini"

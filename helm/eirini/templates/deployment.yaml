@@ -61,6 +61,7 @@ spec:
           mountPath: /workspace/jobs/opi/secrets
         ports:
         - containerPort: 8085
+          name: https
         resources:
           requests:
             cpu: 20m
