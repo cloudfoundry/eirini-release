@@ -4,7 +4,6 @@ kind: Deployment
 metadata:
   name: "eirini"
 spec:
-  replicas: 1
   selector:
     matchLabels:
       name: "eirini"

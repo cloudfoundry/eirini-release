@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: "eirini-metrics"
 spec:
-  replicas: 1
   selector:
     matchLabels:
       name: "eirini-metrics"
