@@ -12,7 +12,7 @@ spec:
         name: "eirini-routing"
     spec:
       dnsPolicy: "ClusterFirst"
-      serviceAccountName: "opi" # Change this to lower permissions
+      serviceAccountName: "eirini-routing"
       volumes:
         - name: config-map-volume
           configMap:
@@ -39,6 +39,10 @@ spec:
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
       - name: route-pod-informer
         {{- if .Values.opi.route_pod_informer_image }}
         image: {{ .Values.opi.route_pod_informer_image }}:{{ .Values.opi.image_tag }}
@@ -55,6 +59,10 @@ spec:
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
       - name: route-statefulset-informer
         {{- if .Values.opi.route_statefulset_informer_image }}
         image: {{ .Values.opi.route_statefulset_informer_image }}:{{ .Values.opi.image_tag }}
@@ -71,3 +79,7 @@ spec:
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
