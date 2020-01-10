@@ -1,3 +1,4 @@
+{{- if .Values.opi.enable_logs }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -52,4 +53,4 @@ data:
     <match kubernetes.var.log.containers.**.log>
       @type null
     </match>
-
+{{- end }}

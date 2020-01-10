@@ -1,3 +1,4 @@
+{{- if .Values.opi.enable_logs }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -110,3 +111,4 @@ spec:
               path: agent.key
             - key: internal-ca-cert
               path: ca.crt
+{{- end }}

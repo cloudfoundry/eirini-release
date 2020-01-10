@@ -28,6 +28,12 @@ eirini:
     # Enable if use_registry_ingress is set to 'true'
     # ingress_endpoint: kubernetes-cluster-ingress-endpoint
 
+    # If you want to disable routing, logs, events, etc you
+    # should set the followoing flags to false
+    # enable_routing: false
+    # enable_logs: false
+    # enable_events: false
+
   secrets:
     BLOBSTORE_PASSWORD: *BLOBSTORE_PASSWORD
     BITS_SERVICE_SECRET: &BITS_SERVICE_SECRET "<bits-secret>"

@@ -1,3 +1,4 @@
+{{- if .Values.opi.enable_events }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,3 +50,4 @@ spec:
           requests:
             cpu: 15m
             memory: 15Mi
+{{- end }}

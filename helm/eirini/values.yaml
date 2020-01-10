@@ -1,16 +1,26 @@
 opi:
   # set ingress endoint when 'use_registry_ingress' is set to true
-  ingress_endpoint: no-ingress-set
   use_registry_ingress: false
+  ingress_endpoint: no-ingress-set
 
-  disk_limit_mb: 2048
-  image_tag: latest
-  namespace: eirini
-  registry_secret_name: registry-credentials
+  enable_rootfs_patcher: true
   rootfs_patcher_timeout: 2m
+  image_tag: latest
+
+  enable_routing: true
+  enable_logs: true
+  enable_events: true
+  enable_metrics: true
+
+  registry_secret_name: registry-credentials
+  disk_limit_mb: 2048
+  namespace: eirini
   version: 0.0.0
 kube:
   external_ips: []
+sizing:
+  nats:
+    count: 0
 
 scfSecretName: "secrets-2.16.4-2"
 

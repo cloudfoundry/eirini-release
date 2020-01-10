@@ -1,3 +1,4 @@
+{{- if .Values.opi.enable_rootfs_patcher }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -33,3 +34,4 @@ spec:
         imagePullPolicy: IfNotPresent
       restartPolicy: OnFailure
       serviceAccountName: eirini-rootfs-patcher
+{{- end }}
