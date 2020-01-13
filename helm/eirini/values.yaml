@@ -11,6 +11,7 @@ opi:
   enable_logs: true
   enable_events: true
   enable_metrics: true
+  enable_secret_smuggler: true
 
   registry_secret_name: registry-credentials
   disk_limit_mb: 2048
