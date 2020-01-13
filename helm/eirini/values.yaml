@@ -58,9 +58,6 @@ tls:
 
 kube:
   external_ips: []
-sizing:
-  nats:
-    count: 0
 
 scfSecretName: "secrets-2.16.4-2"
 
