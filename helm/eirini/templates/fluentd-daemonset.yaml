@@ -102,13 +102,18 @@ spec:
           - key: fluentd-conf
             path: fluent.conf
       - name: loggregator-tls-certs
-        secret:
-          secretName: "{{ .Values.scfSecretName }}"
-          items:
-            - key: loggregator-agent-cert
-              path: agent.crt
-            - key: loggregator-agent-cert-key
-              path: agent.key
-            - key: internal-ca-cert
-              path: ca.crt
+        projected:
+          sources:
+          - secret:
+              name: "{{ .Values.tls.logsClient.secretName }}"
+              items:
+              - key: "{{ .Values.tls.logsClient.certPath }}"
+                path: agent.crt
+              - key: "{{ .Values.tls.logsClient.keyPath }}"
+                path: agent.key
+          - secret:
+              name: "{{ .Values.tls.logsServer.secretName }}"
+              items:
+              - key: "{{ .Values.tls.logsServer.caPath }}"
+                path: ca.crt
 {{- end }}

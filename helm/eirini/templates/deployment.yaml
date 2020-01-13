@@ -23,27 +23,32 @@ spec:
             - key: opi.yml
               path: opi.yml
         - name: cf-secrets
-          secret:
-            secretName: "{{ .Values.scfSecretName }}"
-            items:
-            - key: doppler-cert
-              path: doppler.crt
-            - key: doppler-cert-key
-              path: doppler.key
-            - key: internal-ca-cert
-              path: doppler.ca
-            - key: cc-server-crt
-              path: cc.crt
-            - key: cc-server-crt-key
-              path: cc.key
-            - key: internal-ca-cert
-              path: cc.ca
-            - key: eirini-client-crt
-              path: eirini-server.crt
-            - key: eirini-client-crt-key
-              path: eirini-server.key
-            - key: internal-ca-cert
-              path: eirini-client-ca.crt
+          projected:
+            sources:
+            - secret:
+                name: "{{ .Values.tls.opiCapiClient.secretName }}"
+                items:
+                - key: "{{ .Values.tls.opiCapiClient.certPath }}"
+                  path: cc.crt
+                - key: "{{ .Values.tls.opiCapiClient.keyPath }}"
+                  path: cc.key
+            - secret:
+                name: "{{ .Values.tls.capi.secretName }}"
+                items:
+                - key: "{{ .Values.tls.capi.caPath }}"
+                  path: cc.ca
+            - secret:
+                name: "{{ .Values.tls.opiServer.secretName }}"
+                items:
+                - key: "{{ .Values.tls.opiServer.certPath }}"
+                  path: eirini-server.crt
+                - key: "{{ .Values.tls.opiServer.keyPath }}"
+                  path: eirini-server.key
+            - secret:
+                name: "{{ .Values.tls.eirini.secretName }}"
+                items:
+                - key: "{{ .Values.tls.eirini.caPath }}"
+                  path: eirini.ca
       securityContext:
         runAsNonRoot: false
       containers:

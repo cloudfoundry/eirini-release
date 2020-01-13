@@ -35,8 +35,8 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "{{ .Values.scfSecretName }}"
+              key: "{{ .Values.nats.passwordPath }}"
+              name: "{{ .Values.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
@@ -55,8 +55,8 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "{{ .Values.scfSecretName }}"
+              key: "{{ .Values.nats.passwordPath }}"
+              name: "{{ .Values.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
@@ -75,8 +75,8 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "{{ .Values.scfSecretName }}"
+              key: "{{ .Values.nats.passwordPath }}"
+              name: "{{ .Values.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/

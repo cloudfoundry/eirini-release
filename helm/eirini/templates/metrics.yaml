@@ -22,15 +22,20 @@ spec:
             - key: metrics.yml
               path: metrics.yml
         - name: cf-secrets
-          secret:
-            secretName: "{{ .Values.scfSecretName }}"
-            items:
-            - key: doppler-cert
-              path: doppler.crt
-            - key: doppler-cert-key
-              path: doppler.key
-            - key: internal-ca-cert
-              path: doppler.ca
+          projected:
+            sources:
+            - secret:
+                name: "{{ .Values.tls.metricsClient.secretName }}"
+                items:
+                - key: "{{ .Values.tls.metricsClient.certPath }}"
+                  path: doppler.crt
+                - key: "{{ .Values.tls.metricsClient.keyPath }}"
+                  path: doppler.key
+            - secret:
+                name: "{{ .Values.tls.metricsServer.secretName }}"
+                items:
+                - key: "{{ .Values.tls.metricsServer.caPath }}"
+                  path: doppler.ca
       securityContext:
         runAsNonRoot: false
       containers:
