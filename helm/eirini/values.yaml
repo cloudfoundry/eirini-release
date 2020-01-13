@@ -50,8 +50,8 @@ tls:
     caPath: "internal-ca-cert"
   metricsClient:
     secretName: "secrets-2.16.4-2"
-    keyPath: "doppler-cert"
-    certPath: "doppler-cert-key"
+    keyPath: "doppler-cert-key"
+    certPath: "doppler-cert"
   metricsServer:
     secretName: "secrets-2.16.4-2"
     caPath: "internal-ca-cert"
