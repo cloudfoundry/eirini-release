@@ -10,7 +10,6 @@ eirini:
     external_ips:
     - 1.2.3.4
   opi:
-    ingress_endpoint: ingress.end.point
     use_registry_ingress: false
   secrets:
     BITS_SERVICE_SECRET: aK$GiuqqL9lpXrQE8o@X%'"

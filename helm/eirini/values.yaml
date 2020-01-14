@@ -1,7 +1,7 @@
 opi:
   # set ingress endoint when 'use_registry_ingress' is set to true
   use_registry_ingress: false
-  ingress_endpoint: no-ingress-set
+  ingress_endpoint: ~
 
   enable_rootfs_patcher: true
   rootfs_patcher_timeout: 2m
