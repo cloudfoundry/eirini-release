@@ -1,4 +1,4 @@
-{{- if .Values.opi.enable_logs }}
+{{- if .Values.opi.logs.enable }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -105,15 +105,15 @@ spec:
         projected:
           sources:
           - secret:
-              name: "{{ .Values.tls.logsClient.secretName }}"
+              name: "{{ .Values.opi.logs.tls.client.secretName }}"
               items:
-              - key: "{{ .Values.tls.logsClient.certPath }}"
+              - key: "{{ .Values.opi.logs.tls.client.certPath }}"
                 path: agent.crt
-              - key: "{{ .Values.tls.logsClient.keyPath }}"
+              - key: "{{ .Values.opi.logs.tls.client.keyPath }}"
                 path: agent.key
           - secret:
-              name: "{{ .Values.tls.logsServer.secretName }}"
+              name: "{{ .Values.opi.logs.tls.server.secretName }}"
               items:
-              - key: "{{ .Values.tls.logsServer.caPath }}"
+              - key: "{{ .Values.opi.logs.tls.server.caPath }}"
                 path: ca.crt
 {{- end }}

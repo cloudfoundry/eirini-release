@@ -1,4 +1,4 @@
-{{- if .Values.opi.enable_metrics }}
+{{- if .Values.opi.metrics.enable }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,16 +25,16 @@ spec:
           projected:
             sources:
             - secret:
-                name: "{{ .Values.tls.metricsClient.secretName }}"
+                name: "{{ .Values.opi.metrics.tls.client.secretName }}"
                 items:
-                - key: "{{ .Values.tls.metricsClient.certPath }}"
+                - key: "{{ .Values.opi.metrics.tls.client.certPath }}"
                   path: doppler.crt
-                - key: "{{ .Values.tls.metricsClient.keyPath }}"
+                - key: "{{ .Values.opi.metrics.tls.client.keyPath }}"
                   path: doppler.key
             - secret:
-                name: "{{ .Values.tls.metricsServer.secretName }}"
+                name: "{{ .Values.opi.metrics.tls.server.secretName }}"
                 items:
-                - key: "{{ .Values.tls.metricsServer.caPath }}"
+                - key: "{{ .Values.opi.metrics.tls.server.caPath }}"
                   path: doppler.ca
       securityContext:
         runAsNonRoot: false

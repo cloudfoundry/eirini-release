@@ -1,4 +1,4 @@
-{{- if .Values.opi.enable_logs }}
+{{- if .Values.opi.logs.enable }}
 ---
 apiVersion: v1
 kind: ConfigMap

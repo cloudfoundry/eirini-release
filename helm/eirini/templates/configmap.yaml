@@ -7,7 +7,7 @@ data:
   opi.yml: |
     opi:
       app_namespace: {{ .Values.opi.namespace }}
-      cc_certs_secret_name: "{{ .Values.scfSecretName }}"
+      cc_certs_secret_name: "{{ .Values.opi.staging.secretNameInAppNamespace }}"
       {{- if .Values.opi.use_registry_ingress }}
       registry_address: "registry.{{ .Values.opi.ingress_endpoint }}:443"
       {{- else if .Values.services.loadbalanced }}

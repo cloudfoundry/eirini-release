@@ -1,4 +1,4 @@
-{{- if .Values.opi.enable_rootfs_patcher }}
+{{- if .Values.opi.rootfsPatcher.enable }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -17,7 +17,7 @@ spec:
         command:
         - /bits-waiter
         - --namespace={{ .Release.Namespace }}
-        - --timeout={{ .Values.opi.rootfs_patcher_timeout }}
+        - --timeout={{ .Values.opi.rootfsPatcher.timeout }}
       securityContext:
         runAsNonRoot: false
       containers:

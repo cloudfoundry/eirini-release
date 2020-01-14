@@ -1,4 +1,4 @@
-{{- if .Values.opi.enable_routing }}
+{{- if .Values.opi.routing.enable }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,8 +35,8 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "{{ .Values.nats.passwordPath }}"
-              name: "{{ .Values.nats.secretName }}"
+              key: "{{ .Values.opi.routing.nats.passwordPath }}"
+              name: "{{ .Values.opi.routing.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
@@ -55,8 +55,8 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "{{ .Values.nats.passwordPath }}"
-              name: "{{ .Values.nats.secretName }}"
+              key: "{{ .Values.opi.routing.nats.passwordPath }}"
+              name: "{{ .Values.opi.routing.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
@@ -75,8 +75,8 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "{{ .Values.nats.passwordPath }}"
-              name: "{{ .Values.nats.secretName }}"
+              key: "{{ .Values.opi.routing.nats.passwordPath }}"
+              name: "{{ .Values.opi.routing.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/

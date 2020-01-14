@@ -1,4 +1,4 @@
-{{- if .Values.opi.enable_events }}
+{{- if .Values.opi.events.enable }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,16 +25,16 @@ spec:
           projected:
             sources:
             - secret:
-                name: "{{ .Values.tls.eventsCapiClient.secretName }}"
+                name: "{{ .Values.opi.events.tls.capiClient.secretName }}"
                 items:
-                - key: "{{ .Values.tls.eventsCapiClient.certPath }}"
+                - key: "{{ .Values.opi.events.tls.capiClient.certPath }}"
                   path: cc.crt
-                - key: "{{ .Values.tls.eventsCapiClient.keyPath }}"
+                - key: "{{ .Values.opi.events.tls.capiClient.keyPath }}"
                   path: cc.key
             - secret:
-                name: "{{ .Values.tls.capi.secretName }}"
+                name: "{{ .Values.opi.events.tls.capi.secretName }}"
                 items:
-                - key: "{{ .Values.tls.capi.caPath }}"
+                - key: "{{ .Values.opi.events.tls.capi.caPath }}"
                   path: cc.ca
       securityContext:
         runAsNonRoot: false
