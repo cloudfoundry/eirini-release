@@ -1,6 +1,7 @@
 opi:
-  # set ingress endoint when 'use_registry_ingress' is set to true
+  # used when bits service is using ingress
   use_registry_ingress: false
+  # set ingress_endoint when 'use_registry_ingress' is set to true
   ingress_endpoint: ~
 
   enable_rootfs_patcher: true
@@ -55,22 +56,20 @@ tls:
     secretName: "secrets-2.16.4-2"
     caPath: "internal-ca-cert"
 
-kube:
-  external_ips: []
-
+# used only for secret smuggler to copy credentials to apps namespace
 scfSecretName: "secrets-2.16.4-2"
 
 services:
   loadbalanced: false
-
-secrets:
-  BITS_SERVICE_SECRET: secret
-  BITS_SERVICE_SIGNING_USER_PASSWORD: notpassword123
-  BLOBSTORE_PASSWORD:  blobstore
-
 env:
   # Base domain of the SCF cluster.
   # Example: "my-scf-cluster.com"
+  # used to get bits service URL if it is load balanced and not behind ingress
   DOMAIN: ~
+
+# used to construct bits service URL if it is not load balanced and does not behind ingress
+kube:
+  external_ips: []
+
 global:
   rootfs_version: v75.0.0

@@ -2,6 +2,9 @@ bits:
   secrets:
     BITS_TLS_CRT: certificate
     BITS_TLS_KEY: key
+    BITS_SERVICE_SECRET: aK$GiuqqL9lpXrQE8o@X%'"
+    BITS_SERVICE_SIGNING_USER_PASSWORD: aK$GiuqqL9lpXrQE8o@X%'"
+    BLOBSTORE_PASSWORD: aK$GiuqqL9lpXrQE8o@X%'"
   ingress:
     use: true
     endpoint: ingress.end.point
@@ -12,10 +15,6 @@ eirini:
   opi:
     ingress_endpoint: ingress.end.point
     use_registry_ingress: true
-  secrets:
-    BITS_SERVICE_SECRET: aK$GiuqqL9lpXrQE8o@X%'"
-    BITS_SERVICE_SIGNING_USER_PASSWORD: aK$GiuqqL9lpXrQE8o@X%'"
-    BLOBSTORE_PASSWORD: aK$GiuqqL9lpXrQE8o@X%'"
   services:
     loadbalanced: false
 env:
