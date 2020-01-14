@@ -5,7 +5,6 @@ opi:
 
   enable_rootfs_patcher: true
   rootfs_patcher_timeout: 2m
-  image_tag: latest
 
   enable_routing: true
   enable_logs: true
