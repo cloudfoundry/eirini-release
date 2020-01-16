@@ -37,7 +37,7 @@ spec:
                 - key: "{{ .Values.opi.events.tls.capi.caPath }}"
                   path: cc.ca
       securityContext:
-        runAsNonRoot: false
+        runAsNonRoot: true
       containers:
       - name: event-reporter
         {{- if .Values.opi.event_reporter_image }}

@@ -37,7 +37,7 @@ spec:
                 - key: "{{ .Values.opi.metrics.tls.server.caPath }}"
                   path: doppler.ca
       securityContext:
-        runAsNonRoot: false
+        runAsNonRoot: true
       containers:
       - name: metrics-collector
         {{- if .Values.opi.metrics_collector_image }}

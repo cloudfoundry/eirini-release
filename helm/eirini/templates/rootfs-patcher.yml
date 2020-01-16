@@ -19,7 +19,7 @@ spec:
         - --namespace={{ .Release.Namespace }}
         - --timeout={{ .Values.opi.rootfsPatcher.timeout }}
       securityContext:
-        runAsNonRoot: false
+        runAsNonRoot: true
       containers:
       - name: patch
         command:

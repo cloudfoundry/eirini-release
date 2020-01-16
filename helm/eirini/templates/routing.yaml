@@ -22,7 +22,7 @@ spec:
             - key: routing.yml
               path: routing.yml
       securityContext:
-        runAsNonRoot: false
+        runAsNonRoot: true
       containers:
       - name: route-collector
         {{- if .Values.opi.route_collector_image }}

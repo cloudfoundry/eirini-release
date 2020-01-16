@@ -50,7 +50,7 @@ spec:
                 - key: "{{ .Values.opi.tls.eirini.caPath }}"
                   path: eirini.ca
       securityContext:
-        runAsNonRoot: false
+        runAsNonRoot: true
       containers:
       - name: opi
         {{- if .Values.opi.image }}
