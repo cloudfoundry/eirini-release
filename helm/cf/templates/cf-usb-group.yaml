@@ -370,7 +370,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:bdb79296ce9b1981507882f9cdbbd00af7ee4c25"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-cf-usb-group:7d16fadead570422fbae2da18c08aa3d8b2a853d"
         lifecycle:
           preStop:
             exec:
