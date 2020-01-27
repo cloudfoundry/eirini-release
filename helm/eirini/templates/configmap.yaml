@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "eirini"
+  namespace: {{ .Release.Namespace }}
 data:
   opi.yml: |
     opi:
