@@ -239,7 +239,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-log-cache-scheduler:1aedae968a71e34177906f8571b1a5b32e8a4547"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-log-cache-scheduler:36eed8ae8443a2402a5a9f634a2370f3515b22a0"
         lifecycle:
           preStop:
             exec:
