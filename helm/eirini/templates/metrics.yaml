@@ -1,9 +1,10 @@
+{{- if .Values.opi.metrics.enable }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "eirini-metrics"
+  namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 1
   selector:
     matchLabels:
       name: "eirini-metrics"
@@ -22,15 +23,22 @@ spec:
             - key: metrics.yml
               path: metrics.yml
         - name: cf-secrets
-          secret:
-            secretName: "{{ .Values.scfSecretName }}"
-            items:
-            - key: doppler-cert
-              path: doppler.crt
-            - key: doppler-cert-key
-              path: doppler.key
-            - key: internal-ca-cert
-              path: doppler.ca
+          projected:
+            sources:
+            - secret:
+                name: "{{ .Values.opi.metrics.tls.client.secretName }}"
+                items:
+                - key: "{{ .Values.opi.metrics.tls.client.certPath }}"
+                  path: doppler.crt
+                - key: "{{ .Values.opi.metrics.tls.client.keyPath }}"
+                  path: doppler.key
+            - secret:
+                name: "{{ .Values.opi.metrics.tls.server.secretName }}"
+                items:
+                - key: "{{ .Values.opi.metrics.tls.server.caPath }}"
+                  path: doppler.ca
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: metrics-collector
         {{- if .Values.opi.metrics_collector_image }}
@@ -48,3 +56,4 @@ spec:
           requests:
             cpu: 15m
             memory: 15Mi
+{{- end }}

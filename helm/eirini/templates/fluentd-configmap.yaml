@@ -1,8 +1,10 @@
+{{- if .Values.opi.logs.enable }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fluentd-conf
+  namespace: {{ .Release.Namespace }}
 data:
   fluentd-conf: |
     <match fluent.**>
@@ -52,4 +54,4 @@ data:
     <match kubernetes.var.log.containers.**.log>
       @type null
     </match>
-
+{{- end }}

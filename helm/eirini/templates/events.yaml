@@ -1,9 +1,10 @@
+{{- if .Values.opi.events.enable }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "eirini-events"
+  namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 1
   selector:
     matchLabels:
       name: "eirini-events"
@@ -22,15 +23,22 @@ spec:
             - key: events.yml
               path: events.yml
         - name: cf-secrets
-          secret:
-            secretName: "{{ .Values.scfSecretName }}"
-            items:
-            - key: cc-server-crt
-              path: cc.crt
-            - key: cc-server-crt-key
-              path: cc.key
-            - key: internal-ca-cert
-              path: cc.ca
+          projected:
+            sources:
+            - secret:
+                name: "{{ .Values.opi.events.tls.capiClient.secretName }}"
+                items:
+                - key: "{{ .Values.opi.events.tls.capiClient.certPath }}"
+                  path: cc.crt
+                - key: "{{ .Values.opi.events.tls.capiClient.keyPath }}"
+                  path: cc.key
+            - secret:
+                name: "{{ .Values.opi.events.tls.capi.secretName }}"
+                items:
+                - key: "{{ .Values.opi.events.tls.capi.caPath }}"
+                  path: cc.ca
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: event-reporter
         {{- if .Values.opi.event_reporter_image }}
@@ -48,3 +56,4 @@ spec:
           requests:
             cpu: 15m
             memory: 15Mi
+{{- end }}

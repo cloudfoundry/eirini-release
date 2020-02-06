@@ -1,9 +1,10 @@
+{{- if .Values.opi.routing.enable }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "eirini-routing"
+  namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 1
   selector:
     matchLabels:
       name: "eirini-routing"
@@ -13,7 +14,7 @@ spec:
         name: "eirini-routing"
     spec:
       dnsPolicy: "ClusterFirst"
-      serviceAccountName: "opi" # Change this to lower permissions
+      serviceAccountName: "eirini-routing"
       volumes:
         - name: config-map-volume
           configMap:
@@ -21,6 +22,8 @@ spec:
             items:
             - key: routing.yml
               path: routing.yml
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: route-collector
         {{- if .Values.opi.route_collector_image }}
@@ -33,11 +36,15 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "{{ .Values.scfSecretName }}"
+              key: "{{ .Values.opi.routing.nats.passwordPath }}"
+              name: "{{ .Values.opi.routing.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
       - name: route-pod-informer
         {{- if .Values.opi.route_pod_informer_image }}
         image: {{ .Values.opi.route_pod_informer_image }}:{{ .Values.opi.image_tag }}
@@ -49,11 +56,15 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "{{ .Values.scfSecretName }}"
+              key: "{{ .Values.opi.routing.nats.passwordPath }}"
+              name: "{{ .Values.opi.routing.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
       - name: route-statefulset-informer
         {{- if .Values.opi.route_statefulset_informer_image }}
         image: {{ .Values.opi.route_statefulset_informer_image }}:{{ .Values.opi.image_tag }}
@@ -65,8 +76,13 @@ spec:
         - name: "NATS_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "nats-password"
-              name: "{{ .Values.scfSecretName }}"
+              key: "{{ .Values.opi.routing.nats.passwordPath }}"
+              name: "{{ .Values.opi.routing.nats.secretName }}"
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
+{{- end }}

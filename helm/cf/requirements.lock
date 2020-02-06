@@ -4,6 +4,6 @@ dependencies:
   version: 0.0.0-dev
 - name: bits
   repository: https://cloudfoundry-incubator.github.io/bits-service-release/helm
-  version: 2.30.0
-digest: sha256:33fdb845bfc5f14ddfd1a81a94255965f218b3b614725ebf2c9100c589295849
-generated: "2019-11-14T12:00:16.737084+01:00"
+  version: 2.33.0
+digest: sha256:1b7200f2a3d56afbab7bb21c9614d62cef90ba790d8c8e5937a70ec8637ac601
+generated: "2020-01-16T17:24:13.401257+02:00"

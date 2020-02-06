@@ -1,7 +1,9 @@
+{{- if .Values.opi.rootfsPatcher.enable }}
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: "rootfs-patcher-{{ .Values.global.rootfs_version }}-{{ .Release.Revision }}"
+  namespace: {{ .Release.Namespace }}
 spec:
   template:
     spec:
@@ -16,7 +18,9 @@ spec:
         command:
         - /bits-waiter
         - --namespace={{ .Release.Namespace }}
-        - --timeout={{ .Values.opi.rootfs_patcher_timeout }}
+        - --timeout={{ .Values.opi.rootfsPatcher.timeout }}
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: patch
         command:
@@ -31,3 +35,4 @@ spec:
         imagePullPolicy: IfNotPresent
       restartPolicy: OnFailure
       serviceAccountName: eirini-rootfs-patcher
+{{- end }}
