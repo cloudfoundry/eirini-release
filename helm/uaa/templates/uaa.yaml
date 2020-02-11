@@ -126,12 +126,6 @@ kind: "List"
 # - global-uaa-properties: Dummy BOSH job used to host global parameters that
 #   are required to configure SCF / fissile
 #
-# - wait-for-database: This is a pre-start job to delay starting the rest of the
-#   role until a database connection is ready. Currently it only checks that a
-#   response can be obtained from the server, and not that it responds
-#   intelligently.
-#
-#
 # - uaa: The UAA is the identity management service for Cloud Foundry. It's
 #   primary role is as an OAuth2 provider, issuing tokens for client
 #   applications to use when they act on behalf of Cloud Foundry users. It can
@@ -139,6 +133,14 @@ kind: "List"
 #   an SSO service using those credentials (or others). It has endpoints for
 #   managing user accounts and for registering OAuth2 clients, as well as
 #   various other management functions.
+#
+# - wait-for-database: This is a pre-start job to delay starting the rest of the
+#   role until a database connection is ready. Currently it only checks that a
+#   response can be obtained from the server, and not that it responds
+#   intelligently.
+#
+#
+# Also: bpm
 
 {{- if and (ne (typeOf .Values.sizing.uaa.count) "<nil>") (gt (int .Values.sizing.uaa.count) 65535) }}
 _maxReplicas: {{ fail "uaa cannot have more than 65535 instances" }}
@@ -227,6 +229,17 @@ spec:
         {{- end }}
     spec:
       affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "app.kubernetes.io/component"
+                  operator: "In"
+                  values:
+                  - "uaa"
+              topologyKey: {{if eq (typeOf .Values.kube.podAntiAffinityTopologyKey) "<nil>"}}kubernetes.io/hostname{{else}}{{.Values.kube.podAntiAffinityTopologyKey}}{{end}}
+            weight: 100
         {{- if .Values.sizing.uaa.affinity.nodeAffinity }}
         nodeAffinity: {{ toJson .Values.sizing.uaa.affinity.nodeAffinity }}
         {{- end }}
@@ -237,29 +250,32 @@ spec:
             secretKeyRef:
               key: "aek-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+
+        {{- if .Values.enable.mysql }}
+        - name: "CONFIGGIN_IMPORT_MYSQL_PROXY"
+          valueFrom:
+            secretKeyRef:
+              name: "mysql-proxy"
+              key: {{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}
+        {{- end }}
+
+        - name: "CONFIGGIN_SA_TOKEN"
+          valueFrom:
+            secretKeyRef:
+              name: "configgin"
+              key: "token"
+        - name: "CONFIGGIN_VERSION_TAG"
+          value: {{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}
         - name: "DB_EXTERNAL_DRIVER"
           value: {{if ne (typeOf .Values.env.DB_EXTERNAL_DRIVER) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_DRIVER) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_DRIVER | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_DRIVER | quote}}{{end}}{{else}}""{{end}}
         - name: "DB_EXTERNAL_HOST"
           value: {{if ne (typeOf .Values.env.DB_EXTERNAL_HOST) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_HOST) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_HOST | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_HOST | quote}}{{end}}{{else}}""{{end}}
-        - name: "DB_EXTERNAL_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "db-external-password"
-              name: "secrets"
         - name: "DB_EXTERNAL_PORT"
           value: {{if ne (typeOf .Values.env.DB_EXTERNAL_PORT) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_PORT) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_PORT | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_PORT | quote}}{{end}}{{else}}""{{end}}
-        - name: "DB_EXTERNAL_USER"
-          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_USER) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_USER) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_USER | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_USER | quote}}{{end}}{{else}}""{{end}}
+        - name: "DB_EXTERNAL_USER_HOST_SUFFIX"
+          value: {{if ne (typeOf .Values.env.DB_EXTERNAL_USER_HOST_SUFFIX) "<nil>"}}{{if has (kindOf .Values.env.DB_EXTERNAL_USER_HOST_SUFFIX) (list "map" "slice")}}{{.Values.env.DB_EXTERNAL_USER_HOST_SUFFIX | toJson | quote}}{{else}}{{.Values.env.DB_EXTERNAL_USER_HOST_SUFFIX | quote}}{{end}}{{else}}""{{end}}
         - name: "DOMAIN"
           value: {{if ne (typeOf .Values.env.DOMAIN) "<nil>"}}{{if has (kindOf .Values.env.DOMAIN) (list "map" "slice")}}{{.Values.env.DOMAIN | toJson | quote}}{{else}}{{.Values.env.DOMAIN | quote}}{{end}}{{else}}{{fail "env.DOMAIN has not been set"}}{{end}}
-
-        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
-        - name: "INTERNAL_CA_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "internal-ca-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
 
         {{- if .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
@@ -267,6 +283,14 @@ spec:
             secretKeyRef:
               key: "internal-ca-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.INTERNAL_CA_CERT_KEY }}
@@ -285,20 +309,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.JWT_SIGNING_CERT }}
-        - name: "JWT_SIGNING_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "jwt-signing-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.JWT_SIGNING_CERT }}
         - name: "JWT_SIGNING_CERT"
           valueFrom:
             secretKeyRef:
               key: "jwt-signing-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.JWT_SIGNING_CERT }}
+        - name: "JWT_SIGNING_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "jwt-signing-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.JWT_SIGNING_CERT_KEY }}
@@ -344,14 +368,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT }}
-        - name: "SAML_SERVICEPROVIDER_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "saml-serviceprovider-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.SAML_SERVICEPROVIDER_CERT }}
         - name: "SAML_SERVICEPROVIDER_CERT"
           valueFrom:
@@ -360,12 +376,12 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
-        - name: "SAML_SERVICEPROVIDER_CERT_KEY"
+        {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT }}
+        - name: "SAML_SERVICEPROVIDER_CERT"
           valueFrom:
             secretKeyRef:
-              key: "saml-serviceprovider-cert-key"
-              name: "secrets"
+              key: "saml-serviceprovider-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
@@ -374,6 +390,14 @@ spec:
             secretKeyRef:
               key: "saml-serviceprovider-cert-key"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.SAML_SERVICEPROVIDER_CERT_KEY }}
+        - name: "SAML_SERVICEPROVIDER_CERT_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "saml-serviceprovider-cert-key"
+              name: "secrets"
         {{- end }}
 
         - name: "SCF_LOG_HOST"
@@ -413,6 +437,8 @@ spec:
               name: "secrets"
         {{- end }}
 
+        - name: "UAADB_TLS"
+          value: {{if ne (typeOf .Values.env.UAADB_TLS) "<nil>"}}{{if has (kindOf .Values.env.UAADB_TLS) (list "map" "slice")}}{{.Values.env.UAADB_TLS | toJson | quote}}{{else}}{{.Values.env.UAADB_TLS | quote}}{{end}}{{else}}""{{end}}
         - name: "UAA_ADMIN_CLIENT_SECRET"
           valueFrom:
             secretKeyRef:
@@ -457,7 +483,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:d4f21e1a7c902cbfbc9881eebd736c8395cf110d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-uaa:9de4f84fcaf0672b7488cc0c77342ed955c87e2e"
         lifecycle:
           preStop:
             exec:
@@ -476,7 +502,7 @@ spec:
           exec:
             command:
             - "/opt/fissile/readiness-probe.sh"
-            - "curl --resolve uaa.${DOMAIN}:8443:$(getent hosts ${HOSTNAME} | awk '{ print $1 }') --fail -H \"Host: uaa.${DOMAIN}\" -H 'Accept: application/json' https://uaa.${DOMAIN}:8443/info"
+            - "curl --resolve uaa.${DOMAIN}:8443:$(getent hosts ${HOSTNAME} | awk '{ print $1 }') --fail -H \\\"Host: uaa.${DOMAIN}\\\" -H 'Accept: application/json' https://uaa.${DOMAIN}:8443/info\n"
         resources:
           requests:
             {{- if and .Values.config.memory.requests .Values.sizing.uaa.memory.request }}
@@ -497,10 +523,11 @@ spec:
             {{- end }}
 
         securityContext:
-          allowPrivilegeEscalation: false
+          allowPrivilegeEscalation: true
           capabilities:
             add:
             - "AUDIT_WRITE"
+          privileged: true
         volumeMounts:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"

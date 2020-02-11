@@ -1,15 +1,15 @@
 ---
-# Role "configgin-role" used by accounts:
-# - default
+# Role "configgin" used by accounts:
+# - configgin
 # - secret-generator
 {{- if and (eq (printf "%s" .Values.kube.auth) "rbac") (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: "rbac.authorization.k8s.io/v1"
 kind: "Role"
 metadata:
-  name: "configgin-role"
+  name: "configgin"
   labels:
-    app.kubernetes.io/component: "configgin-role"
-    skiff-role-name: "configgin-role"
+    app.kubernetes.io/component: "configgin"
+    skiff-role-name: "configgin"
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/name: {{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | quote }}
@@ -23,15 +23,12 @@ rules:
   verbs:
   - "get"
   - "list"
-  - "patch"
 - apiGroups:
   - ""
   resources:
   - "services"
   verbs:
   - "get"
-  - "list"
-  - "patch"
 - apiGroups:
   - "apps"
   resources:
@@ -46,5 +43,6 @@ rules:
   verbs:
   - "create"
   - "get"
+  - "update"
   - "delete"
 {{- end }}

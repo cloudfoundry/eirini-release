@@ -212,20 +212,21 @@ spec:
                   operator: "In"
                   values:
                   - "mysql"
-              topologyKey: "beta.kubernetes.io/os"
+              topologyKey: {{if eq (typeOf .Values.kube.podAntiAffinityTopologyKey) "<nil>"}}kubernetes.io/hostname{{else}}{{.Values.kube.podAntiAffinityTopologyKey}}{{end}}
             weight: 100
         {{- if .Values.sizing.mysql.affinity.nodeAffinity }}
         nodeAffinity: {{ toJson .Values.sizing.mysql.affinity.nodeAffinity }}
         {{- end }}
       containers:
+      {{- if .Values.enable.mysql }}
       - env:
-        {{- if not .Values.secrets.GALERA_SERVER_CERT }}
-        - name: "GALERA_SERVER_CERT"
+        - name: "CONFIGGIN_SA_TOKEN"
           valueFrom:
             secretKeyRef:
-              key: "galera-server-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
+              name: "configgin"
+              key: "token"
+        - name: "CONFIGGIN_VERSION_TAG"
+          value: {{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}
 
         {{- if .Values.secrets.GALERA_SERVER_CERT }}
         - name: "GALERA_SERVER_CERT"
@@ -233,6 +234,14 @@ spec:
             secretKeyRef:
               key: "galera-server-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.GALERA_SERVER_CERT }}
+        - name: "GALERA_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "galera-server-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         {{- if not .Values.secrets.GALERA_SERVER_CERT_KEY }}
@@ -251,20 +260,20 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
-        - name: "INTERNAL_CA_CERT"
-          valueFrom:
-            secretKeyRef:
-              key: "internal-ca-cert"
-              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
-        {{- end }}
-
         {{- if .Values.secrets.INTERNAL_CA_CERT }}
         - name: "INTERNAL_CA_CERT"
           valueFrom:
             secretKeyRef:
               key: "internal-ca-cert"
               name: "secrets"
+        {{- end }}
+
+        {{- if not .Values.secrets.INTERNAL_CA_CERT }}
+        - name: "INTERNAL_CA_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "internal-ca-cert"
+              name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
         - name: "KUBERNETES_CLUSTER_DOMAIN"
@@ -276,14 +285,6 @@ spec:
             fieldRef:
               fieldPath: "metadata.namespace"
 
-        {{- if .Values.secrets.MONIT_PASSWORD }}
-        - name: "MONIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "monit-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MONIT_PASSWORD }}
         - name: "MONIT_PASSWORD"
           valueFrom:
@@ -292,11 +293,11 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_ADMIN_PASSWORD }}
-        - name: "MYSQL_ADMIN_PASSWORD"
+        {{- if .Values.secrets.MONIT_PASSWORD }}
+        - name: "MONIT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "mysql-admin-password"
+              key: "monit-password"
               name: "secrets"
         {{- end }}
 
@@ -306,6 +307,14 @@ spec:
             secretKeyRef:
               key: "mysql-admin-password"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_ADMIN_PASSWORD }}
+        - name: "MYSQL_ADMIN_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-admin-password"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.MYSQL_CLUSTER_HEALTH_PASSWORD }}
@@ -324,14 +333,6 @@ spec:
               name: "secrets"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD }}
-        - name: "MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: "mysql-galera-healthcheck-endpoint-password"
-              name: "secrets"
-        {{- end }}
-
         {{- if not .Values.secrets.MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD }}
         - name: "MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD"
           valueFrom:
@@ -340,11 +341,11 @@ spec:
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
         {{- end }}
 
-        {{- if .Values.secrets.MYSQL_SERVER_CERT }}
-        - name: "MYSQL_SERVER_CERT"
+        {{- if .Values.secrets.MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD }}
+        - name: "MYSQL_GALERA_HEALTHCHECK_ENDPOINT_PASSWORD"
           valueFrom:
             secretKeyRef:
-              key: "mysql-server-cert"
+              key: "mysql-galera-healthcheck-endpoint-password"
               name: "secrets"
         {{- end }}
 
@@ -354,6 +355,14 @@ spec:
             secretKeyRef:
               key: "mysql-server-cert"
               name: "secrets-{{ .Chart.Version }}-{{ .Values.kube.secrets_generation_counter }}"
+        {{- end }}
+
+        {{- if .Values.secrets.MYSQL_SERVER_CERT }}
+        - name: "MYSQL_SERVER_CERT"
+          valueFrom:
+            secretKeyRef:
+              key: "mysql-server-cert"
+              name: "secrets"
         {{- end }}
 
         {{- if not .Values.secrets.MYSQL_SERVER_CERT_KEY }}
@@ -399,7 +408,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-mysql:0a5d7be2172357cf33df2061dd44e6b15087621d"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/uaa-mysql:903a2ac9b66484f32137b9029b63ce845695635f"
         lifecycle:
           preStop:
             exec:
@@ -451,6 +460,7 @@ spec:
         - mountPath: "/opt/fissile/config"
           name: "deployment-manifest"
           readOnly: true
+      {{- end }}
       dnsPolicy: "ClusterFirst"
 
       {{- if ne .Values.kube.registry.username "" }}
