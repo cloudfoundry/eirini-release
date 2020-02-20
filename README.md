@@ -103,6 +103,17 @@ Follow instructions [here](./docs/gke.md).
 
 ## Notes
 
+### Best practices for upgrading the kubernetes cluster
+
+In order to upgrade the kubernetes version of your cluster without app downtime, we recommend that:
+- You have at least three worker nodes. This helps preserve performance during the upgrade.
+- You have at least 2 Gorouter instances by setting the `sizing.router.count` in your values.yaml file. This way your apps will allways be accessible.
+- All apps are scaled to at least 2 instances. This way they can be upgraded one at a time ensuring no downtime.
+- The node that is running the bits service is the last one to upgrade if possible. App migration depends on this service as it holds the docker images.
+
+**Note**: If you follow these steps you will have no app downtime, although the kubernetes control plane as well as the 
+cf push experience will go down for a certain amount of time.
+
 ### Overriding Eirini Images
 
 Eirini has a few images which are deployed by the helm chart. By default these come from the eirini Docker Hub account and the versions of them are located in [the versions directory](helm/eirini/versions). These versions are sha256 sums of the images that will be installed by default. If you want to override any of these images please follow this table:
