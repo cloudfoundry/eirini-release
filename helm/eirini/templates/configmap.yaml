@@ -46,17 +46,17 @@ data:
       application_privileged_service_account: eirini-privileged
   routing.yml: |
     app_namespace: {{ .Values.opi.namespace }}
-    nats_ip: "nats-nats.{{ .Release.Namespace }}.svc.cluster.local"
+    nats_ip: "{{ .Values.opi.routing.nats.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local"
     nats_port: 4222
   metrics.yml: |
     app_namespace: {{ .Values.opi.namespace }}
-    loggregator_address: "doppler-doppler-set.{{ .Release.Namespace }}.svc.cluster.local:8082"
+    loggregator_address: "{{ .Values.opi.logs.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8082"
     loggergator_cert_path: "/etc/eirini/secrets/doppler.crt"
     loggregator_key_path: "/etc/eirini/secrets/doppler.key"
     loggregator_ca_path: "/etc/eirini/secrets/doppler.ca"
   events.yml: |
     app_namespace: {{ .Values.opi.namespace }}
-    cc_internal_api: "https://api.{{ .Release.Namespace }}.svc.cluster.local:9023"
+    cc_internal_api: "https://{{ .Values.opi.cc_api.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:9023"
     cc_cert_path: "/etc/eirini/secrets/cc.crt"
     cc_key_path: "/etc/eirini/secrets/cc.key"
     cc_ca_path: "/etc/eirini/secrets/cc.ca"

@@ -10,6 +10,9 @@ opi:
   namespace: eirini
   version: 0.0.0
 
+  cc_api:
+    serviceName: "api"
+
   tls:
     opiCapiClient:
       secretName: "secrets-2.16.4-2"
@@ -40,6 +43,7 @@ opi:
 
   logs:
     enable: true
+    serviceName: "doppler-doppler"
     tls:
       client:
         secretName: "secrets-2.16.4-2"
@@ -69,6 +73,7 @@ opi:
     nats:
       secretName: "secrets-2.16.4-2"
       passwordPath: "nats-password"
+      serviceName: "nats-nats"
 
   secretSmuggler:
     enable: true
