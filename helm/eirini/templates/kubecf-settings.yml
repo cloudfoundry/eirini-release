@@ -94,6 +94,8 @@ data:
         options:
           ca: service_cf_internal_ca
           common_name: "eirini-opi"
+          alternative_names:
+          - eirini-opi.kubecf.svc.cluster.local
           extended_key_usage:
           - server_auth
     - type: replace
