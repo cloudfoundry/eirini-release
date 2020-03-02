@@ -82,6 +82,12 @@ opi:
   staging:
     # secret that is used to connect to CAPI and Blobstore. Copied by secret smuggler
     secretNameInAppNamespace: "secrets-2.16.4-2"
+    tls:
+      stagingReporter:
+        secretName: "secrets-2.16.4-2"
+        certPath: "eirini-client-crt"
+        keyPath: "eirini-client-crt-key"
+        caPath: "internal-ca-cert"
 
 services:
   loadbalanced: false

@@ -60,3 +60,8 @@ data:
     cc_cert_path: "/etc/eirini/secrets/cc.crt"
     cc_key_path: "/etc/eirini/secrets/cc.key"
     cc_ca_path: "/etc/eirini/secrets/cc.ca"
+  staging-reporter.yml: |
+    app_namespace: {{ .Values.opi.namespace }}
+    eirini_cert_path: "/etc/eirini/secrets/eirini-client.crt"
+    eirini_key_path: "/etc/eirini/secrets/eirini-client.key"
+    ca_path: "/etc/eirini/secrets/eirini-client.ca"
