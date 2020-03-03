@@ -33,6 +33,30 @@ data:
     - type: replace
       path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/opi?/url?
       value: https://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085 
+
+      # --- Set endpoints and alternative names for eirini staging. See: 
+      # https://github.com/cloudfoundry-incubator/kubecf/blob/master/deploy/helm/kubecf/assets/operations/instance_groups/eirini.yaml#L177-L201
+    - type: replace
+      path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/packages?/webdav_config?/private_endpoint?
+      value: https://kubecf-singleton-blobstore.{{ .Release.Namespace }}.svc.cluster.local:4443
+    - type: replace
+      path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/buildpacks?/webdav_config?/private_endpoint?
+      value: https://kubecf-singleton-blobstore.{{ .Release.Namespace }}.svc.cluster.local:4443
+    - type: replace
+      path: /variables/name=blobstore_tls/options/alternative_names?/-
+      value: "kubecf-singleton-blobstore.{{ .Release.Namespace }}.svc.cluster.local"
+    - type: replace
+      path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/cc_uploader_url?
+      value: https://kubecf-api.{{ .Release.Namespace }}.svc.cluster.local:9090
+    - type: replace
+      path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/cc_uploader_https_url?
+      value: https://kubecf-api.{{ .Release.Namespace }}.svc.cluster.local:9091
+    - type: replace
+      path: /variables/name=cc_bridge_cc_uploader_server/options/alternative_names?/-
+      value: "kubecf-api.{{ .Release.Namespace }}.svc.cluster.local"
+
+      #---------------
+
     - type: replace
       path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/opi?/opi_staging?
       value: true
