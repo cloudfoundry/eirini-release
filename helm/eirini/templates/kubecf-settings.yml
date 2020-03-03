@@ -46,13 +46,19 @@ data:
       path: /variables/name=blobstore_tls/options/alternative_names?/-
       value: "kubecf-singleton-blobstore.{{ .Release.Namespace }}.svc.cluster.local"
     - type: replace
-      path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/cc_uploader_url?
-      value: https://kubecf-api.{{ .Release.Namespace }}.svc.cluster.local:9090
-    - type: replace
-      path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/diego?/cc_uploader_https_url?
-      value: https://kubecf-api.{{ .Release.Namespace }}.svc.cluster.local:9091
-    - type: replace
       path: /variables/name=cc_bridge_cc_uploader_server/options/alternative_names?/-
+      value: "kubecf-api.{{ .Release.Namespace }}.svc.cluster.local"
+    - type: replace
+      path: /instance_groups/name=api/jobs/name=cc_uploader/properties/internal_hostname?
+      value: "kubecf-api.{{ .Release.Namespace }}.svc.cluster.local"
+    - type: replace
+      path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/internal_service_hostname?
+      value: "kubecf-api.{{ .Release.Namespace }}.svc.cluster.local"
+    - type: replace
+      path: /variables/name=cc_public_tls/options/alternative_names?/-
+      value: "kubecf-api.{{ .Release.Namespace }}.svc.cluster.local"
+    - type: replace
+      path: /variables/name=cc_tls/options/alternative_names?/-
       value: "kubecf-api.{{ .Release.Namespace }}.svc.cluster.local"
 
       #---------------
