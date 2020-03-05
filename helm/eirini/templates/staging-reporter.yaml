@@ -13,17 +13,17 @@ spec:
         name: "eirini-staging-reporter"
     spec:
       dnsPolicy: "ClusterFirst"
-      serviceAccountName: "eirini-events"
+      serviceAccountName: "eirini-staging-reporter"
       securityContext:
         runAsNonRoot: true
       containers:
-      - name: crash-reporter
+      - name: staging-reporter
         {{- if .Values.opi.staging_reporter_image }}
         image: {{ .Values.opi.staging_reporter_image }}:{{ .Values.opi.staging_reporter_image_tag }}
         {{- else }}
         image: eirini/staging-reporter@{{ .Files.Get "versions/staging-reporter" }}
         {{- end }}
-         imagePullPolicy: Always
+        imagePullPolicy: Always
         resources:
           requests:
             cpu: 15m
