@@ -320,6 +320,11 @@ spec:
 You can get IP address of the master by running `kubectl get endpoints` command. If there are multiple Kubernetes API nodes, IP address
 of each of them would need to be specified in the `except` array.
 
+## Differences with Diego
+
+### Environment variables
+It is not possible to set environment variables contining `:` to your apps containers because of Kubernetes restrictions. 
+
 ## Troubleshooting
 
 ### Disk full on blobstore
