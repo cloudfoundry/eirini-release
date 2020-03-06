@@ -8,7 +8,6 @@ data:
   opi.yml: |
     opi:
       app_namespace: {{ .Values.opi.namespace }}
-      cc_certs_secret_name: "{{ .Values.opi.staging.secretNameInAppNamespace }}"
       {{- if .Values.opi.use_registry_ingress }}
       registry_address: "registry.{{ .Values.opi.ingress_endpoint }}:443"
       {{- else if .Values.services.loadbalanced }}
@@ -33,6 +32,18 @@ data:
       {{- else }}
       uploader_image: eirini/recipe-uploader@{{ .Files.Get "versions/staging-uploader" }}
       {{- end }}
+
+      cc_uploader_secret_name: {{ .Values.opi.staging.tls.cc_uploader.secretName }}
+      cc_uploader_cert_path: {{ .Values.opi.staging.tls.cc_uploader.certPath }}
+      cc_uploader_key_path: {{ .Values.opi.staging.tls.cc_uploader.keyPath }}
+
+      client_secret_name: {{ .Values.opi.staging.tls.client.secretName }}
+      client_cert_path: {{ .Values.opi.staging.tls.client.certPath }}
+      client_key_path: {{ .Values.opi.staging.tls.client.keyPath }}
+
+      ca_cert_secret_name: {{ .Values.opi.staging.tls.ca.secretName }}
+      ca_cert_secret_name: {{ .Values.opi.staging.tls.ca.path }}
+
       cc_cert_path: "/workspace/jobs/opi/secrets/cc.crt"
       cc_key_path: "/workspace/jobs/opi/secrets/cc.key"
       cc_ca_path: "/workspace/jobs/opi/secrets/cc.ca"
