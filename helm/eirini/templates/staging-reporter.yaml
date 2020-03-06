@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "eirini-staging-reporter"
-  namespace: scf
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
