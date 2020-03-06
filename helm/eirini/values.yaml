@@ -81,6 +81,7 @@ opi:
     scfSecretName: "secrets-2.16.4-2"
 
   staging:
+    enable: true
     tls:
       client:
         secretName: "secrets-2.16.4-2"
