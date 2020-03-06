@@ -116,6 +116,16 @@ data:
       path: /instance_groups/name=scheduler/jobs/name=cloud_controller_clock/properties/cc/opi?/ca_cert?
       value: ((eirini_tls_server_cert.ca))
 
+    # Make loggregator agent cert validate correctly for fluentd in k8s nodes
+    - type: replace
+      path: /variables/name=loggregator_tls_agent/options/alternative_names?
+      value:
+        - localhost
+        - metron
+    - type: replace
+      path: /variables/name=loggregator_tls_doppler/options/alternative_names?/-
+      value: metron
+
     - type: replace
       path: /variables/name=eirini_tls_server_cert?
       value:
