@@ -25,6 +25,11 @@ We are working hard towards feature parity with Diego, but still there are some 
 ### Environment variables
 It is not possible to set environment variables containing `:` to your apps containers because of Kubernetes restrictions. 
 
+## Differences with Diego
+
+### Environment variables
+It is not possible to set environment variables contining `:` to your apps containers because of Kubernetes restrictions. 
+
 ## Troubleshooting
 
 ### Disk full on blobstore
