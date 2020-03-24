@@ -6,7 +6,10 @@ to a kube backend, using OCI images and Kube deployments.
 
 ## Installation
 
-Please follow our [Installation Guide](docs/installation.md)
+There are two ways to install Cloud Foundry with Eirini enabled:
+
+* [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s)
+* [KubeCF](https://github.com/cloudfoundry-incubator/kubecf)
 
 ## Security
 
@@ -24,11 +27,6 @@ We are working hard towards feature parity with Diego, but still there are some 
 
 ### Environment variables
 It is not possible to set environment variables containing `:` to your apps containers because of Kubernetes restrictions. 
-
-## Differences with Diego
-
-### Environment variables
-It is not possible to set environment variables contining `:` to your apps containers because of Kubernetes restrictions. 
 
 ## Troubleshooting
 
