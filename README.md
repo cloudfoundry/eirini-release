@@ -28,6 +28,9 @@ We are working hard towards feature parity with Diego, but still there are some 
 ### Environment variables
 It is not possible to set environment variables containing `:` to your apps containers because of Kubernetes restrictions. 
 
+### Docker images runnig with the root user
+By default Eirini does not allow docker images running with the root user. Diego allows this because the application runs in a separate user namespace, which is not supported in Kubernetes as of now. However, you can configure Eirini to allow such docker images - see [Security Guidelines](docs/security-guidelines.md#application-podsecuritypolicy) for more information.
+
 ## Troubleshooting
 
 ### Disk full on blobstore
