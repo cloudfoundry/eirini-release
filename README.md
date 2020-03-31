@@ -6,10 +6,11 @@ to a kube backend, using OCI images and Kube deployments.
 
 ## Installation
 
-There are two ways to install Cloud Foundry with Eirini enabled:
+The following CFAR (Cloud Foundry Application Runtime) distributions deploy CF on top of Kubernetes and bundle Eirini with it:
 
 * [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s)
 * [KubeCF](https://github.com/cloudfoundry-incubator/kubecf)
+* Deprecated: [Install via SCF](./docs/installation.md). **Warning**: this installation type is no longer officially supported and will be soon discontinued.
 
 ## Security
 
@@ -26,9 +27,9 @@ To learn about how you can use Kubernetes security primitives to make your deplo
 We are working hard towards feature parity with Diego, but still there are some differences in behaviour
 
 ### Environment variables
-It is not possible to set environment variables containing `:` to your apps containers because of Kubernetes restrictions. 
+It is not possible to set environment variables containing `:` to your apps containers because of Kubernetes restrictions.
 
-### Docker images runnig with the root user
+### Docker images running with the root user
 By default Eirini does not allow docker images running with the root user. Diego allows this because the application runs in a separate user namespace, which is not supported in Kubernetes as of now. However, you can configure Eirini to allow such docker images - see [Security Guidelines](docs/security-guidelines.md#application-podsecuritypolicy) for more information.
 
 ## Troubleshooting
