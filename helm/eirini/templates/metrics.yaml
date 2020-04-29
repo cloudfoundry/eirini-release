@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         name: "eirini-metrics"
+{{ toYaml .Values.global.labels | indent 8 }}
+      annotations:
+{{ toYaml .Values.global.annotations | indent 8 }}
     spec:
       dnsPolicy: "ClusterFirst"
       serviceAccountName: "eirini-metrics"

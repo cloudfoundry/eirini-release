@@ -13,6 +13,9 @@ spec:
       labels:
         name: "eirini"
         eirinifs_version: "{{  .Values.global.rootfs_version  }}"
+{{ toYaml .Values.global.labels | indent 8 }}
+      annotations:
+{{ toYaml .Values.global.annotations | indent 8 }}
     spec:
       dnsPolicy: "ClusterFirst"
       serviceAccountName: "opi"
