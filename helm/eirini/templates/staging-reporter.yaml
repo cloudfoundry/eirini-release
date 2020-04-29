@@ -13,9 +13,13 @@ spec:
     metadata:
       labels:
         name: "eirini-staging-reporter"
+{{- if .Values.global.labels }}
 {{ toYaml .Values.global.labels | indent 8 }}
+{{- end }}
+{{- if .Values.global.annotations }}
       annotations:
 {{ toYaml .Values.global.annotations | indent 8 }}
+{{- end }}
     spec:
       dnsPolicy: "ClusterFirst"
       serviceAccountName: "eirini-staging-reporter"
