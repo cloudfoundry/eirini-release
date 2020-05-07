@@ -1793,3 +1793,5 @@ ingress:
   # ingress.tls.crt and ingress.tls.key, when specified, are used by the TLS
   # secret for the Ingress resource.
   tls: {}
+global:
+  rootfs_version: 'v150.0.0'
