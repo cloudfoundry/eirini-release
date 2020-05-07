@@ -319,7 +319,7 @@ spec:
           value: {{ .Values.kube.limits.nproc.hard | quote }}
         - name: "VCAP_SOFT_NPROC"
           value: {{ .Values.kube.limits.nproc.soft | quote }}
-        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:820e8fa002e9b3ae502d6d33e75ca759c4cdfd18"
+        image: "{{ .Values.kube.registry.hostname }}/{{ .Values.kube.organization }}/scf-credhub-user:98fbdba876bff6db0ad8505a3c8f15114d4940d3"
         lifecycle:
           preStop:
             exec:
