@@ -29,7 +29,7 @@ As of v1.5.0 a single instance of the eirini deployment can take a sustained loa
 In order to better understand this result we have to state some condtitions that we assumed when performing the tests:
 - Performing well under load means that the eirini server will respond in less than 30s.
 - The tests were performed directly against the Eirini API (bypassing the cloud controller) and agains a sufficiently large cluster in order to make sure the eirini is the only bottleneck. So these results apply to eirini in isolation. The whole cf system will be as scalable as it's weakest subsystem.
-- There results describe the through put of eirini itself. Our measurements apply from the moment a desire request is placed to the moment a stateful set is created on Kubernetes. These are not scalability results for Kubernetes.
+- There results describe the throughput of eirini itself. Our measurements apply from the moment a desire request is placed to the moment a stateful set is created on Kubernetes. These are not scalability results for Kubernetes.
 
 ## Differences with Diego
 
