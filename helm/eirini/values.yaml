@@ -99,6 +99,11 @@ opi:
         certPath: "eirini-client-crt"
         keyPath: "eirini-client-crt-key"
         caPath: "internal-ca-cert"
+      taskReporter:
+        secretName: "secrets-2.16.4-2"
+        keyPath: "cc-server-crt-key"
+        certPath: "cc-server-crt"
+        caPath: "internal-ca-cert"
 
   kubecf:
     enable: false
