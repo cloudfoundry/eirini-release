@@ -1,3 +1,4 @@
+{{- if .Values.opi.tasks.enable }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -43,11 +44,12 @@ spec:
               path: task-reporter.yml
         - name: cf-secrets
           secret:
-             secretName: "{{ .Values.opi.staging.tls.taskReporter.secretName }}"
+             secretName: "{{ .Values.opi.tasks.tls.taskReporter.secretName }}"
              items:
-             - key: "{{ .Values.opi.staging.tls.taskReporter.certPath }}"
+             - key: "{{ .Values.opi.tasks.tls.taskReporter.certPath }}"
                path: cc.crt
-             - key: "{{ .Values.opi.staging.tls.taskReporter.keyPath }}"
+             - key: "{{ .Values.opi.tasks.tls.taskReporter.keyPath }}"
                path: cc.key
-             - key: "{{ .Values.opi.staging.tls.taskReporter.caPath }}"
+             - key: "{{ .Values.opi.tasks.tls.taskReporter.caPath }}"
                path: cc.ca
+{{- end }}

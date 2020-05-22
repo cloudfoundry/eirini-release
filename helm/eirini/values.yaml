@@ -99,6 +99,10 @@ opi:
         certPath: "eirini-client-crt"
         keyPath: "eirini-client-crt-key"
         caPath: "internal-ca-cert"
+
+  tasks:
+    enable: false
+    tls:
       taskReporter:
         secretName: "secrets-2.16.4-2"
         keyPath: "cc-server-crt-key"
