@@ -42,7 +42,7 @@ It is not possible to set environment variables containing `:` to your apps cont
 By default Eirini does not allow docker images running with the root user. Diego allows this because the application runs in a separate user namespace, which is not supported in Kubernetes as of now. However, you can configure Eirini to allow such docker images - see [Security Guidelines](docs/security-guidelines.md#application-podsecuritypolicy) for more information.
 
 ### Task retries and parallelism
-Tasks in Diego are run [at most once](https://www.pivotaltracker.com/story/show/172765898) and once completed you can determine whether they failed or not. In Eirini we run tasks as Jobs in Kubernetes with both `completions` and `parallelism` set to 1. However, [as per the Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/#handling-pod-and-container-failures), there is no guarantee that the task won't be ran more than once.
+Tasks in Diego are run [at most once](https://github.com/cloudfoundry/diego-notes/blob/926024b/notes/lrp-task-states-and-transitions.md#task-states) and once completed you can determine whether they failed or not. In Eirini we run tasks as Jobs in Kubernetes with both `completions` and `parallelism` set to 1. However, [as per the Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/#handling-pod-and-container-failures), there is no guarantee that the task won't be ran more than once.
 
 ## Troubleshooting
 
