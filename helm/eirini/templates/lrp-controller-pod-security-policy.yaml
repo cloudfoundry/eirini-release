@@ -1,49 +1,40 @@
-{{- if .Values.opi.staging.enable }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: eirini-staging-reporter
+  name: lrp-controller
   namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: eirini-staging-reporter
-  namespace: {{ .Values.opi.namespace }}
+  name: lrp-controller-cluster-role
 rules:
 - apiGroups:
-  - ""
+  - eirini.cloudfoundry.org
   resources:
-  - pods
+  - lrps
   verbs:
-  - list
   - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
   - list
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
-  name: eirini-staging-reporter
-  namespace: {{ .Values.opi.namespace }}
+  name: lrp-controller-cluster-rolebinding
 roleRef:
-  kind: Role
-  name: eirini-staging-reporter
+  kind: ClusterRole
+  name: lrp-controller-cluster-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: eirini-staging-reporter
+  name: lrp-controller
   namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: eirini-staging-reporter-psp
+  name: lrp-controller-role
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
@@ -53,26 +44,26 @@ rules:
   verbs:
   - use
   resourceNames:
-  - eirini-staging-reporter
+  - eirini-lrp-controller
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: eirini-staging-reporter-psp
+  name: lrp-controller-rolebinding
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: eirini-staging-reporter-psp
+  name: lrp-controller-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: eirini-staging-reporter
+  name: lrp-controller
   namespace: {{ .Release.Namespace }}
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: eirini-staging-reporter
+  name: eirini-lrp-controller
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'runtime/default'
     seccomp.security.alpha.kubernetes.io/defaultProfileName:  'runtime/default'
@@ -84,7 +75,6 @@ spec:
   volumes:
     - 'configMap'
     - 'secret'
-    - 'projected'
   hostNetwork: false
   hostIPC: false
   hostPID: false
@@ -106,4 +96,3 @@ spec:
       - min: 1
         max: 65535
   readOnlyRootFilesystem: false
-{{- end }}

@@ -109,6 +109,14 @@ opi:
         certPath: "cc-server-crt"
         caPath: "internal-ca-cert"
 
+  lrpController:
+    enable: false
+    tls:
+      secretName: "secrets-2.16.4-2"
+      certPath: "eirini-client-crt"
+      keyPath: "eirini-client-crt-key"
+      caPath: "internal-ca-cert"
+
   kubecf:
     enable: false
 
