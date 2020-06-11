@@ -110,7 +110,7 @@ opi:
         caPath: "internal-ca-cert"
 
   lrpController:
-    enable: false
+    enable: true
     tls:
       secretName: "secrets-2.16.4-2"
       certPath: "eirini-client-crt"
