@@ -16,7 +16,7 @@ data:
       registry_address: "registry.{{ index .Values.kube.external_ips 0 }}.nip.io:6666"
       {{- end }}
       registry_secret_name: {{ .Values.opi.registry_secret_name }}
-      eirini_address: "https://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
+      eirini_address: "https://{{ .Values.opi.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8085"
       {{- if .Values.opi.staging.downloader_image_tag }}
       downloader_image: "eirini/recipe-downloader:{{ .Values.opi.staging.downloader_image_tag }}"
       {{- else }}
@@ -84,7 +84,7 @@ data:
     ca_path: "/etc/eirini/secrets/cc.ca"
   lrp-controller.yml: |
     app_namespace: {{ .Values.opi.namespace }}
-    eirini_uri: "https://eirini-opi.{{ .Release.Namespace }}.svc.cluster.local:8085"
+    eirini_uri: "https://{{ .Values.opi.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8085"
     eirini_cert_path: "/etc/eirini/secrets/eirini-client.crt"
     eirini_key_path: "/etc/eirini/secrets/eirini-client.key"
     ca_path: "/etc/eirini/secrets/eirini-client.ca"

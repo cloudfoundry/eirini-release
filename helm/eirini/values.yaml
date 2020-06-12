@@ -10,6 +10,7 @@ opi:
   disk_limit_mb: 2048
   namespace: eirini
   version: 0.0.0
+  serviceName: "eirini-opi"
 
   cc_api:
     serviceName: "api"
