@@ -102,7 +102,7 @@ opi:
         caPath: "internal-ca-cert"
 
   tasks:
-    enable: false
+    enable: true
     tls:
       taskReporter:
         secretName: "secrets-2.16.4-2"
