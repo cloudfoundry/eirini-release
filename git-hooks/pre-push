@@ -9,6 +9,7 @@ main() {
   while read -r _ _ remote_ref _; do
     if [[ "$remote_ref" =~ .*/master$ ]]; then
       echo -e "${RED}   Do not push to master. Never.   ${NORMAL}"
+      exit 1
     fi
     if [[ "$remote_ref" =~ .*/develop$ ]]; then
       check-ci
@@ -17,8 +18,8 @@ main() {
 }
 
 check-ci() {
-  if check-pipeline "ci" || check-pipeline "eirini-release"; then
-    echo -e "${RED}   Pipeline is red.   ${NORMAL}"
+  if check-pipeline "ci" || check-pipeline "acceptance"; then
+    echo -e "${RED}   Pipeline is red.    ${NORMAL}"
     prompt-push
   fi
   echo "CI is green"
@@ -38,6 +39,7 @@ prompt-push() {
 check-pipeline() {
   local pipeline_name failed_jobs
   pipeline_name="$1"
+  echo "Checking https://jetson.eirini.cf-app.com/teams/main/pipelines/$pipeline_name ..."
   curl -s "https://jetson.eirini.cf-app.com/api/v1/teams/main/pipelines/$pipeline_name/jobs" | grep -Eq "failed|error"
 }
 
