@@ -56,6 +56,8 @@ data:
       application_service_account: eirini
       staging_service_account: eirini-staging
       allow_run_image_as_root: false
+      unsafe_allow_automount_service_account_token: {{ .Values.opi.unsafe_allow_automount_service_account_token }}
+      serve_plaintext: {{ .Values.opi.serve_plaintext }}
   routing.yml: |
     app_namespace: {{ .Values.opi.namespace }}
     nats_ip: "{{ .Values.opi.routing.nats.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local"

@@ -12,6 +12,9 @@ opi:
   version: 0.0.0
   serviceName: "eirini-opi"
 
+  unsafe_allow_automount_service_account_token: false
+  serve_plaintext: false
+
   cc_api:
     serviceName: "api"
 
