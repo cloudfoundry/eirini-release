@@ -17,6 +17,8 @@ opi:
 
   cc_api:
     serviceName: "api"
+    protocol: https
+    port: 9023
 
   tls:
     opiCapiClient:
