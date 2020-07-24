@@ -15,13 +15,13 @@ spec:
             spec:
               type: object
               properties:
-                GUID:
+                guid:
                   type: string
                 name:
                   type: string
                 image:
                   type: string
-                completion_callback:
+                completionCallback:
                   type: string
                 privateRegistry:
                   type: object
@@ -42,15 +42,15 @@ spec:
                     type: string
                 appName:
                   type: string
-                appGUID:
+                appGuid:
                   type: string
                 orgName:
                   type: string
-                orgGUID:
+                orgGuid:
                   type: string
                 spaceName:
                   type: string
-                spaceGUID:
+                spaceGuid:
                   type: string
                 memoryMB:
                   type: integer
