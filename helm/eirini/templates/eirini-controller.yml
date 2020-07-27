@@ -1,4 +1,4 @@
-{{- if .Values.opi.eiriniController.enable }}
+{{- if .Values.opi.lrpController.enable }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -44,12 +44,12 @@ spec:
               path: eirini-controller.yml
         - name: cf-secrets
           secret:
-            secretName: "{{ .Values.opi.eiriniController.tls.secretName }}"
+            secretName: "{{ .Values.opi.lrpController.tls.secretName }}"
             items:
-            - key: "{{ .Values.opi.eiriniController.tls.certPath }}"
+            - key: "{{ .Values.opi.lrpController.tls.certPath }}"
               path: eirini-client.crt
-            - key: "{{ .Values.opi.eiriniController.tls.keyPath }}"
+            - key: "{{ .Values.opi.lrpController.tls.keyPath }}"
               path: eirini-client.key
-            - key: "{{ .Values.opi.eiriniController.tls.caPath }}"
+            - key: "{{ .Values.opi.lrpController.tls.caPath }}"
               path: eirini-client.ca
 {{- end }}
