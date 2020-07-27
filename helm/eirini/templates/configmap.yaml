@@ -94,7 +94,7 @@ data:
     cc_key_path: "/etc/eirini/secrets/cc.key"
     ca_path: "/etc/eirini/secrets/cc.ca"
     {{- end }}
-  lrp-controller.yml: |
+  eirini-controller.yml: |
     app_namespace: {{ .Values.opi.namespace }}
     eirini_uri: "https://{{ .Values.opi.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8085"
     eirini_cert_path: "/etc/eirini/secrets/eirini-client.crt"
