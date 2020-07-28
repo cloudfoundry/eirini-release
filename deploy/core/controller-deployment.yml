@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eirini-controller
+  namespace: eirini-core
+spec:
+  selector:
+    matchLabels:
+      name: eirini-controller
+  template:
+    metadata:
+      labels:
+        name: eirini-controller
+    spec:
+      dnsPolicy: ClusterFirst
+      serviceAccountName: eirini-controller
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: eirini-controller
+        image: eirini/eirini-controller@sha256:e3d5469cde8e65c7bb08d8b487dbae4120370992ab90ee1127bba622c463bed2
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 15m
+            memory: 15Mi
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/config
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: "opi"
+            items:
+            - key: opi.yml
+              path: eirini-controller.yml
