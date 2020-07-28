@@ -14,6 +14,10 @@ spec:
           properties:
             spec:
               type: object
+              required:
+                - guid
+                - image
+                - command
               properties:
                 guid:
                   type: string
