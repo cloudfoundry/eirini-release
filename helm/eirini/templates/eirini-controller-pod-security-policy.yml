@@ -20,6 +20,12 @@ rules:
   - list
   - get
 - apiGroups:
+  - eirini.cloudfoundry.org
+  resources:
+  - lrps/status
+  verbs:
+  - update
+- apiGroups:
   - apps
   resources:
   - statefulsets
