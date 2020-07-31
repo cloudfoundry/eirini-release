@@ -68,7 +68,7 @@ data:
   metrics.yml: |
     app_namespace: {{ .Values.opi.namespace }}
     loggregator_address: "{{ .Values.opi.logs.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8082"
-    loggergator_cert_path: "/etc/eirini/secrets/doppler.crt"
+    loggregator_cert_path: "/etc/eirini/secrets/doppler.crt"
     loggregator_key_path: "/etc/eirini/secrets/doppler.key"
     loggregator_ca_path: "/etc/eirini/secrets/doppler.ca"
   events.yml: |
