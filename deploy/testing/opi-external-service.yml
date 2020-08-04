@@ -5,9 +5,8 @@ metadata:
   name: eirini-external
   namespace: eirini-core
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     name: eirini
   ports:
   - port: 8085
-    nodePort: 30085
