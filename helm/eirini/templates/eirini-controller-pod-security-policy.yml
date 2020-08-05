@@ -36,6 +36,22 @@ rules:
   - watch
   - list
 - apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - list
+  - create
+  - update
+- apiGroups:
   - batch
   resources:
   - jobs
