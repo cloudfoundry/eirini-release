@@ -100,3 +100,7 @@ data:
     eirini_cert_path: "/etc/eirini/secrets/eirini-client.crt"
     eirini_key_path: "/etc/eirini/secrets/eirini-client.key"
     ca_path: "/etc/eirini/secrets/eirini-client.ca"
+  instance-index-env-injector.yml: |
+    service_name: instance-index-env-injector
+    service_namespace: {{ .Release.Namespace }}
+    service_port: 443

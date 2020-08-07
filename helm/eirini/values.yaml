@@ -141,3 +141,5 @@ kube:
 
 global:
   rootfs_version: v75.0.0
+
+instanceIndexEnvInjector: {}

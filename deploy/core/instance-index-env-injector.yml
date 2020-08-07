@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: instance-index-env-injector
+  namespace: eirini-core
+spec:
+  selector:
+    matchLabels:
+      name: instance-index-env-injector
+  template:
+    metadata:
+      labels:
+        name: instance-index-env-injector
+    spec:
+      serviceAccountName: eirini-instance-index-env-injector
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: instance-index-env-injector
+            items:
+            - key: instance-index-env-injector.yml
+              path: instance-index-env-injector.yml
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: instance-index-env-injector
+        image: eirini/instance-index-env-injector@sha256:64e81ad32c45eeccaecfd33dad5af5d2e847c474f77ec0426ea043ba08ebe7de
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/config
+        ports:
+        - containerPort: 8443
+          name: https
+        resources:
+          requests:
+            cpu: 20m
+            memory: 20Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: instance-index-env-injector
+  namespace: eirini-core
+spec:
+  ports:
+    - port: 443
+      targetPort: 8443
+      protocol: TCP
+      name: https
+  selector:
+    name: instance-index-env-injector
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: instance-index-env-injector
+  namespace: eirini-core
+data:
+  instance-index-env-injector.yml: |
+    service_name: instance-index-env-injector
+    service_namespace: eirini-core
+    service_port: 8443
