@@ -22,18 +22,18 @@ check_app_exists() {
 cleanup() {
   kubectl -n eirini-workloads delete lrps --all
   kubectl -n eirini-workloads delete statefulsets --all
-  gcloud compute firewall-rules delete --quiet test-node-port
 }
 
 test_api() {
-  tls_crt="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.crt"]' | base64 -d)"
-  tls_key="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.key"]' | base64 -d)"
-  tls_ca="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.ca"]' | base64 -d)"
+  tls_crt="$(kubectl get secret -n eirini-core eirini-certs -o json | jq -r '.data["tls.crt"]' | base64 -d)"
+  tls_key="$(kubectl get secret -n eirini-core eirini-certs -o json | jq -r '.data["tls.key"]' | base64 -d)"
+  tls_ca="$(kubectl get secret -n eirini-core eirini-certs -o json | jq -r '.data["tls.ca"]' | base64 -d)"
 
   eirini_host="$(kubectl get nodes -o wide | tail -1 | awk '{ print $7 }')"
+  node_port="$(kubectl get -n eirini-core services eirini-external -o jsonpath="{.spec.ports[0].nodePort}")"
 
   echo "Creating an app via API"
-  curl --cacert <(echo "$tls_ca") --key <(echo "$tls_key") --cert <(echo "$tls_crt") -k "https://$eirini_host:30085/apps/testapp" -X PUT -H "Content-Type: application/json" -d '{"guid": "the-app-guid","version": "0.0.0","ports" : [8080],"lifecycle": {"docker_lifecycle": {"image": "busybox","command": ["/bin/sleep", "100"]}},"instances": 1}'
+  curl --cacert <(echo "$tls_ca") --key <(echo "$tls_key") --cert <(echo "$tls_crt") -k "https://$eirini_host:$node_port/apps/testapp" -X PUT -H "Content-Type: application/json" -d '{"guid": "the-app-guid","version": "0.0.0","ports" : [8080],"lifecycle": {"docker_lifecycle": {"image": "busybox","command": ["/bin/sleep", "100"]}},"instances": 1}'
 
   check_app_exists
 }
@@ -65,8 +65,6 @@ kubectl -n eirini-workloads delete lrps --all
 
 cluster_name=$(kubectl config current-context | cut -d _ -f 4)
 echo "Using cluster '$cluster_name'"
-echo "Allowing nodeport 30085..."
-gcloud compute firewall-rules create test-node-port --quiet --network "$cluster_name" --allow tcp:30085
 trap cleanup EXIT
 
 test_api

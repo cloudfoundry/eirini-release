@@ -26,12 +26,12 @@ spec:
             cpu: 15m
             memory: 15Mi
         volumeMounts:
-        - name: config-map-volume
+        - name: config-map
           mountPath: /etc/eirini/config
       volumes:
-        - name: config-map-volume
+        - name: config-map
           configMap:
-            name: "opi"
+            name: eirini
             items:
             - key: opi.yml
               path: eirini-controller.yml

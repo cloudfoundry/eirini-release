@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: eirini
+  name: eirini-api
   namespace: eirini-core
 spec:
   ports:
@@ -10,4 +10,4 @@ spec:
       protocol: TCP
       name: https
   selector:
-    name: eirini
+    name: eirini-api

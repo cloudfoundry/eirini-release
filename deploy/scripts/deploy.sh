@@ -19,4 +19,4 @@ pushd "$PROJECT_ROOT/deploy/scripts"
 }
 popd
 
-cat "$PROJECT_ROOT"/deploy/**/*.yml | kubectl apply -f -
+kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy

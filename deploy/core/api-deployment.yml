@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eirini-api
+  namespace: eirini-core
+spec:
+  selector:
+    matchLabels:
+      name: eirini-api
+  template:
+    metadata:
+      labels:
+        name: eirini-api
+        eirinifs_version: v75.0.0
+    spec:
+      dnsPolicy: ClusterFirst
+      serviceAccountName: opi
+      volumes:
+        - name: config-map
+          configMap:
+            name: eirini
+        - name: cc-certs
+          secret:
+            secretName: capi-tls
+            optional: true
+        - name: eirini-certs
+          secret:
+            secretName: eirini-certs
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: opi
+        image: eirini/opi@sha256:c7c60d73c89db5c1a74019b86db0fb93686ed5572984411f1d4a027681aec457
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-map
+          mountPath: /etc/eirini/config
+        - name: eirini-certs
+          mountPath: /etc/eirini/certs
+        - name: cc-certs
+          mountPath: /etc/cf-api/certs
+        ports:
+        - containerPort: 8085
+          name: https
+        resources:
+          requests:
+            cpu: 20m
+            memory: 20
