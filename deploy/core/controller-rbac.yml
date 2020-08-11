@@ -4,6 +4,7 @@ kind: ServiceAccount
 metadata:
   name: eirini-controller
   namespace: eirini-core
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -75,6 +76,7 @@ rules:
   - list
   - create
   - update
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -88,6 +90,7 @@ subjects:
 - kind: ServiceAccount
   name: eirini-controller
   namespace: eirini-core
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -103,6 +106,7 @@ rules:
   - use
   resourceNames:
   - eirini-controller
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -117,6 +121,7 @@ subjects:
 - kind: ServiceAccount
   name: eirini-controller
   namespace: eirini-core
+
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy

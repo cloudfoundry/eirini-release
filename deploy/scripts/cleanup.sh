@@ -4,4 +4,5 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-cat "$PROJECT_ROOT"/deploy/**/*.yml | kubectl delete -f -
+kubectl delete mutatingwebhookconfigurations eirini-x-mutating-hook
+kubectl delete --recursive=true -f "$PROJECT_ROOT"/deploy

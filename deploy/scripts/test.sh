@@ -29,11 +29,10 @@ test_api() {
   tls_key="$(kubectl get secret -n eirini-core eirini-certs -o json | jq -r '.data["tls.key"]' | base64 -d)"
   tls_ca="$(kubectl get secret -n eirini-core eirini-certs -o json | jq -r '.data["tls.ca"]' | base64 -d)"
 
-  eirini_host="$(kubectl get nodes -o wide | tail -1 | awk '{ print $7 }')"
-  node_port="$(kubectl get -n eirini-core services eirini-external -o jsonpath="{.spec.ports[0].nodePort}")"
+  eirini_host="$(kubectl -n eirini-core get service eirini-external -ojsonpath="{.status.loadBalancer.ingress[0].ip}")"
 
   echo "Creating an app via API"
-  curl --cacert <(echo "$tls_ca") --key <(echo "$tls_key") --cert <(echo "$tls_crt") -k "https://$eirini_host:$node_port/apps/testapp" -X PUT -H "Content-Type: application/json" -d '{"guid": "the-app-guid","version": "0.0.0","ports" : [8080],"lifecycle": {"docker_lifecycle": {"image": "busybox","command": ["/bin/sleep", "100"]}},"instances": 1}'
+  curl --cacert <(echo "$tls_ca") --key <(echo "$tls_key") --cert <(echo "$tls_crt") -k "https://$eirini_host:8085/apps/testapp" -X PUT -H "Content-Type: application/json" -d '{"guid": "the-app-guid","version": "0.0.0","ports" : [8080],"lifecycle": {"docker_lifecycle": {"image": "busybox","command": ["/bin/sleep", "100"]}},"instances": 1}'
 
   check_app_exists
 }
