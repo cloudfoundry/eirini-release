@@ -103,4 +103,4 @@ data:
   instance-index-env-injector.yml: |
     service_name: instance-index-env-injector
     service_namespace: {{ .Release.Namespace }}
-    service_port: 443
+    service_port: 8443
