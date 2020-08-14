@@ -65,3 +65,10 @@ data:
     service_name: instance-index-env-injector
     service_namespace: eirini-core
     service_port: 8443
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: eirini-x-mutating-hook
+
