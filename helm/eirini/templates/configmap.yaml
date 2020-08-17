@@ -86,7 +86,6 @@ data:
     eirini_key_path: "/etc/eirini/secrets/eirini-client.key"
     ca_path: "/etc/eirini/secrets/eirini-client.ca"
   task-reporter.yml: |
-    app_namespace: {{ .Values.opi.namespace }}
     cc_tls_disabled: {{ .Values.opi.cc_api.tls_disabled }}
     {{- if not .Values.opi.cc_api.tls_disabled }}
     cc_cert_path: "/etc/eirini/secrets/cc.crt"
