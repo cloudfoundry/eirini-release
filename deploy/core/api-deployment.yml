@@ -27,6 +27,7 @@ spec:
         - name: eirini-certs
           secret:
             secretName: eirini-certs
+            optional: true
       securityContext:
         runAsNonRoot: true
       containers:

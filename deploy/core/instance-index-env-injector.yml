@@ -54,17 +54,6 @@ spec:
       name: https
   selector:
     name: instance-index-env-injector
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: instance-index-env-injector
-  namespace: eirini-core
-data:
-  instance-index-env-injector.yml: |
-    service_name: instance-index-env-injector
-    service_namespace: eirini-core
-    service_port: 8443
 
 ---
 apiVersion: admissionregistration.k8s.io/v1

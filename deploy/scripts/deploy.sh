@@ -2,6 +2,27 @@
 
 set -euo pipefail
 
+RED=1
+GREEN=2
+
+print_message() {
+  message=$1
+  colour=$2
+  printf "\\r\\033[00;3%sm%s\\033[0m\\n" "$colour" "$message"
+}
+
+warning=$(
+  cat <<EOF
+** WARNING **
+
+This an example script used to create a standalone Eirini deployment.
+It is used internally for testing, but is not supported for external use.
+
+EOF
+)
+
+print_message "$warning" "$RED"
+
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 USE_LOADBALANCED_SERVICE=${USE_LOADBALANCED_SERVICE:-"false"}
 

@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: instance-index-env-injector
+  namespace: eirini-core
+data:
+  instance-index-env-injector.yml: |
+    service_name: instance-index-env-injector
+    service_namespace: eirini-core
+    service_port: 8443
+
