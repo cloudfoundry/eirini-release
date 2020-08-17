@@ -2,74 +2,102 @@
 
 ** Disclaimer ** The tool agnostic deployment of Eirini is still work in progress. Please stay tuned.
 
-## Prerequisites
+## Core components
 
-- Create two namespaces. `eirini-core` will be used to run Eirini and `eirini-workloads` will be used by Eirini to run apps:
+The core eirini components include:
+
+- eirini-api (the REST interface that CloudController uses to communicate with Eirini)
+- eirini-controller (CRD k8s controller watching LRP and Task resources)
+- instance-env-injector (a mutating webhook that injects the `CF_INSTANCE_INDEX` env variable to app pods)
+
+Throughout these deployment YAML files, the core components are configured to
+run in the eirini-core namespace and to deploy LRPs and Tasks to the
+eirini-workloads namespace. The core namespace is created in the
+core/namespace.yml file.
+
+### Configuration
+
+#### Config Maps
+
+Eirini API and controller configuration mainly happens through the [config map](../deploy/core/api-configmap.yml). Instance Injector configuration is [here](../deploy/core/instance-index-env-injector-configmap.yml).
+
+For API and controller, you can set the following:
+
+- app_namespace: namespace in which to create workloads (LRPs and Tasks).
+  Can be left blank if deploying to multiple workload namespaces.
+
+- tls_port: local port for the REST API server when serving TLS.
+
+- plaintext_port: local port for the REST API server when serving plain HTTP.
+
+- cc_tls_disabled: set to true when the CloudController does not use TLS (i.e. transport security handled by Istio)
+
+- disk_limit_mb: defaults to 2048 if not set, and provides a limit to the app container disk size when not passed by the Cloud Controller
+
+- application_service_account: name of service account used to run LRPs and Tasks. See [here](#lrps-and-tasks) for required permissions
+
+- allow_run_image_as_root: **insecure** allow docker images to run as the privileged user
+
+- unsafe_allow_automount_service_account_token: **insecure** mount the service account token for the kubenetes API in each LRP / Task pod. Required for cf-for-k8s on Kind.
+
+- serve_plaintext: set to true to disable TLS for the REST API. `plaintext_port` must be set. Used when TLS provided by Istio.
+
+When using eirini for staging buildpack apps, rather than kpack, the following are required:
+
+- staging_service_account: name of service account used to run staging tasks. See [here](#lrps-and-tasks) for required permissions
+
+- registry_address: set the address of the private registry used to store staged app images
+
+- registry_secret_name: the name of the secret containing the private docker registry's credentials. Must be of type `kubernetes.io/dockerconfigjson`
+
+- eirini_address: the eirini api internal URI, used by the stager to communicate with eirini
+
+- downloader_image: set the staging downloader image
+
+- uploader_image: set the staging uploader image
+
+- executor_image: set the staging executor image
+
+For the Instance Index Injector, you will probably only need to override the service namespace, if using a namespace other than eirini-core for the eirini components:
+
+- service_namespace: set the namespace for the injector k8s service
+
+#### Secrets
+
+Eirini depends on the following secrets, which must be named and constructed as follows:
+
+- capi-tls (optional, when `cc_tls_disabled` is set to true)
+  * tls.crt: client certificate used for mTLS
+  * tls.key: key for client certificate
+  * ca.crt: CA used to validate CAPI's server certificate
+
+- eirini-certs (optional, when `serve_plaintext` is set to true)
+  * tls.crt: server certificate
+  * tls.key: key for server certificate
+  * ca.crt: CA used to validate client certificates
+
+#### Service Accounts
+
+##### LRPs and Tasks
+
+A service account is required with permissions to run applications in the workloads namespace(s).A minimal example is given in the [workloads directory](../deploy/workloads/app-rbac.yml).
+
+The name must match that given in the config map (see above).
+
+##### Staging (optional)
+
+If using eirini to stage buildpack apps, rather than kpack, a service account is required with permissions to stage applications in the workloads namespace(s). A minimal example is given in the [workloads directory](../deploy/workloads/staging-rbac.yml).
+
+The name must match that given in the config map (see above).
+
+### Deployment
+
+Now you can create the Eirini objects by running the following command from the root directory of this repository:
 
 ```bash
-kubectl create namespace eirini-core
-kubectl create namespace eirini-workloads
-```
-
-- The Eirini API Server needs to be given a key pair and CA. The certificate information should be put in a secret named `eirini-tls` with the following keys:
-  - tls.crt
-  - tls.key
-  - tls.ca
-  This secret should be be created in the `eirini-core` namespace. You can use the `deploy/scripts/generate_eirini_tls.sh` script to generate a self signed cert to get you going.
-
-## Deployment
-
-- Now you can create the Eirini ojbects by running the following command from the root directory of this repository:
-
-```bash
-cat deploy/**/*.yml | kubectl apply -f -
+kubectl apply --recursive=true -f deploy/core/
 ```
 
 Wait for all pods in the `eirini-core` namespace to be in the RUNNING state. That's it!
 
-## Testing
-
-There are two ways to talk to eirini: The HTTPS API and the CRD API.
-
-### HTTPS
-
-Eirini comes with a NodePort service that exports it to port `30085` on each node. You can create an LRP using the script below:
-
-```bash
-tls_crt="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.crt"]' | base64 -d)"
-tls_key="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.key"]' | base64 -d)"
-tls_ca="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.ca"]' | base64 -d)"
-eirini_host="$(kubectl get nodes -o wide | tail -1 | awk '{ print $7 }')"
-
-curl --cacert <(echo "$tls_ca") --key <(echo "$tls_key") --cert <(echo "$tls_crt") -k "https://$eirini_host:30085/apps/testapp" -X PUT -H "Content-Type: application/json" -d '{"guid": "the-app-guid","version": "0.0.0","ports" : [8080],"lifecycle": {"docker_lifecycle": {"image": "busybox","command": ["/bin/sleep", "100"]}},"instances": 1}'
-```
-
-After you do that a pod will appear in the `eirini-workloads` namespace.
-
-### CRD
-
-Eirini defines custom resopurces for tasks and LRPs. Here is how to create an LRP resource:
-
-```bash
-cat <<EOF | kubectl apply -f -
-apiVersion: eirini.cloudfoundry.org/v1
-kind: LRP
-metadata:
-  name: testapp
-  namespace: eirini-workloads
-spec:
-  GUID: "the-app-guid"
-  version: "version-1"
-  instances: 1
-  lastUpdated: "never"
-  ports:
-  - 8080
-  image: "eirini/dorini"
-EOF
-```
-
-After you do that a pod will appear in the `eirini-workloads` namespace.
-
-
-
-
+For a fuller example, see [deploy.sh](../deploy/scripts/deploy.sh) which also sets up some external access.
