@@ -72,7 +72,6 @@ data:
     loggregator_key_path: "/etc/eirini/secrets/doppler.key"
     loggregator_ca_path: "/etc/eirini/secrets/doppler.ca"
   events.yml: |
-    app_namespace: {{ .Values.opi.namespace }}
     cc_internal_api: "{{ .Values.opi.cc_api.protocol}}://{{ .Values.opi.cc_api.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.opi.cc_api.port}}"
     cc_tls_disabled: {{ .Values.opi.cc_api.tls_disabled }}
     {{- if not .Values.opi.cc_api.tls_disabled }}
