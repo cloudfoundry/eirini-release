@@ -48,7 +48,7 @@ metadata:
   namespace: eirini-core
 spec:
   ports:
-    - port: 443
+    - port: 8443
       targetPort: 8443
       protocol: TCP
       name: https
