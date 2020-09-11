@@ -72,10 +72,6 @@ opi:
         secretName: "secrets-2.16.4-2"
         caPath: "internal-ca-cert"
 
-  rootfsPatcher:
-    enable: true
-    timeout: 2m
-
   routing:
     enable: true
     nats:

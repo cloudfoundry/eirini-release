@@ -100,7 +100,7 @@ In order to upgrade the kubernetes version of your cluster without app downtime,
 - All apps are scaled to at least 2 instances. This way they can be upgraded one at a time ensuring no downtime.
 - The node that is running the bits service is the last one to upgrade if possible. App migration depends on this service as it holds the docker images.
 
-**Note**: If you follow these steps you will have no app downtime, although the kubernetes control plane as well as the 
+**Note**: If you follow these steps you will have no app downtime, although the kubernetes control plane as well as the
 cf push experience will go down for a certain amount of time.
 
 ### Overriding Eirini Images
@@ -112,8 +112,6 @@ Eirini has a few images which are deployed by the helm chart. By default these c
 | opi                 | `eirini.opi.image`                     | `eirini/opi`                 |
 | opi-init            | `eirini.opi.init_image`                | `eirini/opi-init`            |
 | secret-smuggler     | `eirini.opi.secret_smuggler_image`     | `eirini/secret-smuggler`     |
-| bits-waiter         | `eirini.opi.bits_waiter`               | `eirini/bit-waiter`          |
-| rootfs-patcher      | `eirini.opi.rootfs_patcher`            | `eirini/rootfs-patcher`      |
 | loggregator-fluentd | `eirini.opi.loggregator_fluentd_image` | `eirini/loggregator-fluentd` |
 | staging-images      | `eirini.opi.stager.downloader_image`   | `eirini/recipe-downloader`   |
 |                     | `eirini.opi.stager.executor_image`     | `eirini/recipe-executor`     |
@@ -153,7 +151,7 @@ The services suite is disabled in main ci due to flaking often. We additionally 
 
 #### Running CATs against Eirini
 
-To run cats follow the instructions on the [cf-acceptance-tests repository](https://github.com/cloudfoundry/cf-acceptance-tests#test-execution). Use the following config and skip the aforementioned cats with the `-skip=uses the buildpack cache after first staging|reverse log proxy streams logs` flag for [./bin/test](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/bin/test): 
+To run cats follow the instructions on the [cf-acceptance-tests repository](https://github.com/cloudfoundry/cf-acceptance-tests#test-execution). Use the following config and skip the aforementioned cats with the `-skip=uses the buildpack cache after first staging|reverse log proxy streams logs` flag for [./bin/test](https://github.com/cloudfoundry/cf-acceptance-tests/blob/5980e6f70aa4fe32e0207272326ae90a011a8c83/bin/test):
 
 ```
     {

@@ -102,9 +102,6 @@ subjects:
   name: opi
   namespace: eirini-core
 - kind: ServiceAccount
-  name: eirini-rootfs-patcher
-  namespace: eirini-core
-- kind: ServiceAccount
   name: eirini-secret-smuggler
   namespace: eirini-core
 
