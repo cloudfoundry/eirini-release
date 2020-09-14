@@ -88,7 +88,6 @@ data:
     cc_tls_disabled: {{ .Values.opi.cc_api.tls_disabled }}
     {{- if not .Values.opi.cc_api.tls_disabled }}
     cc_cert_path: "/etc/eirini/secrets/cc.crt"
-    cc_cert_path: "/etc/eirini/secrets/cc.crt"
     cc_key_path: "/etc/eirini/secrets/cc.key"
     ca_path: "/etc/eirini/secrets/cc.ca"
     {{- end }}
