@@ -73,3 +73,7 @@ pushd "$PROJECT_ROOT/deploy/scripts"
   ./generate_eirini_tls.sh $externalIP
 }
 popd
+
+for dep in $(ls -1 $PROJECT_ROOT/deploy/core/*-deployment.yml); do
+  kubectl rollout status -f $dep
+done
