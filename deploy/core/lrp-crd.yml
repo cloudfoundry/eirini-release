@@ -15,6 +15,8 @@ spec:
           properties:
             spec:
               type: object
+              required:
+                - diskMB
               properties:
                 GUID:
                   type: string
@@ -68,6 +70,7 @@ spec:
                 diskMB:
                   type: integer
                   format: int64
+                  minimum: 1
                 cpuWeight:
                   type: integer
                   format: uint8
