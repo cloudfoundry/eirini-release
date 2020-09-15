@@ -25,6 +25,9 @@ spec:
           requests:
             cpu: 15m
             memory: 15Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
         volumeMounts:
         - name: config-map
           mountPath: /etc/eirini/config
