@@ -58,9 +58,9 @@ spec:
         {{- end }}
         resources:
           requests:
-            cpu: 15m
-            memory: 15Mi
+            cpu: {{ .Values.kube.resources.events.requests.cpu }}
+            memory: {{ .Values.kube.resources.events.requests.memory }}
           limits:
-            cpu: 100m
-            memory: 100Mi
+            cpu: {{ .Values.kube.resources.events.limits.cpu }}
+            memory: {{ .Values.kube.resources.events.limits.memory }}
 {{- end }}
