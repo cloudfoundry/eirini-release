@@ -41,6 +41,9 @@ cat "$PROJECT_ROOT"/deploy/**/namespace.yml | kubectl apply -f -
 kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/core/
 kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/workloads/
 
+# Install wiremock to mock the cloud controller
+kubectl apply -f $PROJECT_ROOT/deploy/testing/cc-wiremock.yml
+
 if [[ ${USE_LOADBALANCED_SERVICE} == "true" ]]; then
   echo "Creating the externally accessible api service using LoadBalancer"
   kubectl apply -f $PROJECT_ROOT/deploy/testing/api-loadbalanced-service.yml
