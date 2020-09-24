@@ -6,6 +6,7 @@ metadata:
   namespace: eirini-core
 data:
   instance-index-env-injector.yml: |
+    enable_multi_namespace_support: true
     service_name: instance-index-env-injector
     service_namespace: eirini-core
     service_port: 8443

@@ -7,6 +7,7 @@ metadata:
 data:
   opi.yml: |
     opi:
+      enable_multi_namespace_support: true
       app_namespace: eirini-workloads
       tls_port: 8085
 

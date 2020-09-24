@@ -4,6 +4,7 @@ set -euo pipefail
 
 RED=1
 GREEN=2
+BLUE=4
 
 print_message() {
   message=$1
@@ -21,10 +22,15 @@ It is used internally for testing, but is not supported for external use.
 EOF
 )
 
-print_message "$warning" "$RED"
+print_message "$warning" "$BLUE"
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 USE_LOADBALANCED_SERVICE=${USE_LOADBALANCED_SERVICE:-"false"}
+
+ns_directory="single-namespace"
+if [ "${USE_MULTI_NAMESPACES:-true}" == "true" ]; then
+  ns_directory="multi-namespace"
+fi
 
 export KUBECONFIG
 KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
@@ -38,13 +44,15 @@ fi
 
 cat "$PROJECT_ROOT"/deploy/**/namespace.yml | kubectl apply -f -
 
-kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/core/
-kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/workloads/
-kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/events/
-kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/metrics/
+kubectl apply -f "$PROJECT_ROOT/deploy/core/"
+kubectl apply -f "$PROJECT_ROOT/deploy/core/$ns_directory"
+kubectl apply -f "$PROJECT_ROOT/deploy/workloads/"
+kubectl apply -f "$PROJECT_ROOT/deploy/events/"
+kubectl apply -f "$PROJECT_ROOT/deploy/events/$ns_directory"
+kubectl apply -f "$PROJECT_ROOT/deploy/metrics/"
 
 # Install wiremock to mock the cloud controller
-kubectl apply -f $PROJECT_ROOT/deploy/testing/cc-wiremock.yml
+kubectl apply -f "$PROJECT_ROOT/deploy/testing/cc-wiremock"
 
 if [[ ${USE_LOADBALANCED_SERVICE} == "true" ]]; then
   echo "Creating the externally accessible api service using LoadBalancer"
