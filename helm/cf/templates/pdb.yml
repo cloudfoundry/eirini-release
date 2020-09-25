@@ -1,4 +1,5 @@
-{{- if and (hasKey .Values.sizing.router "count" ) ( gt .Values.sizing.router.count 1.0 ) }}
+{{- if hasKey .Values.sizing.router "count" }}
+{{- if gt .Values.sizing.router.count 1.0 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -9,4 +10,5 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: "router"
+{{- end }}
 {{- end }}
