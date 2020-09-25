@@ -27,7 +27,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: instance-index-env-injector
-        image: eirini/instance-index-env-injector@sha256:1121011f6991b1a5acfbf97207e7794269026792f42d2feb07480c15fd9407c5
+        image: eirini/instance-index-env-injector@sha256:5b219822049e5b4b9967980eb674a071a35fbcd400ea53e9b76b8ca17053abd3
         imagePullPolicy: Always
         volumeMounts:
         - name: config-map-volume
