@@ -1,0 +1,102 @@
+secrets:
+  BITS_SERVICE_SECRET: dummy-bits-secret-123
+  BITS_SERVICE_SIGNING_USER_PASSWORD: dummy-bits-secret-123
+  BLOBSTORE_PASSWORD: dummy-bits-secret-123
+
+opi:
+  tls:
+    opiCapiClient:
+      secretName: "eirini-certs"
+      keyPath: "tls.key"
+      certPath: "tls.crt"
+    opiServer:
+      secretName: "eirini-certs"
+      certPath: "tls.crt"
+      keyPath: "tls.key"
+    capi:
+      secretName: "eirini-certs"
+      caPath: "ca.crt"
+    eirini:
+      secretName: "eirini-certs"
+      caPath: "ca.crt"
+
+  events:
+    tls:
+      capiClient:
+        secretName: "eirini-certs"
+        keyPath: "tls.key"
+        certPath: "tls.crt"
+      capi:
+        secretName: "eirini-certs"
+        caPath: "ca.crt"
+
+  logs:
+    tls:
+      client:
+        secretName: "eirini-certs"
+        keyPath: "tls.key"
+        certPath: "tls.crt"
+      server:
+        secretName: "eirini-certs"
+        caPath: "ca.crt"
+
+  metrics:
+    tls:
+      client:
+        secretName: "eirini-certs"
+        keyPath: "tls.key"
+        certPath: "tls.crt"
+      server:
+        secretName: "eirini-certs"
+        caPath: "ca.crt"
+
+  routing:
+    nats:
+      serviceName: nats-client
+      secretName: "eirini-certs"
+
+  secretSmuggler:
+    enable: false
+
+  staging:
+    tls:
+      client:
+        secretName: "eirini-certs"
+        certPath: "tls.crt"
+        keyPath: "tls.key"
+      cc_uploader:
+        secretName: "eirini-certs"
+        certPath: "tls.crt"
+        keyPath: "tls.key"
+      ca:
+        secretName: "eirini-certs"
+        path: "ca.crt"
+      stagingReporter:
+        secretName: "eirini-certs"
+        certPath: "tls.crt"
+        keyPath: "tls.key"
+        caPath: "ca.crt"
+
+  tasks:
+    tls:
+      taskReporter:
+        secretName: "eirini-certs"
+        keyPath: "tls.key"
+        certPath: "tls.crt"
+        caPath: "ca.crt"
+
+  lrpController:
+    tls:
+      secretName: "eirini-certs"
+      certPath: "tls.crt"
+      keyPath: "tls.key"
+      caPath: "ca.crt"
+
+  cc_api:
+    serviceName: "cc-wiremock"
+    tls_disabled: true
+    protocol: http
+    port: 80
+
+kube:
+  external_ips: []
