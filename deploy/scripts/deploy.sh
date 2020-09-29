@@ -78,9 +78,10 @@ pushd "$PROJECT_ROOT/deploy/scripts"
 }
 popd
 
-for dep in $(ls -1 $PROJECT_ROOT/deploy/core/*-deployment.yml); do
-  kubectl rollout status -f $dep
-done
-for dep in $(ls -1 $PROJECT_ROOT/deploy/events/*-deployment.yml); do
-  kubectl rollout status -f $dep
+deployments="$(kubectl get deployments \
+  --namespace eirini-core \
+  --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{ end }}')"
+
+for dep in $deployments; do
+  kubectl rollout status deployment "$dep" --namespace eirini-core
 done
