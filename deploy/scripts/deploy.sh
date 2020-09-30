@@ -41,6 +41,7 @@ cat "$PROJECT_ROOT"/deploy/**/namespace.yml | kubectl apply -f -
 kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/core/
 kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/workloads/
 kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/events/
+kubectl apply --recursive=true -f "$PROJECT_ROOT"/deploy/metrics/
 
 # Install wiremock to mock the cloud controller
 kubectl apply -f $PROJECT_ROOT/deploy/testing/cc-wiremock.yml

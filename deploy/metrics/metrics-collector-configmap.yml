@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eirini-metrics
+  namespace: eirini-core
+data:
+  metrics.yml: |
+    app_namespace: eirini-workloads
+    loggregator_address: "http://cc-wiremock.eirini-core.svc.cluster.local"
