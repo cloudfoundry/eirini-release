@@ -28,7 +28,7 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 USE_LOADBALANCED_SERVICE=${USE_LOADBALANCED_SERVICE:-"false"}
 
 ns_directory="single-namespace"
-if [ "${USE_MULTI_NAMESPACES:-true}" == "true" ]; then
+if [ "${USE_MULTI_NAMESPACE:-true}" == "true" ]; then
   ns_directory="multi-namespace"
 fi
 
