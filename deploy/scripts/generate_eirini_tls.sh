@@ -7,11 +7,11 @@ echo "Will now generate tls.ca tls.crt and tls.key files"
 mkdir -p keys
 trap 'rm -rf keys' EXIT
 
-externalIP=$1
+otherDNS=$1
 
 pushd keys
 {
-  openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -nodes -subj '/CN=localhost' -addext "subjectAltName = IP:${externalIP}" -days 365
+  openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:$otherDNS" -days 365
 
   if ! kubectl -n eirini-core get secret eirini-certs >/dev/null 2>&1; then
     echo "Creating the secret in your kubernetes cluster"
