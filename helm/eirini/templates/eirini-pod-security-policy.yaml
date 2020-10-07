@@ -1,8 +1,15 @@
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRole
+{{- else }}
+kind: Role
+{{- end }}
 metadata:
-  name: eirini-cluster-role
+  name: eirini-resource-role
+  {{- if not .Values.opi.enable_multi_namespace_support }}
+  namespace: {{ .Values.opi.namespace }}
+  {{- end }}
 rules:
 - apiGroups:
   - batch
@@ -48,25 +55,38 @@ rules:
   verbs:
   - create
   - delete
+
 ---
 # Bind to the default service account
 apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRoleBinding
+{{- else }}
+kind: RoleBinding
+{{- end }}
 metadata:
-  name: eirini-cluster-rolebinding
+  name: eirini-resource-rolebinding
+  {{- if not .Values.opi.enable_multi_namespace_support }}
+  namespace: {{ .Values.opi.namespace }}
+  {{- end }}
 roleRef:
+  {{- if .Values.opi.enable_multi_namespace_support }}
   kind: ClusterRole
-  name: eirini-cluster-role
+  {{- else }}
+  kind: Role
+  {{- end }}
+  name: eirini-resource-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
   name: opi
   namespace: {{ .Release.Namespace }}
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: eirini-role
+  name: eirini-psp-role
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
@@ -77,15 +97,16 @@ rules:
   - use
   resourceNames:
   - eirini
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: eirini-rolebinding
+  name: eirini-psp-rolebinding
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: eirini-role
+  name: eirini-psp-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
@@ -94,6 +115,7 @@ subjects:
 - kind: ServiceAccount
   name: eirini-secret-smuggler
   namespace: {{ .Release.Namespace }}
+
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
