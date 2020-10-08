@@ -94,6 +94,7 @@ data:
     ca_path: "/etc/eirini/secrets/eirini-client.ca"
   task-reporter.yml: |
     enable_multi_namespace_support: {{ .Values.opi.enable_multi_namespace_support }}
+    completion_callback_retry_limit: {{ .Value.opi.tasks.completionCallbackRetryLimit }}
     {{- if not .Values.opi.enable_multi_namespace_support }}
     app_namespace: {{ .Values.opi.namespace }}
     {{- end }}

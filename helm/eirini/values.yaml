@@ -113,6 +113,7 @@ opi:
         keyPath: "cc-server-crt-key"
         certPath: "cc-server-crt"
         caPath: "internal-ca-cert"
+    completionCallbackRetryLimit: 10
 
   lrpController:
     enable: true

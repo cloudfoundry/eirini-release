@@ -9,3 +9,4 @@ data:
     enable_multi_namespace_support: false
     app_namespace: eirini-workloads
     cc_tls_disabled: false
+    completion_callback_retry_limit: 10
