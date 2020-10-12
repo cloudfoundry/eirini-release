@@ -27,7 +27,7 @@ print_message "$warning" "$BLUE"
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 ns_directory="single-namespace"
-if [ "${USE_MULTI_NAMESPACE:-true}" == "true" ]; then
+if [ "${USE_MULTI_NAMESPACE:-false}" == "true" ]; then
   ns_directory="multi-namespace"
 fi
 
