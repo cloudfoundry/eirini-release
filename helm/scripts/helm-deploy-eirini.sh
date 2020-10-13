@@ -32,7 +32,7 @@ create_values_file() {
   cp "$EIRINI_RELEASE/helm/scripts/assets/helm-values-template.yml" "$file"
   cluster_ip=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
   goml set --prop kube.external_ips.+ --value "$cluster_ip" --file "$file"
-  if [ "${USE_MULTI_NAMESPACE:-true}" == "true" ]; then
+  if [ "${USE_MULTI_NAMESPACE:-false}" == "true" ]; then
     goml set --prop opi.enable_multi_namespace_support --value "true" --file "$file"
   else
     goml set --prop opi.enable_multi_namespace_support --value "false" --file "$file"
