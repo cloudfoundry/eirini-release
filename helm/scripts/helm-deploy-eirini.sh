@@ -8,13 +8,13 @@ NATS_PASSWORD="dummy-nats-password"
 
 main() {
   install_tiller
+  install-nats
 
   values_file=$(mktemp)
   create_values_file $values_file
-  helm-install $values_file
+  install-eirini $values_file
   rm $values_file
 
-  install-nats
   install-wiremock
   create-test-secret
   wait-for-deployments
@@ -81,7 +81,7 @@ EOF
   kubectl apply -n cf -f "$secrets_file"
 }
 
-helm-install() {
+install-eirini() {
   helm upgrade --install eirini \
     "$EIRINI_RELEASE/helm/eirini" \
     --namespace cf \
