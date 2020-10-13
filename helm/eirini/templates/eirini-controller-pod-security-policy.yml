@@ -13,7 +13,7 @@ kind: ClusterRole
 kind: Role
 {{- end }}
 metadata:
-  name: eirini-controller-resource-role
+  name: eirini-controller-resource
   {{- if not .Values.opi.enable_multi_namespace_support }}
   namespace: {{ .Values.opi.namespace }}
   {{- end }}
@@ -92,7 +92,7 @@ kind: ClusterRoleBinding
 kind: RoleBinding
 {{- end }}
 metadata:
-  name: eirini-controller-cluster-rolebinding
+  name: eirini-controller-resource
   {{- if not .Values.opi.enable_multi_namespace_support }}
   namespace: {{ .Values.opi.namespace }}
   {{- end }}
@@ -102,7 +102,7 @@ roleRef:
   {{- else }}
   kind: Role
   {{- end }}
-  name: eirini-controller-resource-role
+  name: eirini-controller-resource
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
@@ -113,7 +113,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: eirini-controller-role
+  name: eirini-controller
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
@@ -129,11 +129,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: eirini-controller-rolebinding
+  name: eirini-controller
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: eirini-controller-role
+  name: eirini-controller
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
