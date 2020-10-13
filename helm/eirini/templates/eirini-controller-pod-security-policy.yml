@@ -4,11 +4,19 @@ kind: ServiceAccount
 metadata:
   name: eirini-controller
   namespace: {{ .Release.Namespace }}
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRole
+{{- else }}
+kind: Role
+{{- end }}
 metadata:
-  name: eirini-controller-cluster-role
+  name: eirini-controller-resource-role
+  {{- if not .Values.opi.enable_multi_namespace_support }}
+  namespace: {{ .Values.opi.namespace }}
+  {{- end }}
 rules:
 - apiGroups:
   - eirini.cloudfoundry.org
@@ -75,19 +83,32 @@ rules:
   verbs:
   - create
   - delete
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRoleBinding
+{{- else }}
+kind: RoleBinding
+{{- end }}
 metadata:
   name: eirini-controller-cluster-rolebinding
+  {{- if not .Values.opi.enable_multi_namespace_support }}
+  namespace: {{ .Values.opi.namespace }}
+  {{- end }}
 roleRef:
+  {{- if .Values.opi.enable_multi_namespace_support }}
   kind: ClusterRole
-  name: eirini-controller-cluster-role
+  {{- else }}
+  kind: Role
+  {{- end }}
+  name: eirini-controller-resource-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
   name: eirini-controller
   namespace: {{ .Release.Namespace }}
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -103,6 +124,7 @@ rules:
   - use
   resourceNames:
   - eirini-controller
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -117,6 +139,7 @@ subjects:
 - kind: ServiceAccount
   name: eirini-controller
   namespace: {{ .Release.Namespace }}
+
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
