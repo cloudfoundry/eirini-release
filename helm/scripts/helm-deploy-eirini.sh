@@ -9,6 +9,7 @@ NATS_PASSWORD="dummy-nats-password"
 main() {
   install_tiller
   install-nats
+  create-test-secret
 
   values_file=$(mktemp)
   create_values_file $values_file
@@ -16,7 +17,6 @@ main() {
   rm $values_file
 
   install-wiremock
-  create-test-secret
   wait-for-deployments
 }
 
@@ -52,11 +52,6 @@ install-wiremock() {
 }
 
 create-test-secret() {
-  if kubectl -n cf get secret eirini-certs >/dev/null 2>&1; then
-    echo "Secret eirini-certs already exists. Skipping cert generation..."
-    return
-  fi
-
   local nats_password_b64 cert key secrets_file
   nats_password_b64="$(echo -n "$NATS_PASSWORD" | base64)"
   openssl req -x509 -newkey rsa:4096 -keyout test.key -out test.cert -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:eirini-opi.cf.svc.cluster.local" -days 365
