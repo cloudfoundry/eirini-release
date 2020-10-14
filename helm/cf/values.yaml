@@ -1794,4 +1794,4 @@ ingress:
   # secret for the Ingress resource.
   tls: {}
 global:
-  rootfs_version: 'v195.0.0'
+  rootfs_version: 'v196.0.0'
