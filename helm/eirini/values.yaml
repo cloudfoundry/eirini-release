@@ -114,6 +114,7 @@ opi:
         certPath: "cc-server-crt"
         caPath: "internal-ca-cert"
     completionCallbackRetryLimit: 10
+    ttlSeconds: 5
 
   lrpController:
     enable: true
