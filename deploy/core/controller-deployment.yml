@@ -19,7 +19,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: eirini-controller
-        image: eirini/eirini-controller@sha256:19c9425988df568d76683bdccb70017901179c307d452e7954ccd8def8a4641f
+        image: eirini/eirini-controller@sha256:5771ab4c4b8866bee97571729d4ac21a0969af3929da7f14ecbee221f74da75f
         imagePullPolicy: IfNotPresent
         resources:
           requests:
