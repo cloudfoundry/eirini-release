@@ -18,6 +18,7 @@ rules:
   - pods
   verbs:
   - get
+  - update
   - watch
   - list
 - apiGroups:
