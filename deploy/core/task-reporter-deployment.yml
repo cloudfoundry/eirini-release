@@ -20,7 +20,7 @@ spec:
       containers:
       - name: task-reporter
         image: eirini/task-reporter@sha256:46711593cce11ec48d2d849b8108edabb2b0ad25063a668bfb12b83ebbe86387
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 15m

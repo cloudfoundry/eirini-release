@@ -28,7 +28,7 @@ spec:
       containers:
       - name: metrics-collector
         image: eirini/metrics-collector@sha256:0e95c9ad8459a8b0ca98ea79c3e3b84cdc2d9a706e95392762fa69569aadec9e
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini-metrics/config

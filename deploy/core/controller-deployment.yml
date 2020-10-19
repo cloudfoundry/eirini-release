@@ -20,7 +20,7 @@ spec:
       containers:
       - name: eirini-controller
         image: eirini/eirini-controller@sha256:243153df7e9f69a2f565da385d3924a5c7933d5c969103dcb8ef5cdaf90b638e
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 15m

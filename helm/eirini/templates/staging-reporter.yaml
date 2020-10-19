@@ -25,7 +25,7 @@ spec:
         {{- else }}
         image: eirini/staging-reporter@{{ .Files.Get "versions/staging-reporter" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: {{ .Values.kube.resources.staging.requests.cpu }}

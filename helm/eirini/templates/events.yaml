@@ -48,7 +48,7 @@ spec:
         {{- else }}
         image: eirini/event-reporter@{{ .Files.Get "versions/event-reporter" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini-event-reporter/config

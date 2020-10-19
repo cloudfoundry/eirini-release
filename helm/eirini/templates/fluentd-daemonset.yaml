@@ -36,7 +36,7 @@ spec:
         {{- else }}
         image: eirini/loggregator-fluentd@{{ .Files.Get "versions/fluentd" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: FLUENT_UID
           value: "0"
@@ -60,7 +60,7 @@ spec:
             memory: 120Mi
       - name: loggregator-agent
         image: loggregator/agent
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: AGENT_METRIC_SOURCE_ID
           value: scf/daemonset/loggregator-fluentd

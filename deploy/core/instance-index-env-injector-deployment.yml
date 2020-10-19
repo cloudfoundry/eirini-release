@@ -28,7 +28,7 @@ spec:
       containers:
       - name: instance-index-env-injector
         image: eirini/instance-index-env-injector@sha256:ac5fa996646989396b7538dea0119d475ec246d3dd811a520e0995fda15e1d9e
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/config

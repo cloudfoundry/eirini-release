@@ -31,7 +31,7 @@ spec:
         {{- else }}
         image: eirini/route-collector@{{ .Files.Get "versions/route-collector" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: "NATS_PASSWORD"
           valueFrom:
@@ -54,7 +54,7 @@ spec:
         {{- else }}
         image: eirini/route-pod-informer@{{ .Files.Get "versions/route-pod-informer" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: "NATS_PASSWORD"
           valueFrom:
@@ -74,7 +74,7 @@ spec:
         {{- else }}
         image: eirini/route-statefulset-informer@{{ .Files.Get "versions/route-statefulset-informer" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: "NATS_PASSWORD"
           valueFrom:

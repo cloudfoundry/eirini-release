@@ -32,7 +32,7 @@ spec:
         {{- else }}
         image: eirini/instance-index-env-injector@{{ .Files.Get "versions/instance-index-env-injector" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/config

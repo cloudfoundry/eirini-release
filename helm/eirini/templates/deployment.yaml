@@ -64,7 +64,7 @@ spec:
         {{- else }}
         image: eirini/opi@{{ .Files.Get "versions/opi" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/config

@@ -25,7 +25,7 @@ spec:
         {{- else }}
         image: eirini/task-reporter@{{ .Files.Get "versions/task-reporter" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: {{ .Values.kube.resources.task_reporter.requests.cpu }}

@@ -46,7 +46,7 @@ spec:
         {{- else }}
         image: eirini/metrics-collector@{{ .Files.Get "versions/metrics-collector" }}
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini-metrics/config

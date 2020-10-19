@@ -33,7 +33,7 @@ spec:
       containers:
       - name: opi
         image: eirini/opi@sha256:6b470d26ad0b935d27f2c227ffae06107395241bff5344f332144350206d0d26
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map
           mountPath: /etc/eirini/config
