@@ -32,7 +32,7 @@ spec:
       containers:
       - name: loggregator-fluentd
         {{- if .Values.opi.loggregator_fluentd_image }}
-        image: {{ .Values.opi.loggregator_fluentd_image }}:{{ .Values.opi.image_tag }}
+        image: {{ .Values.opi.loggregator_fluentd_image }}
         {{- else }}
         image: eirini/loggregator-fluentd@{{ .Files.Get "versions/fluentd" }}
         {{- end }}

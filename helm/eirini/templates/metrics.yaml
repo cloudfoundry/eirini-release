@@ -42,7 +42,7 @@ spec:
       containers:
       - name: metrics-collector
         {{- if .Values.opi.metrics_collector_image }}
-        image: {{ .Values.opi.metrics_collector_image }}:{{ .Values.opi.image_tag }}
+        image: {{ .Values.opi.metrics_collector_image }}
         {{- else }}
         image: eirini/metrics-collector@{{ .Files.Get "versions/metrics-collector" }}
         {{- end }}

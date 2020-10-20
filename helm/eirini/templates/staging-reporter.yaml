@@ -21,7 +21,7 @@ spec:
       containers:
       - name: staging-reporter
         {{- if .Values.opi.staging_reporter_image }}
-        image: {{ .Values.opi.staging_reporter_image }}:{{ .Values.opi.staging_reporter_image_tag }}
+        image: {{ .Values.opi.staging_reporter_image }}
         {{- else }}
         image: eirini/staging-reporter@{{ .Files.Get "versions/staging-reporter" }}
         {{- end }}

@@ -21,7 +21,7 @@ spec:
       containers:
       - name: task-reporter
         {{- if .Values.opi.task_reporter_image }}
-        image: {{ .Values.opi.task_reporter_image }}:{{ .Values.opi.task_reporter_image_tag }}
+        image: {{ .Values.opi.task_reporter_image }}
         {{- else }}
         image: eirini/task-reporter@{{ .Files.Get "versions/task-reporter" }}
         {{- end }}

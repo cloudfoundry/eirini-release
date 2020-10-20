@@ -21,7 +21,7 @@ spec:
       containers:
       - name: eirini-controller
         {{- if .Values.opi.eirini_controller_image }}
-        image: {{ .Values.opi.eirini_controller_image }}:{{ .Values.opi.eirini_controller_image_tag }}
+        image: {{ .Values.opi.eirini_controller_image }}
         {{- else }}
         image: eirini/eirini-controller@{{ .Files.Get "versions/eirini-controller" }}
         {{- end }}

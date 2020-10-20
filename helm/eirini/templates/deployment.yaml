@@ -60,7 +60,7 @@ spec:
       containers:
       - name: opi
         {{- if .Values.opi.image }}
-        image: {{ .Values.opi.image }}:{{ .Values.opi.image_tag }}
+        image: {{ .Values.opi.image }}
         {{- else }}
         image: eirini/opi@{{ .Files.Get "versions/opi" }}
         {{- end }}
