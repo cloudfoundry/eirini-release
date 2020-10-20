@@ -10,6 +10,7 @@ rules:
   - jobs
   verbs:
   - delete
+  - update
   - list
 - apiGroups:
   - ""
