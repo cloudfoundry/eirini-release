@@ -10,7 +10,7 @@ rules:
   - jobs
   verbs:
   - delete
-  - update
+  - patch
   - list
 - apiGroups:
   - ""
@@ -19,7 +19,6 @@ rules:
   verbs:
   - get
   - update
-  - patch
   - watch
   - list
 - apiGroups:
