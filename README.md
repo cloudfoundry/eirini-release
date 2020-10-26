@@ -4,6 +4,10 @@ This is a `helm` release for Project [Eirini](https://code.cloudfoundry.org/eiri
 Cloud Foundry, made in the effort to decouple Cloud Foundry from Diego, the only current option of a scheduler. It deploys CF apps
 to a kube backend, using OCI images and Kube deployments.
 
+# Eirini Overview Diagram
+
+![Eirini Overview Diagram](docs/architecture/EiriniOverview.png)
+
 ## Installation
 
 The following CFAR (Cloud Foundry Application Runtime) distributions deploy CF on top of Kubernetes and bundle Eirini with it:
