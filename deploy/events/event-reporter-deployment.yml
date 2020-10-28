@@ -26,7 +26,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: event-reporter
-        image: eirini/event-reporter@sha256:c6f3fefd51005f9d4b1a2f62e921f0c4392a459a418cb69da147e308077c6a1b
+        image: eirini/event-reporter@sha256:51e35152840618ca5aad5d438e8cf70c99f0cbe0172f5b537c0a5662a5b24fc6
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
