@@ -85,26 +85,6 @@ opi:
     enable: true
     scfSecretName: "secrets-2.16.4-2"
 
-  staging:
-    enable: true
-    tls:
-      client:
-        secretName: "secrets-2.16.4-2"
-        certPath: "eirini-client-crt"
-        keyPath: "eirini-client-crt-key"
-      cc_uploader:
-        secretName: "secrets-2.16.4-2"
-        certPath: "cc-server-crt"
-        keyPath: "cc-server-crt-key"
-      ca:
-        secretName: "secrets-2.16.4-2"
-        path: "internal-ca-cert"
-      stagingReporter:
-        secretName: "secrets-2.16.4-2"
-        certPath: "eirini-client-crt"
-        keyPath: "eirini-client-crt-key"
-        caPath: "internal-ca-cert"
-
   tasks:
     enable: true
     tls:
@@ -188,14 +168,6 @@ kube:
       limits:
         cpu: 200m
         memory: 300Mi
-    staging:
-      requests:
-        cpu: 15m
-        memory: 15Mi
-      limits:
-        cpu: 100m
-        memory: 100Mi
-
 
 global:
   rootfs_version: v75.0.0

@@ -58,25 +58,6 @@ opi:
   secretSmuggler:
     enable: false
 
-  staging:
-    tls:
-      client:
-        secretName: "eirini-certs"
-        certPath: "tls.crt"
-        keyPath: "tls.key"
-      cc_uploader:
-        secretName: "eirini-certs"
-        certPath: "tls.crt"
-        keyPath: "tls.key"
-      ca:
-        secretName: "eirini-certs"
-        path: "ca.crt"
-      stagingReporter:
-        secretName: "eirini-certs"
-        certPath: "tls.crt"
-        keyPath: "tls.key"
-        caPath: "ca.crt"
-
   tasks:
     tls:
       taskReporter:

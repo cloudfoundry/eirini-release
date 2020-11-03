@@ -42,22 +42,6 @@ For API and controller, you can set the following:
 
 - `serve_plaintext`: set to true to disable TLS for the REST API. `plaintext_port` must be set. Used when TLS provided by Istio.
 
-When using eirini for staging buildpack apps, rather than kpack, the following are required:
-
-- `staging_service_account`: name of service account used to run staging tasks. See [here](#lrps-and-tasks) for required permissions
-
-- `registry_address`: set the address of the private registry used to store staged app images
-
-- `registry_secret_name`: the name of the secret containing the private docker registry's credentials. Must be of type `kubernetes.io/dockerconfigjson`
-
-- `eirini_address`: the eirini api internal URI, used by the stager to communicate with eirini
-
-- `downloader_image`: set the staging downloader image
-
-- `uploader_image`: set the staging uploader image
-
-- `executor_image`: set the staging executor image
-
 For the Instance Index Injector, you will probably only need to override the service namespace, if using a namespace other than eirini-core for the eirini components:
 
 - `service_namespace`: set the namespace for the injector k8s service
@@ -81,12 +65,6 @@ Eirini depends on the following secrets, which must be named and constructed as 
 ##### LRPs and Tasks
 
 A service account is required with permissions to run applications in the workloads namespace(s).A minimal example is given in the [workloads directory](../deploy/workloads/app-rbac.yml).
-
-The name must match that given in the config map (see above).
-
-##### Staging (optional)
-
-If using eirini to stage buildpack apps, rather than kpack, a service account is required with permissions to stage applications in the workloads namespace(s). A minimal example is given in the [workloads directory](../deploy/workloads/staging-rbac.yml).
 
 The name must match that given in the config map (see above).
 

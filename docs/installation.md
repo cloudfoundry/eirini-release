@@ -113,12 +113,8 @@ Eirini has a few images which are deployed by the helm chart. By default these c
 | opi-init            | `eirini.opi.init_image`                | `eirini/opi-init`            |
 | secret-smuggler     | `eirini.opi.secret_smuggler_image`     | `eirini/secret-smuggler`     |
 | loggregator-fluentd | `eirini.opi.loggregator_fluentd_image` | `eirini/loggregator-fluentd` |
-| staging-images      | `eirini.opi.stager.downloader_image`   | `eirini/recipe-downloader`   |
-|                     | `eirini.opi.stager.executor_image`     | `eirini/recipe-executor`     |
-|                     | `eirini.opi.stager.uploader_image`     | `eirini/recipe-uploader`     |
 
 By default, this is will install the `latest` tag of any image that was overriden. To change that, you'd have to set `eirini.opi.image_tag` as well. As of now, all the overriden images need to have same tag.
-If a staging image needs to be updated, all the staging images must be updated.
 
 ### CF acceptance tests
 

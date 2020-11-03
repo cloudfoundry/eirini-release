@@ -12,12 +12,6 @@ Both [IKS](https://cloud.ibm.com/docs/containers?topic=containers-network_polici
 
 For other implementations of the Kubernetes networking model, take a look [here](https://kubernetes.io/docs/concepts/cluster-administration/networking/#how-to-implement-the-kubernetes-networking-model). Keep in mind that not all implementations support defining network polcies (e.g. Flannel). For a more detailed comparison between different plugins, take a look [here](https://docs.google.com/spreadsheets/d/1qCOlor16Wp5mHd6MQxB5gUEQILnijyDLIExEpqmee2k/edit#gid=0) (not maintained by us).
 
-## Staging PodSecurityPolicy
-
-_Note: For this section, ensure that PodSecurityPolicy support is enabled on your cluster. This is platform specific (e.g. in GKE this is not enabled by default)._
-
-By default, when staging is enabled Eirini attaches a specific Service Account to the staging pods. This Service Account permissions can be found [here](../helm/eirini/templates/staging-pod-security-policy.yaml). They allow the mounting of volumes because staging needs that capability. Mounting volumes is not allowed by the Application PodSecurityPolicy (see below).
-
 ## Application PodSecurityPolicy
 _Note: For this section, ensure that PodSecurityPolicy support is enabled on your cluster. This is platform specific (e.g. in GKE this is not enabled by default)._
 
