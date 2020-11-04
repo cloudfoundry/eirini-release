@@ -4,6 +4,8 @@ secrets:
   BLOBSTORE_PASSWORD: dummy-bits-secret-123
 
 opi:
+  deny_app_ingress: false
+
   tls:
     opiCapiClient:
       secretName: "eirini-certs"
