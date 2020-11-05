@@ -19,7 +19,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: task-reporter
-        image: eirini/task-reporter@sha256:4be0f918ed7f6e87994edc1779eb7b069523a86d8df39ddb45efe966caca72a8
+        image: eirini/task-reporter@sha256:32764837cb7b576b47ab4096f417b9ea25f8c3ce15525c5c5eeabf2971e9a9d8
         imagePullPolicy: IfNotPresent
         resources:
           requests:
