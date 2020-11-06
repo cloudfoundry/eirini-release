@@ -16,6 +16,7 @@ spec:
       containers:
       - name: wiremock
         image: rodolpheche/wiremock
+        args: ["--verbose"]
         ports:
         - containerPort: 8080
           name: http
