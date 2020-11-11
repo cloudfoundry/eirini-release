@@ -1,32 +1,20 @@
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRole
-{{- else }}
-kind: Role
-{{- end }}
 metadata:
-  name: eirini-resource-role
-  {{- if not .Values.opi.enable_multi_namespace_support }}
-  namespace: {{ .Values.opi.namespace }}
-  {{- end }}
+  name: eirini-cluster-role
 rules:
 - apiGroups:
   - batch
   resources:
   - jobs
   verbs:
-  - create
-  - delete
   - list
 - apiGroups:
   - apps
   resources:
   - statefulsets
   verbs:
-  - create
-  - update
-  - delete
   - list
 - apiGroups:
   - ""
@@ -40,42 +28,16 @@ rules:
   - pods
   verbs:
   - list
-  - delete
-- apiGroups:
-  - policy
-  resources:
-  - poddisruptionbudgets
-  verbs:
-  - create
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - delete
 
 ---
 # Bind to the default service account
 apiVersion: rbac.authorization.k8s.io/v1
-{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRoleBinding
-{{- else }}
-kind: RoleBinding
-{{- end }}
 metadata:
-  name: eirini-resource-rolebinding
-  {{- if not .Values.opi.enable_multi_namespace_support }}
-  namespace: {{ .Values.opi.namespace }}
-  {{- end }}
+  name: eirini-cluster-rolebinding
 roleRef:
-  {{- if .Values.opi.enable_multi_namespace_support }}
   kind: ClusterRole
-  {{- else }}
-  kind: Role
-  {{- end }}
-  name: eirini-resource-role
+  name: eirini-cluster-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount

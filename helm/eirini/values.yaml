@@ -15,8 +15,6 @@ opi:
   unsafe_allow_automount_service_account_token: false
   serve_plaintext: false
 
-  enable_multi_namespace_support: true
-
   cc_api:
     serviceName: "api"
     tls_disabled: false

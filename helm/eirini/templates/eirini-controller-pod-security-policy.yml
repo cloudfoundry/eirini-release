@@ -7,16 +7,9 @@ metadata:
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRole
-{{- else }}
-kind: Role
-{{- end }}
 metadata:
   name: eirini-controller-resource
-  {{- if not .Values.opi.enable_multi_namespace_support }}
-  namespace: {{ .Values.opi.namespace }}
-  {{- end }}
 rules:
 - apiGroups:
   - eirini.cloudfoundry.org
@@ -28,18 +21,10 @@ rules:
   - list
   - get
 - apiGroups:
-  - eirini.cloudfoundry.org
-  resources:
-  - lrps/status
-  verbs:
-  - update
-- apiGroups:
   - apps
   resources:
   - statefulsets
   verbs:
-  - create
-  - update
   - get
   - watch
   - list
@@ -57,51 +42,22 @@ rules:
   - events
   verbs:
   - list
-  - create
-  - update
 - apiGroups:
   - batch
   resources:
   - jobs
   verbs:
-  - create
-  - update
   - get
   - watch
   - list
-- apiGroups:
-  - policy
-  resources:
-  - poddisruptionbudgets
-  verbs:
-  - create
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - delete
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-{{- if .Values.opi.enable_multi_namespace_support }}
 kind: ClusterRoleBinding
-{{- else }}
-kind: RoleBinding
-{{- end }}
 metadata:
   name: eirini-controller-resource
-  {{- if not .Values.opi.enable_multi_namespace_support }}
-  namespace: {{ .Values.opi.namespace }}
-  {{- end }}
 roleRef:
-  {{- if .Values.opi.enable_multi_namespace_support }}
   kind: ClusterRole
-  {{- else }}
-  kind: Role
-  {{- end }}
   name: eirini-controller-resource
   apiGroup: rbac.authorization.k8s.io
 subjects:

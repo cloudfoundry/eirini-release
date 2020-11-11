@@ -7,7 +7,6 @@ metadata:
 data:
   opi.yml: |
     opi:
-      enable_multi_namespace_support: {{ .Values.opi.enable_multi_namespace_support }}
       app_namespace: {{ .Values.opi.namespace }}
       {{- if .Values.opi.use_registry_ingress }}
       registry_address: "registry.{{ .Values.opi.ingress_endpoint }}:443"
@@ -40,19 +39,11 @@ data:
     nats_ip: "{{ .Values.opi.routing.nats.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local"
     nats_port: 4222
   metrics.yml: |
-    enable_multi_namespace_support: {{ .Values.opi.enable_multi_namespace_support }}
-    {{- if not .Values.opi.enable_multi_namespace_support }}
-    app_namespace: {{ .Values.opi.namespace }}
-    {{- end }}
     loggregator_address: "{{ .Values.opi.logs.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8082"
     loggregator_cert_path: "/etc/eirini/secrets/doppler.crt"
     loggregator_key_path: "/etc/eirini/secrets/doppler.key"
     loggregator_ca_path: "/etc/eirini/secrets/doppler.ca"
   events.yml: |
-    enable_multi_namespace_support: {{ .Values.opi.enable_multi_namespace_support }}
-    {{- if not .Values.opi.enable_multi_namespace_support }}
-    app_namespace: {{ .Values.opi.namespace }}
-    {{- end }}
     cc_internal_api: "{{ .Values.opi.cc_api.protocol}}://{{ .Values.opi.cc_api.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.opi.cc_api.port}}"
     cc_tls_disabled: {{ .Values.opi.cc_api.tls_disabled }}
     {{- if not .Values.opi.cc_api.tls_disabled }}
@@ -61,12 +52,8 @@ data:
     cc_ca_path: "/etc/eirini/secrets/cc.ca"
     {{- end }}
   task-reporter.yml: |
-    enable_multi_namespace_support: {{ .Values.opi.enable_multi_namespace_support }}
     completion_callback_retry_limit: {{ .Values.opi.tasks.completionCallbackRetryLimit }}
     ttl_seconds: {{ .Values.opi.tasks.ttlSeconds }}
-    {{- if not .Values.opi.enable_multi_namespace_support }}
-    app_namespace: {{ .Values.opi.namespace }}
-    {{- end }}
     cc_tls_disabled: {{ .Values.opi.cc_api.tls_disabled }}
     {{- if not .Values.opi.cc_api.tls_disabled }}
     cc_cert_path: "/etc/eirini/secrets/cc.crt"
@@ -75,19 +62,11 @@ data:
     {{- end }}
   eirini-controller.yml: |
     opi:
-      enable_multi_namespace_support: {{ .Values.opi.enable_multi_namespace_support }}
-      {{- if not .Values.opi.enable_multi_namespace_support }}
-      app_namespace: {{ .Values.opi.namespace }}
-      {{- end }}
       eirini_uri: "https://{{ .Values.opi.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8085"
       eirini_cert_path: "/etc/eirini/secrets/eirini-client.crt"
       eirini_key_path: "/etc/eirini/secrets/eirini-client.key"
       ca_path: "/etc/eirini/secrets/eirini-client.ca"
   instance-index-env-injector.yml: |
-    enable_multi_namespace_support: {{ .Values.opi.enable_multi_namespace_support }}
-    {{- if not .Values.opi.enable_multi_namespace_support }}
-    app_namespace: {{ .Values.opi.namespace }}
-    {{- end }}
     service_name: instance-index-env-injector
     service_namespace: {{ .Release.Namespace }}
     service_port: 8443
