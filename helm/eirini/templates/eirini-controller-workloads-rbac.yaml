@@ -1,9 +1,10 @@
+{{- range prepend (.Values.opi.namespaces | default list) .Values.opi.namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: eirini-controller-namespaced-role
-  namespace: {{ .Values.opi.namespace }}
+  namespace: {{ . }}
 rules:
 - apiGroups:
   - eirini.cloudfoundry.org
@@ -52,7 +53,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: eirini-controller-namespaced-rolebinding
-  namespace: {{ .Values.opi.namespace }}
+  namespace: {{ . }}
 roleRef:
   kind: Role
   name: eirini-controller-namespaced-role
@@ -60,5 +61,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: eirini-controller
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ $.Release.Namespace }}
+
+{{- end }}
 

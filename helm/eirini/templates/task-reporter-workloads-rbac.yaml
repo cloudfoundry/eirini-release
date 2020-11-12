@@ -1,9 +1,11 @@
+{{- range prepend (.Values.opi.namespaces | default list) .Values.opi.namespace }}
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: eirini-task-reporter-namespaced
-  namespace: {{ .Values.opi.namespace }}
+  namespace: {{ . }}
 rules:
 - apiGroups:
   - batch
@@ -32,7 +34,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: eirini-task-reporter-namespaced
-  namespace: {{ .Values.opi.namespace }}
+  namespace: {{ . }}
 roleRef:
   kind: Role
   name: eirini-task-reporter-namespaced
@@ -40,4 +42,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: eirini-task-reporter
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ $.Release.Namespace }}
+
+{{- end }}

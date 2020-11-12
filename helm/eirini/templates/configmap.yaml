@@ -7,7 +7,7 @@ metadata:
 data:
   opi.yml: |
     opi:
-      app_namespace: {{ .Values.opi.namespace }}
+      app_namespace: {{ required "opi.namespace is mandatory in the values file" .Values.opi.namespace }}
       {{- if .Values.opi.use_registry_ingress }}
       registry_address: "registry.{{ .Values.opi.ingress_endpoint }}:443"
       {{- else if .Values.services.loadbalanced }}
@@ -35,7 +35,6 @@ data:
       unsafe_allow_automount_service_account_token: {{ .Values.opi.unsafe_allow_automount_service_account_token }}
       serve_plaintext: {{ .Values.opi.serve_plaintext }}
   routing.yml: |
-    app_namespace: {{ .Values.opi.namespace }}
     nats_ip: "{{ .Values.opi.routing.nats.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local"
     nats_port: 4222
   metrics.yml: |

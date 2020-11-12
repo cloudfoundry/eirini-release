@@ -9,6 +9,8 @@ opi:
   registry_secret_name: registry-credentials
   disk_limit_mb: 2048
   namespace: eirini
+  # list of additional workload namespaces
+  namespaces: []
   version: 0.0.0
   serviceName: "eirini-opi"
 

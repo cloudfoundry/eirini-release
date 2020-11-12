@@ -1,9 +1,11 @@
+{{- range prepend (.Values.opi.namespaces | default list) .Values.opi.namespace }}
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: eirini-namespaced-role
-  namespace: {{ .Values.opi.namespace }}
+  namespace: {{ . }}
 rules:
 - apiGroups:
   - batch
@@ -47,7 +49,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: eirini-namespaced-rolebinding
-  namespace: {{ .Values.opi.namespace }}
+  namespace: {{ . }}
 roleRef:
   kind: Role
   apiGroup: rbac.authorization.k8s.io
@@ -55,5 +57,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: opi
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ $.Release.Namespace }}
+
+{{- end }}
 
