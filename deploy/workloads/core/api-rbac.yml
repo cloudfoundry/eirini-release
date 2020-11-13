@@ -1,8 +1,9 @@
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: eirini-cluster-role
+  name: eirini-namespaced-role
+  namespace: eirini-workloads
 rules:
 - apiGroups:
   - batch
@@ -11,7 +12,6 @@ rules:
   verbs:
   - create
   - delete
-  - list
 - apiGroups:
   - apps
   resources:
@@ -20,19 +20,11 @@ rules:
   - create
   - update
   - delete
-  - list
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - list
 - apiGroups:
   - ""
   resources:
   - pods
   verbs:
-  - list
   - delete
 - apiGroups:
   - policy
@@ -52,13 +44,14 @@ rules:
 ---
 # Bind to the default service account
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
-  name: eirini-cluster-rolebinding
+  name: eirini-namespaced-rolebinding
+  namespace: eirini-workloads
 roleRef:
-  kind: ClusterRole
-  name: eirini-cluster-role
+  kind: Role
   apiGroup: rbac.authorization.k8s.io
+  name: eirini-namespaced-role
 subjects:
 - kind: ServiceAccount
   name: opi

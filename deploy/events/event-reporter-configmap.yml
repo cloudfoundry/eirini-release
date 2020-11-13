@@ -6,6 +6,5 @@ metadata:
   namespace: eirini-core
 data:
   events.yml: |
-    enable_multi_namespace_support: true
     cc_internal_api: "http://cc-wiremock.eirini-core.svc.cluster.local"
     cc_tls_disabled: true

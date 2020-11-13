@@ -8,15 +8,6 @@ rules:
 - apiGroups:
   - eirini.cloudfoundry.org
   resources:
-  - lrps
-  - tasks
-  verbs:
-  - watch
-  - list
-  - get
-- apiGroups:
-  - eirini.cloudfoundry.org
-  resources:
   - lrps/status
   verbs:
   - update
@@ -27,9 +18,6 @@ rules:
   verbs:
   - create
   - update
-  - get
-  - watch
-  - list
 - apiGroups:
   - batch
   resources:
@@ -37,9 +25,6 @@ rules:
   verbs:
   - create
   - update
-  - get
-  - watch
-  - list
 - apiGroups:
   - policy
   resources:
@@ -57,17 +42,8 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - pods
-  verbs:
-  - get
-  - watch
-  - list
-- apiGroups:
-  - ""
-  resources:
   - events
   verbs:
-  - list
   - create
   - update
 

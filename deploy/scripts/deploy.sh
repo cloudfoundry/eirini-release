@@ -26,11 +26,6 @@ print_message "$warning" "$BLUE"
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-ns_directory="single-namespace"
-if [ "${USE_MULTI_NAMESPACE:-false}" == "true" ]; then
-  ns_directory="multi-namespace"
-fi
-
 export KUBECONFIG
 KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 KUBECONFIG=$(readlink -f "$KUBECONFIG")
@@ -44,12 +39,9 @@ fi
 cat "$PROJECT_ROOT"/deploy/**/namespace.yml | kubectl apply -f -
 
 kubectl apply -f "$PROJECT_ROOT/deploy/core/"
-kubectl apply -f "$PROJECT_ROOT/deploy/core/$ns_directory"
-kubectl apply -f "$PROJECT_ROOT/deploy/workloads/"
 kubectl apply -f "$PROJECT_ROOT/deploy/events/"
-kubectl apply -f "$PROJECT_ROOT/deploy/events/$ns_directory"
 kubectl apply -f "$PROJECT_ROOT/deploy/metrics/"
-kubectl apply -f "$PROJECT_ROOT/deploy/metrics/$ns_directory"
+kubectl apply -R -f "$PROJECT_ROOT/deploy/workloads"
 
 # Install wiremock to mock the cloud controller
 kubectl apply -f "$PROJECT_ROOT/deploy/testing/cc-wiremock"
