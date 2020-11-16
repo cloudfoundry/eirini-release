@@ -1,9 +1,0 @@
-dependencies:
-- name: eirini
-  repository: file://../eirini
-  version: 0.0.0-dev
-- name: bits
-  repository: https://cloudfoundry-incubator.github.io/bits-service-release/helm
-  version: 2.36.0
-digest: sha256:0633d36ee59cc3a213ef9d14906f53d28f64af2cd63750706dabc465109c3085
-generated: "2020-03-11T17:22:43.704158+02:00"

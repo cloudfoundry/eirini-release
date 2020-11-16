@@ -1,8 +1,3 @@
-secrets:
-  BITS_SERVICE_SECRET: dummy-bits-secret-123
-  BITS_SERVICE_SIGNING_USER_PASSWORD: dummy-bits-secret-123
-  BLOBSTORE_PASSWORD: dummy-bits-secret-123
-
 opi:
   deny_app_ingress: false
 

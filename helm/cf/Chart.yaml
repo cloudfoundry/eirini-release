@@ -1,5 +1,0 @@
-apiVersion: v1
-appVersion: 1.4
-description: A Helm chart for SUSE Cloud Foundry
-name: cf
-version: 2.16.4

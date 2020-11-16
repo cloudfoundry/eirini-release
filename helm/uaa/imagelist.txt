@@ -1,6 +1,0 @@
-uaa-configgin-helper:7ef898a83f98f20b3340e88760e99e30c60081c0
-uaa-mysql-proxy:797ce1924c85379bf1c83e830955d528597cc832
-uaa-mysql:903a2ac9b66484f32137b9029b63ce845695635f
-uaa-post-deployment-setup:18a5bef2ffe2f8dc43b47f0fc1c34266c49623cf
-uaa-secret-generation:0653dd4863841f90cb585d36907afdfb7c1369bf
-uaa-uaa:9de4f84fcaf0672b7488cc0c77342ed955c87e2e
