@@ -35,9 +35,6 @@ subjects:
 - kind: ServiceAccount
   name: opi
   namespace: eirini-core
-- kind: ServiceAccount
-  name: eirini-secret-smuggler
-  namespace: eirini-core
 
 ---
 apiVersion: policy/v1beta1
