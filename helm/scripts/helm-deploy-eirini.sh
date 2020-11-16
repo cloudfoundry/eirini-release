@@ -30,8 +30,6 @@ install_tiller() {
 create_values_file() {
   local file=$1
   cp "$EIRINI_RELEASE/helm/scripts/assets/helm-values-template.yml" "$file"
-  cluster_ip=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
-  goml set --prop kube.external_ips.+ --value "$cluster_ip" --file "$file"
 }
 
 install-nats() {

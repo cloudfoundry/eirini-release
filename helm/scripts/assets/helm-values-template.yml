@@ -75,6 +75,3 @@ opi:
     tls_disabled: true
     protocol: http
     port: 80
-
-kube:
-  external_ips: []

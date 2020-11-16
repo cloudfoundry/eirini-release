@@ -1,8 +1,4 @@
 opi:
-  # used when bits service is using ingress
-  use_registry_ingress: false
-  # set ingress_endoint when 'use_registry_ingress' is set to true
-  ingress_endpoint: ~
 
   deny_app_ingress: true
   # secret name in app namespace
@@ -112,8 +108,6 @@ env:
   DOMAIN: ~
 
 kube:
-  # used to construct bits service URL if it is not load balanced and does not behind ingress
-  external_ips: []
   resources:
     opi:
       requests:
