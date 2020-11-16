@@ -96,17 +96,6 @@ opi:
       keyPath: "eirini-client-crt-key"
       caPath: "internal-ca-cert"
 
-  kubecf:
-    enable: false
-
-services:
-  loadbalanced: false
-env:
-  # Base domain of the SCF cluster.
-  # Example: "my-scf-cluster.com"
-  # used to get bits service URL if it is load balanced and not behind ingress
-  DOMAIN: ~
-
 kube:
   resources:
     opi:
