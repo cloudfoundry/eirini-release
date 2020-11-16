@@ -12,7 +12,6 @@ data:
       eirini_address: "https://{{ .Values.opi.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local:8085"
 
       cc_tls_disabled: {{ .Values.opi.cc_api.tls_disabled }}
-      rootfs_version: {{ .Values.global.rootfs_version }}
       tls_port: 8085
       disk_limit_mb: {{ .Values.opi.disk_limit_mb }}
       application_service_account: eirini

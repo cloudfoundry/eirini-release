@@ -165,7 +165,4 @@ kube:
         cpu: 200m
         memory: 300Mi
 
-global:
-  rootfs_version: v75.0.0
-
 instanceIndexEnvInjector: {}
