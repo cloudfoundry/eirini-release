@@ -51,34 +51,6 @@ spec:
 kubectl patch -n eirini role eirini-app-role --type='json' -p '[{"op":"add","path":"/rules/0/resourceNames/-","value":"eirini-app-privileged-psp"}]'
 ```
 
-### Securing SCF endpoints
-
-It is not possible to do it with native Kubernetes network policies. In order to achieve this, the CNI plugin can be used directly. If you're using [Calico](https://www.projectcalico.org/) on IBMCloud, you can run the following command:
-
-```bash
-calicoctl apply --config $CALICOCNF -f - <<EOF
-apiVersion: projectcalico.org/v3
-kind: NetworkPolicy
-metadata:
-  name: deny-scf-access
-  namespace: eirini
-spec:
-  types:
-  - Egress
-  egress:
-  - action: Deny
-    source:
-      selector: source_type == 'APP'
-    destination:
-      namespaceSelector: name == 'scf'
-  - action: Allow
-EOF
-```
-
-You can use [this](https://www.ibm.com/cloud/blog/configure-calicoctl-for-ibm-cloud-kubernetes-service) guide to export `$CALICOCNF` on IBM Cloud.
-
-Note that GKE does not currently support creating custom Calico network policies.
-
 ### Securing Kubernetes API Endpoint
 
 The Kubernetes API is available in all pods by default at `https://kubernetes.default`. Eirini does not mount

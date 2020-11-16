@@ -10,7 +10,6 @@ The following CFAR (Cloud Foundry Application Runtime) distributions deploy CF o
 
 * [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s)
 * [KubeCF](https://github.com/cloudfoundry-incubator/kubecf)
-* Deprecated: [Install via SCF](./docs/installation.md). **Warning**: this installation type is no longer officially supported and will be soon discontinued.
 
 ## Security
 
@@ -52,11 +51,10 @@ If all the CF apps are running, it is safe to delete all files in `/var/vcap/sto
 To do so, you can run this command:
 
 ```bash
-kubectl exec -n <scf-namespace> blobstore-0 -c blobstore -- \
+kubectl exec -n <cf-system-namespace> blobstore-0 -c blobstore -- \
   /bin/sh -c 'rm -rf /var/vcap/store/shared/cc-droplets/sh/a2/sha256:*'
 ```
 
 ## Resources
 
-* [SCF documentation](https://github.com/SUSE/scf/wiki/How-to-Install-SCF#deploy-using-helm)
 * [Eirini Continuous Integration Pipeline](https://ci.eirini.cf-app.com/teams/main/pipelines/eirini-release)
