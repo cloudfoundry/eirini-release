@@ -38,7 +38,7 @@ spec:
           mountPath: /etc/eirini/config
         {{- if not .Values.opi.cc_api.tls_disabled }}
         - name: cf-secrets
-          mountPath: /etc/eirini/secrets
+          mountPath: /etc/cf-api/certs
         {{- end }}
       volumes:
         - name: config-map-volume
@@ -53,10 +53,10 @@ spec:
              secretName: "{{ .Values.opi.tasks.tls.taskReporter.secretName }}"
              items:
              - key: "{{ .Values.opi.tasks.tls.taskReporter.certPath }}"
-               path: cc.crt
+               path: tls.crt
              - key: "{{ .Values.opi.tasks.tls.taskReporter.keyPath }}"
-               path: cc.key
+               path: tls.key
              - key: "{{ .Values.opi.tasks.tls.taskReporter.caPath }}"
-               path: cc.ca
+               path: ca.crt
         {{- end }}
 {{- end }}
