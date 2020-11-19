@@ -35,6 +35,12 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - pods
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - create
