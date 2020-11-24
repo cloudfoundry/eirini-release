@@ -5,6 +5,7 @@ metadata:
   name: eirini-controller
   namespace: eirini-core
 spec:
+  replicas: 2
   selector:
     matchLabels:
       name: eirini-controller

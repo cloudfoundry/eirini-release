@@ -9,6 +9,7 @@ spec:
   selector:
     matchLabels:
       name: eirini-controller
+  replicas: 2
   template:
     metadata:
       labels:
