@@ -8,6 +8,7 @@ spec:
   selector:
     matchLabels:
       name: eirini-task-reporter
+  replicas: 2
   template:
     metadata:
       labels:

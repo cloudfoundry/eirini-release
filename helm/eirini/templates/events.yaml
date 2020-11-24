@@ -8,6 +8,7 @@ spec:
   selector:
     matchLabels:
       name: "eirini-events"
+  replicas: 2
   template:
     metadata:
       labels:
