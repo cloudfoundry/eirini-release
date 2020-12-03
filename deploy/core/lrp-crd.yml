@@ -112,6 +112,27 @@ spec:
                     timeoutMs:
                       type: integer
                       format: uint8
+                sidecars:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - name
+                    - command
+                    properties:
+                      name:
+                        type: string
+                      command:
+                        type: array
+                        items:
+                          type: string
+                      memoryMB:
+                        type: integer
+                        format: int64
+                      env:
+                        type: object
+                        additionalProperties:
+                          type: string
             status:
               type: object
               properties:
