@@ -47,6 +47,10 @@ spec:
                   items:
                     type: integer
                     format: int32
+                placement_tags:
+                  type: array
+                  items:
+                    type: string
                 volumeMounts:
                   type: array
                   items:
