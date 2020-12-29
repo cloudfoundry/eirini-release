@@ -12,13 +12,29 @@ spec:
       labels:
         name: cc-wiremock
     spec:
+      volumes:
+        - name: wiremock-keystore
+          secret:
+            secretName: wiremock-keystore
+            optional: true
       containers:
       - name: wiremock
+        env:
+        - name: KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wiremock-keystore
+              key: ks.pass
         image: rodolpheche/wiremock
-        args: ["--verbose"]
+        args: ["--verbose", "--https-port", "8081", "--https-keystore", "/etc/wiremock/keystore/keystore.pkcs12", "--keystore-type", "PKCS12", "--keystore-password", "$(KEYSTORE_PASSWORD)", "--key-manager-password", "$(KEYSTORE_PASSWORD)"]
+        volumeMounts:
+        - name: wiremock-keystore
+          mountPath: /etc/wiremock/keystore
         ports:
         - containerPort: 8080
           name: http
+        - containerPort: 8081
+          name: https
 
 ---
 apiVersion: v1
@@ -32,5 +48,9 @@ spec:
       targetPort: 8080
       protocol: TCP
       name: http
+    - port: 443
+      targetPort: 8081
+      protocol: TCP
+      name: https
   selector:
     name: cc-wiremock

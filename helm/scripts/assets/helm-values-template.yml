@@ -3,7 +3,7 @@ opi:
 
   tls:
     opiCapiClient:
-      secretName: "eirini-certs"
+      secretName: "capi-tls"
       keyPath: "tls.key"
       certPath: "tls.crt"
     opiServer:
@@ -11,7 +11,7 @@ opi:
       certPath: "tls.crt"
       keyPath: "tls.key"
     capi:
-      secretName: "eirini-certs"
+      secretName: "capi-tls"
       caPath: "ca.crt"
     eirini:
       secretName: "eirini-certs"
@@ -20,11 +20,11 @@ opi:
   events:
     tls:
       capiClient:
-        secretName: "eirini-certs"
+        secretName: "capi-tls"
         keyPath: "tls.key"
         certPath: "tls.crt"
       capi:
-        secretName: "eirini-certs"
+        secretName: "capi-tls"
         caPath: "ca.crt"
 
   logs:
@@ -58,7 +58,7 @@ opi:
   tasks:
     tls:
       taskReporter:
-        secretName: "eirini-certs"
+        secretName: "capi-tls"
         keyPath: "tls.key"
         certPath: "tls.crt"
         caPath: "ca.crt"
@@ -72,6 +72,6 @@ opi:
 
   cc_api:
     serviceName: "cc-wiremock"
-    tls_disabled: true
-    protocol: http
-    port: 80
+    tls_disabled: false
+    protocol: https
+    port: 443

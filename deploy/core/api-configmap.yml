@@ -10,8 +10,8 @@ data:
       app_namespace: eirini-workloads
       tls_port: 8085
 
-      cc_tls_disabled: true
-      cc_internal_api: "http://cc-wiremock.eirini-core.svc.cluster.local"
+      cc_tls_disabled: false
+      cc_internal_api: "https://cc-wiremock.eirini-core.svc.cluster.local"
 
 
       application_service_account: eirini
