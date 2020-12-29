@@ -50,7 +50,7 @@ kubectl apply -f "$PROJECT_ROOT/deploy/testing/cc-wiremock"
 
 pushd "$PROJECT_ROOT/deploy/scripts"
 {
-  ./generate_eirini_tls.sh "eirini-api.eirini-core.svc.cluster.local" "$WIREMOCK_KEYSTORE_PASSWORD"
+  ./generate_eirini_tls.sh "*.eirini-core.svc.cluster.local" "$WIREMOCK_KEYSTORE_PASSWORD"
 }
 popd
 
