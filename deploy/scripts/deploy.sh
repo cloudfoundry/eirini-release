@@ -35,6 +35,8 @@ GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-""}
 if [[ -n $GOOGLE_APPLICATION_CREDENTIALS ]]; then
   GOOGLE_APPLICATION_CREDENTIALS=$(readlink -f "$GOOGLE_APPLICATION_CREDENTIALS")
 fi
+export WIREMOCK_KEYSTORE_PASSWORD
+WIREMOCK_KEYSTORE_PASSWORD=${WIREMOCK_KEYSTORE_PASSWORD:-""}
 
 cat "$PROJECT_ROOT"/deploy/**/namespace.yml | kubectl apply -f -
 
@@ -48,7 +50,7 @@ kubectl apply -f "$PROJECT_ROOT/deploy/testing/cc-wiremock"
 
 pushd "$PROJECT_ROOT/deploy/scripts"
 {
-  ./generate_eirini_tls.sh "eirini-api.eirini-core.svc.cluster.local"
+  ./generate_eirini_tls.sh "eirini-api.eirini-core.svc.cluster.local" "$WIREMOCK_KEYSTORE_PASSWORD"
 }
 popd
 

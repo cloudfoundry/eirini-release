@@ -5,6 +5,8 @@ set -euo pipefail
 EIRINI_RELEASE="$(cd "$(dirname "$0")/../.." && pwd)"
 CI_DIR="$EIRINI_RELEASE/../eirini-ci"
 NATS_PASSWORD="dummy-nats-password"
+export WIREMOCK_KEYSTORE_PASSWORD
+WIREMOCK_KEYSTORE_PASSWORD=${WIREMOCK_KEYSTORE_PASSWORD:-""}
 
 main() {
   install_tiller
@@ -65,9 +67,28 @@ data:
   ca.crt: "$cert"
   tls.key: "$key"
   nats-password: "$nats_password_b64"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: capi-tls
+type: Opaque
+data:
+  tls.crt: "$cert"
+  ca.crt: "$cert"
+  tls.key: "$key"
 EOF
 
   kubectl apply -n cf -f "$secrets_file"
+
+  pem_file=$(mktemp)
+  keystore_file=$(mktemp)
+  cat test.key >"$pem_file"
+  cat test.cert >>"$pem_file"
+  openssl pkcs12 -export -in "$pem_file" -out "$keystore_file" -password "pass:$WIREMOCK_KEYSTORE_PASSWORD"
+  kubectl create secret -n cf generic wiremock-keystore --from-file=keystore.pkcs12="$keystore_file" --from-literal=ks.pass="$WIREMOCK_KEYSTORE_PASSWORD"
+  rm "$pem_file"
+  rm "$keystore_file"
 }
 
 install-eirini() {
