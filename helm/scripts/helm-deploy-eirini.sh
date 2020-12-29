@@ -53,7 +53,6 @@ create-test-secret() {
   openssl req -x509 -newkey rsa:4096 -keyout test.key -out test.cert -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:eirini-opi.cf.svc.cluster.local" -days 365
   cert=$(base64 -w0 <test.cert)
   key=$(base64 -w0 <test.key)
-  rm test.*
 
   secrets_file=$(mktemp)
   cat <<EOF >"$secrets_file"
@@ -87,6 +86,8 @@ EOF
   cat test.cert >>"$pem_file"
   openssl pkcs12 -export -in "$pem_file" -out "$keystore_file" -password "pass:$WIREMOCK_KEYSTORE_PASSWORD"
   kubectl create secret -n cf generic wiremock-keystore --from-file=keystore.pkcs12="$keystore_file" --from-literal=ks.pass="$WIREMOCK_KEYSTORE_PASSWORD"
+
+  rm test.*
   rm "$pem_file"
   rm "$keystore_file"
 }
