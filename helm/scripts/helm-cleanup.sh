@@ -16,6 +16,6 @@ while kubectl get ns "$workloadsNS" &>/dev/null; do
 done
 echo " gone"
 
-kubectl -n cf delete secret capi-tls
-kubectl -n cf delete secret eirini-certs
-kubectl -n cf delete secret wiremock-keystore
+kubectl -n cf delete secret capi-tls || true
+kubectl -n cf delete secret eirini-certs || true
+kubectl -n cf delete secret wiremock-keystore || true
