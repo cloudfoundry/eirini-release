@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eirini-routes
+  namespace: eirini-core
+data:
+  routing.yml: |
+    nats_ip: nats-client.eirini-core.svc.cluster.local
+    nats_port: 4222

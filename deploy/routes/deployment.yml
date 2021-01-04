@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eirini-routing
+  namespace: eirini-core
+spec:
+  selector:
+    matchLabels:
+      name: eirini-routing
+  template:
+    metadata:
+      labels:
+        name: eirini-routing
+    spec:
+      dnsPolicy: ClusterFirst
+      serviceAccountName: eirini-routing
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: eirini-routes
+            items:
+            - key: routing.yml
+              path: routing.yml
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: route-collector
+        image: eirini/route-collector@sha256:b3989189b17ca062ea61eb1b8359ddbd257007ccb0c91e844127401f8c082f6e
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: NATS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: nats-password
+              name: nats-secret
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
+          limits:
+            cpu: 200m
+            memory: 300Mi
+      - name: route-pod-informer
+        image: eirini/route-pod-informer@sha256:11e7ce91fef9636f3f0b81896457b3c1dd4edb2a97fbd7b0f3f5511d4043c111
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: NATS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: nats-password
+              name: nats-secret
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
+          limits:
+            cpu: 200m
+            memory: 300Mi
+      - name: route-statefulset-informer
+        image: eirini/route-statefulset-informer@sha256:a488a1c7a0b76f9f17b0637b624d56296fea21ca201b7dcdeb7227b731a97347
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: NATS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: nats-password
+              name: nats-secret
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/
+        resources:
+          requests:
+            cpu: 30m
+            memory: 45Mi
+          limits:
+            cpu: 200m
+            memory: 300Mi

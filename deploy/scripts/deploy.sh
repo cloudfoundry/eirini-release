@@ -25,6 +25,8 @@ EOF
 print_message "$warning" "$BLUE"
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+export NATS_PASSWORD
+NATS_PASSWORD="${NATS_PASSWORD:-dummy-nats-password}"
 
 export KUBECONFIG
 KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
@@ -40,9 +42,16 @@ WIREMOCK_KEYSTORE_PASSWORD=${WIREMOCK_KEYSTORE_PASSWORD:-""}
 
 cat "$PROJECT_ROOT"/deploy/**/namespace.yml | kubectl apply -f -
 
+helm3 upgrade nats \
+  --install bitnami/nats \
+  --namespace eirini-core \
+  --set auth.user="nats" \
+  --set auth.password="$NATS_PASSWORD"
+
 kubectl apply -f "$PROJECT_ROOT/deploy/core/"
 kubectl apply -f "$PROJECT_ROOT/deploy/events/"
 kubectl apply -f "$PROJECT_ROOT/deploy/metrics/"
+kubectl apply -f "$PROJECT_ROOT/deploy/routes/"
 kubectl apply -R -f "$PROJECT_ROOT/deploy/workloads"
 
 # Install wiremock to mock the cloud controller

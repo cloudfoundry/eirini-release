@@ -2,6 +2,8 @@
 
 set -eu
 
+readonly NATS_PASSWORD="${NATS_PASSWORD:-dummy-nats-password}"
+
 echo "Will now generate tls.ca tls.crt and tls.key files"
 
 mkdir -p keys
@@ -16,7 +18,13 @@ pushd keys
 
   if ! kubectl -n eirini-core get secret eirini-certs >/dev/null 2>&1; then
     echo "Creating the secret in your kubernetes cluster"
+    nats_password_b64="$(echo -n "$NATS_PASSWORD" | base64)"
     kubectl create secret -n eirini-core generic eirini-certs --from-file=tls.crt=./tls.crt --from-file=ca.crt=./tls.crt --from-file=tls.key=./tls.key
+  fi
+
+  if ! kubectl -n eirini-core get secret nats-secret >/dev/null 2>&1; then
+    echo "Creating the secret in your kubernetes cluster"
+    kubectl create secret -n eirini-core generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
   fi
 
   if ! kubectl -n eirini-core get secret loggregator-certs >/dev/null 2>&1; then
