@@ -65,11 +65,12 @@ spec:
         - name: config-map-volume
           mountPath: /etc/eirini/
         resources:
-          cpu: {{ .Values.kube.resources.routing.requests.cpu }}
-          memory: {{ .Values.kube.resources.routing.requests.memory }}
-        limits:
-          cpu: {{ .Values.kube.resources.routing.limits.cpu }}
-          memory: {{ .Values.kube.resources.routing.limits.memory }}
+          requests:
+            cpu: {{ .Values.kube.resources.routing.requests.cpu }}
+            memory: {{ .Values.kube.resources.routing.requests.memory }}
+          limits:
+            cpu: {{ .Values.kube.resources.routing.limits.cpu }}
+            memory: {{ .Values.kube.resources.routing.limits.memory }}
       - name: route-statefulset-informer
         {{- if .Values.opi.route_statefulset_informer_image }}
         image: {{ .Values.opi.route_statefulset_informer_image }}
@@ -87,9 +88,10 @@ spec:
         - name: config-map-volume
           mountPath: /etc/eirini/
         resources:
-          cpu: {{ .Values.kube.resources.routing.requests.cpu }}
-          memory: {{ .Values.kube.resources.routing.requests.memory }}
-        limits:
-          cpu: {{ .Values.kube.resources.routing.limits.cpu }}
-          memory: {{ .Values.kube.resources.routing.limits.memory }}
+          requests:
+            cpu: {{ .Values.kube.resources.routing.requests.cpu }}
+            memory: {{ .Values.kube.resources.routing.requests.memory }}
+          limits:
+            cpu: {{ .Values.kube.resources.routing.limits.cpu }}
+            memory: {{ .Values.kube.resources.routing.limits.memory }}
 {{- end }}
