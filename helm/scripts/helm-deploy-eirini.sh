@@ -9,7 +9,6 @@ export WIREMOCK_KEYSTORE_PASSWORD
 WIREMOCK_KEYSTORE_PASSWORD=${WIREMOCK_KEYSTORE_PASSWORD:-""}
 
 main() {
-  install_tiller
   install-nats
   create-test-secret
 
@@ -22,19 +21,13 @@ main() {
   wait-for-deployments
 }
 
-install_tiller() {
-  kubectl apply -f "$CI_DIR/k8s-specs/tiller-service-account.yml"
-  kubectl apply -f "$CI_DIR/k8s-specs/restricted-psp.yaml"
-  helm init --service-account tiller --upgrade --wait
-  helm repo add bitnami https://charts.bitnami.com/bitnami
-}
-
 create_values_file() {
   local file=$1
   cp "$EIRINI_RELEASE/helm/scripts/assets/helm-values-template.yml" "$file"
 }
 
 install-nats() {
+  helm repo add bitnami https://charts.bitnami.com/bitnami
   helm upgrade nats \
     --install bitnami/nats \
     --version "4.5.8" \
