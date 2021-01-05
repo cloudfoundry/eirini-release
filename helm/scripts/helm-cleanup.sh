@@ -19,3 +19,4 @@ echo " gone"
 kubectl -n cf delete secret capi-tls || true
 kubectl -n cf delete secret eirini-certs || true
 kubectl -n cf delete secret wiremock-keystore || true
+kubectl -n cf delete secret nats-secret || true
