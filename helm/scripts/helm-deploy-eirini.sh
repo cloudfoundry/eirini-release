@@ -48,8 +48,8 @@ install-wiremock() {
 }
 
 create-test-secret() {
-  local nats_password_b64 cert key secrets_file
-  nats_password_b64="$(echo -n "$NATS_PASSWORD" | base64)"
+  local cert key secrets_file
+
   openssl req -x509 -newkey rsa:4096 -keyout test.key -out test.cert -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:*.cf.svc.cluster.local" -days 365
   cert=$(base64 -w0 <test.cert)
   key=$(base64 -w0 <test.key)
@@ -65,7 +65,6 @@ data:
   tls.crt: "$cert"
   ca.crt: "$cert"
   tls.key: "$key"
-  nats-password: "$nats_password_b64"
 ---
 apiVersion: v1
 kind: Secret
@@ -85,7 +84,10 @@ EOF
   cat test.key >"$pem_file"
   cat test.cert >>"$pem_file"
   openssl pkcs12 -export -in "$pem_file" -out "$keystore_file" -password "pass:$WIREMOCK_KEYSTORE_PASSWORD"
+
   kubectl create secret -n cf generic wiremock-keystore --from-file=keystore.pkcs12="$keystore_file" --from-literal=ks.pass="$WIREMOCK_KEYSTORE_PASSWORD"
+
+  kubectl create secret -n eirini-core generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
 
   rm test.*
   rm "$pem_file"

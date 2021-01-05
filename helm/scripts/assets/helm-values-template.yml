@@ -50,7 +50,7 @@ opi:
   routing:
     nats:
       serviceName: nats-client
-      secretName: "eirini-certs"
+      secretName: "nats-secret"
 
   secretSmuggler:
     enable: false
