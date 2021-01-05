@@ -4,8 +4,8 @@ set -eu
 
 EIRINI_RELEASE="$(cd "$(dirname "$0")/../.." && pwd)"
 
-helm delete --purge nats || true
-helm delete --purge eirini || true
+helm delete nats || true
+helm delete eirini || true
 
 workloadsNS="$(goml get --file $EIRINI_RELEASE/helm/eirini/values.yaml --prop opi.namespace)"
 
