@@ -40,7 +40,8 @@ install-nats() {
     --version "4.5.8" \
     --namespace cf \
     --set auth.user="nats" \
-    --set auth.password="$NATS_PASSWORD"
+    --set auth.password="$NATS_PASSWORD" \
+    --wait
 }
 
 install-wiremock() {

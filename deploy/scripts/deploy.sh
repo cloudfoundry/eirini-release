@@ -48,7 +48,8 @@ helm upgrade nats \
   --install bitnami/nats \
   --namespace eirini-core \
   --set auth.user="nats" \
-  --set auth.password="$NATS_PASSWORD"
+  --set auth.password="$NATS_PASSWORD" \
+  --wait
 
 kubectl apply -f "$PROJECT_ROOT/deploy/core/"
 kubectl apply -f "$PROJECT_ROOT/deploy/events/"
