@@ -42,7 +42,7 @@ WIREMOCK_KEYSTORE_PASSWORD=${WIREMOCK_KEYSTORE_PASSWORD:-""}
 
 cat "$PROJECT_ROOT"/deploy/**/namespace.yml | kubectl apply -f -
 
-helm3 upgrade nats \
+helm upgrade nats \
   --install bitnami/nats \
   --namespace eirini-core \
   --set auth.user="nats" \
