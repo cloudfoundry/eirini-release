@@ -9,6 +9,7 @@ export WIREMOCK_KEYSTORE_PASSWORD
 WIREMOCK_KEYSTORE_PASSWORD=${WIREMOCK_KEYSTORE_PASSWORD:-""}
 
 main() {
+  kubectl create namespace cf || true
   install-nats
   create-test-secret
 
