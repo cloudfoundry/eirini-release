@@ -87,7 +87,7 @@ EOF
 
   kubectl create secret -n cf generic wiremock-keystore --from-file=keystore.pkcs12="$keystore_file" --from-literal=ks.pass="$WIREMOCK_KEYSTORE_PASSWORD"
 
-  kubectl create secret -n eirini-core generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
+  kubectl create secret -n cf generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
 
   rm test.*
   rm "$pem_file"
