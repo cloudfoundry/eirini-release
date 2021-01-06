@@ -25,7 +25,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: route-collector
-        image: eirini/route-collector@sha256:541eec490f0141923c203617c042289403c6d39dcd52eb14bf57752e9ace8976
+        image: eirini/route-collector@sha256:f26d63d4b6bbd10563e7ee2c540521ea57865aa864350f4edd940076ab863c82
         imagePullPolicy: IfNotPresent
         env:
         - name: NATS_PASSWORD
@@ -44,7 +44,7 @@ spec:
             cpu: 200m
             memory: 300Mi
       - name: route-pod-informer
-        image: eirini/route-pod-informer@sha256:a2816101dbd7c653376eb5b167c33ba940827eeace17ddc6cf7e3d215b1e6f09
+        image: eirini/route-pod-informer@sha256:5f40b42cefa4a4fe991bd0f4495dc444046b753cbd3d7c93793de3f5108b0126
         imagePullPolicy: IfNotPresent
         env:
         - name: NATS_PASSWORD
@@ -63,7 +63,7 @@ spec:
             cpu: 200m
             memory: 300Mi
       - name: route-statefulset-informer
-        image: eirini/route-statefulset-informer@sha256:f199778e1f68801da841f118e46069294186e1195fc8ec41bf5fc6dc2287a0bd
+        image: eirini/route-statefulset-informer@sha256:6d5406e0936f6b07cbb69b9616f45efda0796b2f561b5891af24509db7908ccd
         imagePullPolicy: IfNotPresent
         env:
         - name: NATS_PASSWORD
