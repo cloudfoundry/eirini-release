@@ -27,7 +27,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: metrics-collector
-        image: eirini/metrics-collector@sha256:c86f02e69d96c440b196fcb053b5ebd63769f15789f46701478daa7474e838c9
+        image: eirini/metrics-collector@sha256:92ae15611681dd79dfa7346b9725de52aae708e728863731d581599c520263fd
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume
