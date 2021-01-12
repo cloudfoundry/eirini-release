@@ -1,0 +1,44 @@
+api:
+  registry_secret_name: registry-credentials
+  unsafe_allow_automount_service_account_token: false
+  tls_port: 8085
+  serve_plaintext: false
+  tls_secret_name: "eirini-internal-tls-certs"
+
+tasks:
+  completion_callback_retry_limit: 10
+  ttl_seconds: 5
+
+workloads:
+    default_namespace: eirini-workloads
+    namespaces: []
+
+cc_api:
+  host: "api.eirini-core.svc.cluster.local"
+  port: 9023
+  scheme: https
+  tls_disabled: false
+  tls_secret_name: "eirini-internal-tls-certs"
+
+routing:
+  nats:
+    host: "nats-client.eirini-core.svc.cluster.local"
+    port: 4222
+    password_key: nats-password
+    secret_name: nats-secret
+
+metrics:
+  loggregator:
+    host: "doppler.eirini-core.svc.cluster.local"
+    port: 8082
+
+images:
+    api: eirini/opi@sha256:20863cf12aedb86b3af251978615ccbc5f501cd3f75e64f0a61d26fcfb9f6184
+    eirini_controller: eirini/eirini-controller@sha256:6cbab531d5277db07829cc98c70625bba3e0c97df0975b3551c7898d12d034bd
+    instance_index_env_injector: eirini/instance-index-env-injector@sha256:b3a0129b30e00384cfd535b48850e251f17ce059eac3bb5369b4f7aef6145605
+    task_reporter: eirini/task-reporter@sha256:dfd8fb4ee29022d37ed8cbb6baf4f3839b5a798385d33677a31cac163e715af4
+    event_reporter: eirini/event-reporter@sha256:302fa5f9156fca41c6bf23c35dd54ef0bc75f3149d70e2e3fd9b7301fefc0121
+    route_collector: eirini/route-collector@sha256:792ef0fd92893c7a1b10cba8e6d25f5352fa6405f4a21214ba41d966409de8cf
+    route_pod_informer: eirini/route-pod-informer@sha256:aa99d5ce6878cb0ef5c6d6733d82e35f0b5380688eb2fb10593164e964ee1f87
+    route_statefulset_informer: eirini/route-statefulset-informer@sha256:bd0d0ecc7fcabeb5d72936c2d5563db312efa4f27bb01f33b3213388c768df47
+    metrics_collector: eirini/metrics-collector@sha256:c704431ee61d5968ea4a2297699e3ba4225528dd52f13b09d0a3ba62cc8b6dbb

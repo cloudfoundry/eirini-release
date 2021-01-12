@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eirini-metrics
+  namespace: {{ .Release.Namespace }}
+data:
+  metrics.yml: |
+      loggregator_address: "{{ .Values.metrics.loggregator.host }}:{{ .Values.metrics.loggregator.port }}"

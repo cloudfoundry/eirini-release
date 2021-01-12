@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: instance-index-env-injector
+  namespace: {{ .Release.Namespace }}
+data:
+  instance-index-env-injector.yml: |
+    service_name: instance-index-env-injector
+    service_namespace: {{ .Release.Namespace }}
+    service_port: 8443

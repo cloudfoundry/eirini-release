@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eirini-event-reporter
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      name: eirini-event-reporter
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        name: eirini-event-reporter
+    spec:
+      dnsPolicy: ClusterFirst
+      serviceAccountName: eirini-event-reporter
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: eirini-event-reporter
+        - name: cc-certs
+          secret:
+            secretName: {{ .Values.cc_api.tls_secret_name }}
+            optional: true
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: event-reporter
+        image: {{ .Values.images.event_reporter }}
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini-event-reporter/config
+        - name: cc-certs
+          mountPath: /etc/cf-api/certs
+        resources:
+          requests:
+            cpu: 15m
+            memory: 15Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi

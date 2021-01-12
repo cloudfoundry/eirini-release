@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eirini-routes
+  namespace: {{ .Release.Namespace }}
+data:
+  routing.yml: |
+    nats_ip: {{ .Values.routing.nats.host }}
+    nats_port: {{ .Values.routing.nats.port }}

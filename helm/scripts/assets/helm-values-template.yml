@@ -1,77 +1,11 @@
-opi:
-  deny_app_ingress: false
+api:
+  tls_secret_name: eirini-certs
 
-  tls:
-    opiCapiClient:
-      secretName: "capi-tls"
-      keyPath: "tls.key"
-      certPath: "tls.crt"
-    opiServer:
-      secretName: "eirini-certs"
-      certPath: "tls.crt"
-      keyPath: "tls.key"
-    capi:
-      secretName: "capi-tls"
-      caPath: "ca.crt"
-    eirini:
-      secretName: "eirini-certs"
-      caPath: "ca.crt"
+cc_api:
+  host: "cc-wiremock.eirini-core.svc.cluster.local"
+  port: 443
+  tls_secret_name: capi-tls
 
-  events:
-    tls:
-      capiClient:
-        secretName: "capi-tls"
-        keyPath: "tls.key"
-        certPath: "tls.crt"
-      capi:
-        secretName: "capi-tls"
-        caPath: "ca.crt"
-
-  logs:
-    tls:
-      client:
-        secretName: "eirini-certs"
-        keyPath: "tls.key"
-        certPath: "tls.crt"
-      server:
-        secretName: "eirini-certs"
-        caPath: "ca.crt"
-
-  metrics:
-    tls:
-      client:
-        secretName: "eirini-certs"
-        keyPath: "tls.key"
-        certPath: "tls.crt"
-      server:
-        secretName: "eirini-certs"
-        caPath: "ca.crt"
-
-  routing:
-    nats:
-      serviceName: nats-client
-      secretName: "nats-secret"
-
-  secretSmuggler:
-    enable: false
-
-  tasks:
-    tls:
-      taskReporter:
-        secretName: "capi-tls"
-        keyPath: "tls.key"
-        certPath: "tls.crt"
-        caPath: "ca.crt"
-
-  lrpController:
-    tls:
-      secretName: "eirini-certs"
-      certPath: "tls.crt"
-      keyPath: "tls.key"
-      caPath: "ca.crt"
-
-  cc_api:
-    serviceName: "cc-wiremock"
-    tls_disabled: false
-    protocol: https
-    port: 443
+routing:
+  nats:
+    host: "nats-client.eirini-core.svc.cluster.local"

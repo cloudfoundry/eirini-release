@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eirini-event-reporter
+  namespace: {{ .Release.Namespace }}
+data:
+  events.yml: |
+    cc_internal_api: "{{ .Values.cc_api.scheme }}://{{ .Values.cc_api.host }}:{{ .Values.cc_api.port }}"
+    cc_tls_disabled: {{ .Values.cc_api.tls_disabled }}

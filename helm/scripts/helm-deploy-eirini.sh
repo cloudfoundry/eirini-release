@@ -9,14 +9,14 @@ export WIREMOCK_KEYSTORE_PASSWORD
 WIREMOCK_KEYSTORE_PASSWORD=${WIREMOCK_KEYSTORE_PASSWORD:-""}
 
 main() {
-  kubectl create namespace cf || true
+  kubectl create namespace eirini-core || true
   install-nats
   create-test-secret
 
   values_file=$(mktemp)
+  trap "rm $values_file" EXIT
   create_values_file $values_file
   install-eirini $values_file
-  rm $values_file
 
   install-wiremock
   wait-for-deployments
@@ -32,20 +32,20 @@ install-nats() {
   helm upgrade nats \
     --install bitnami/nats \
     --version "4.5.8" \
-    --namespace cf \
+    --namespace eirini-core \
     --set auth.user="nats" \
     --set auth.password="$NATS_PASSWORD" \
     --wait
 }
 
 install-wiremock() {
-  kubectl apply -n cf -f "$EIRINI_RELEASE/helm/scripts/assets/wiremock.yml"
+  kubectl apply -n eirini-core -f "$EIRINI_RELEASE/helm/scripts/assets/wiremock.yml"
 }
 
 create-test-secret() {
   local cert key secrets_file
 
-  openssl req -x509 -newkey rsa:4096 -keyout test.key -out test.cert -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:*.cf.svc.cluster.local" -days 365
+  openssl req -x509 -newkey rsa:4096 -keyout test.key -out test.cert -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:*.eirini-core.svc.cluster.local" -days 365
   cert=$(base64 -w0 <test.cert)
   key=$(base64 -w0 <test.key)
 
@@ -72,7 +72,7 @@ data:
   tls.key: "$key"
 EOF
 
-  kubectl apply -n cf -f "$secrets_file"
+  kubectl apply -n eirini-core -f "$secrets_file"
 
   pem_file=$(mktemp)
   keystore_file=$(mktemp)
@@ -80,9 +80,9 @@ EOF
   cat test.cert >>"$pem_file"
   openssl pkcs12 -export -in "$pem_file" -out "$keystore_file" -password "pass:$WIREMOCK_KEYSTORE_PASSWORD"
 
-  kubectl create secret -n cf generic wiremock-keystore --from-file=keystore.pkcs12="$keystore_file" --from-literal=ks.pass="$WIREMOCK_KEYSTORE_PASSWORD"
+  kubectl create secret -n eirini-core generic wiremock-keystore --from-file=keystore.pkcs12="$keystore_file" --from-literal=ks.pass="$WIREMOCK_KEYSTORE_PASSWORD"
 
-  kubectl create secret -n cf generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
+  kubectl create secret -n eirini-core generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
 
   rm test.*
   rm "$pem_file"
@@ -92,18 +92,18 @@ EOF
 install-eirini() {
   helm upgrade --install eirini \
     "$EIRINI_RELEASE/helm/eirini" \
-    --namespace cf \
+    --namespace eirini-core \
     --values $1
 }
 
 wait-for-deployments() {
   local deployments
   deployments="$(kubectl get deployments \
-    --namespace cf \
+    --namespace eirini-core \
     --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{ end }}')"
 
   for dep in $deployments; do
-    kubectl rollout status deployment "$dep" --namespace cf
+    kubectl rollout status deployment "$dep" --namespace eirini-core
   done
 }
 

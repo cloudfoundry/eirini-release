@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: task-reporter
+  namespace: {{ .Release.Namespace }}
+data:
+  task-reporter.yml: |
+    cc_tls_disabled: {{ .Values.cc_api.tls_disabled }}
+    completion_callback_retry_limit: {{ .Values.tasks.completion_callback_retry_limit }}
+    ttl_seconds: {{ .Values.tasks.ttl_seconds }}
