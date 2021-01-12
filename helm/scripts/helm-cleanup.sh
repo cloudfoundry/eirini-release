@@ -6,6 +6,7 @@ EIRINI_RELEASE="$(cd "$(dirname "$0")/../.." && pwd)"
 
 helm delete -n cf nats || true
 helm delete -n cf eirini || true
+kubectl delete -n cf -f "$EIRINI_RELEASE/helm/scripts/assets/wiremock.yml"
 
 workloadsNS="$(goml get --file $EIRINI_RELEASE/helm/eirini/values.yaml --prop opi.namespace)"
 
