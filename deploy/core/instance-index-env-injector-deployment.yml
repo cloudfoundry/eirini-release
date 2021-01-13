@@ -19,7 +19,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: instance-index-env-injector-registration
-        image: eirini/instance-index-env-injector@sha256:b3a0129b30e00384cfd535b48850e251f17ce059eac3bb5369b4f7aef6145605
+        image: eirini/instance-index-env-injector@sha256:b5775621846dd6f85b131babd7ace8e3f27a5056087ab0b8864ea8faf3ac352f
         imagePullPolicy: IfNotPresent
         args: ["--register-only"]
         volumeMounts:
