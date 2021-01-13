@@ -1,4 +1,45 @@
 ---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: instance-index-env-injector
+  namespace: {{ .Release.Namespace }}
+spec:
+  template:
+    spec:
+      serviceAccountName: eirini-instance-index-env-injector-registrar
+      volumes:
+      - name: config-map-volume
+        configMap:
+          name: instance-index-env-injector
+          items:
+          - key: instance-index-env-injector.yml
+            path: instance-index-env-injector.yml
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: instance-index-env-injector-registration
+        {{- if .Values.instanceIndexEnvInjector.image }}
+        image: {{ .Values.instanceIndexEnvInjector.image }}
+        {{- else }}
+        image: eirini/instance-index-env-injector@{{ .Files.Get "versions/instance-index-env-injector" }}
+        {{- end }}
+        imagePullPolicy: IfNotPresent
+        args: ["--register-only"]
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/config
+        resources:
+          requests:
+            cpu: {{ .Values.kube.resources.instance_index_env_injector.requests.cpu }}
+            memory: {{ .Values.kube.resources.instance_index_env_injector.requests.memory }}
+          limits:
+            cpu: {{ .Values.kube.resources.instance_index_env_injector.limits.cpu }}
+            memory: {{ .Values.kube.resources.instance_index_env_injector.limits.memory }}
+      restartPolicy: Never
+  backoffLimit: 4
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,6 +74,7 @@ spec:
         image: eirini/instance-index-env-injector@{{ .Files.Get "versions/instance-index-env-injector" }}
         {{- end }}
         imagePullPolicy: IfNotPresent
+        args: ["--execute-only"]
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/config

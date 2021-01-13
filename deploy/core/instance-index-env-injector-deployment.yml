@@ -1,4 +1,41 @@
 ---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: instance-index-env-injector
+  namespace: eirini-core
+spec:
+  template:
+    spec:
+      serviceAccountName: eirini-instance-index-env-injector-registrar
+      volumes:
+      - name: config-map-volume
+        configMap:
+          name: instance-index-env-injector
+          items:
+          - key: instance-index-env-injector.yml
+            path: instance-index-env-injector.yml
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: instance-index-env-injector-registration
+        image: eirini/instance-index-env-injector@sha256:b3a0129b30e00384cfd535b48850e251f17ce059eac3bb5369b4f7aef6145605
+        imagePullPolicy: IfNotPresent
+        args: ["--register-only"]
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/config
+        resources:
+          requests:
+            cpu: 20m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      restartPolicy: Never
+  backoffLimit: 4
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,6 +66,7 @@ spec:
       - name: instance-index-env-injector
         image: eirini/instance-index-env-injector@sha256:b5775621846dd6f85b131babd7ace8e3f27a5056087ab0b8864ea8faf3ac352f
         imagePullPolicy: IfNotPresent
+        args: ["--execute-only"]
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/config
