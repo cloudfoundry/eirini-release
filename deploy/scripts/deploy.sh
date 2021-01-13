@@ -51,25 +51,17 @@ helm upgrade nats \
   --set auth.password="$NATS_PASSWORD" \
   --wait
 
-kubectl apply -f "$PROJECT_ROOT/deploy/core/"
-kubectl apply -f "$PROJECT_ROOT/deploy/events/"
-kubectl apply -f "$PROJECT_ROOT/deploy/metrics/"
-kubectl apply -f "$PROJECT_ROOT/deploy/routes/"
-kubectl apply -R -f "$PROJECT_ROOT/deploy/workloads"
-
-# Install wiremock to mock the cloud controller
-kubectl apply -f "$PROJECT_ROOT/deploy/testing/cc-wiremock"
-
 pushd "$PROJECT_ROOT/deploy/scripts"
 {
   ./generate_eirini_tls.sh "*.eirini-core.svc.cluster.local" "$WIREMOCK_KEYSTORE_PASSWORD"
 }
 popd
 
-deployments="$(kubectl get deployments \
-  --namespace eirini-core \
-  --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{ end }}')"
+kapp deploy -y -a eirini -f "$PROJECT_ROOT/deploy/core/" \
+  -f "$PROJECT_ROOT/deploy/events/" \
+  -f "$PROJECT_ROOT/deploy/metrics/" \
+  -f "$PROJECT_ROOT/deploy/routes/" \
+  -f "$PROJECT_ROOT/deploy/workloads"
 
-for dep in $deployments; do
-  kubectl rollout status deployment "$dep" --namespace eirini-core
-done
+# Install wiremock to mock the cloud controller
+kapp deploy -y -a wiremock -f "$PROJECT_ROOT/deploy/testing/cc-wiremock"
