@@ -5,7 +5,3 @@ cc_api:
   host: "cc-wiremock.eirini-core.svc.cluster.local"
   port: 443
   tls_secret_name: capi-tls
-
-routing:
-  nats:
-    host: "nats-client.eirini-core.svc.cluster.local"
