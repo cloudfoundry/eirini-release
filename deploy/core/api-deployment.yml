@@ -32,7 +32,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: opi
-        image: eirini/opi@sha256:04b5b81de817cb7adacb54cbb842b42139215fafc2c181155c7b2e4ba33f9fc9
+        image: eirini/opi@sha256:b153174757e8d5440fe5acc878ae521ba501443565065dbdfee3ddf455852f09
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map
