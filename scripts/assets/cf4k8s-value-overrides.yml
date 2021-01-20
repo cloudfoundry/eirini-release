@@ -1,0 +1,10 @@
+api:
+  serve_plaintext: true
+
+workloads:
+    default_namespace: cf-workloads
+    create_namespaces: false
+
+cc_api:
+  host: "capi.cf-system.svc.cluster.local"
+  scheme: http

@@ -2,6 +2,7 @@ api:
   registry_secret_name: registry-credentials
   unsafe_allow_automount_service_account_token: false
   tls_port: 8085
+  plaintext_port: 8080
   serve_plaintext: false
   tls_secret_name: eirini-internal-tls-certs
 
@@ -12,9 +13,10 @@ tasks:
 workloads:
     default_namespace: eirini-workloads
     namespaces: []
+    create_namespaces: true
 
 cc_api:
-  host: "api.eirini-core.svc.cluster.local"
+  host: "capi.eirini-core.svc.cluster.local"
   port: 9023
   scheme: https
   tls_disabled: false

@@ -41,8 +41,13 @@ spec:
         - name: cc-certs
           mountPath: /etc/cf-api/certs
         ports:
-        - containerPort: 8085
+        {{- if .Values.api.serve_plaintext }}
+        - containerPort: {{ .Values.api.plaintext_port }}
+          name: http
+        {{- else }}
+        - containerPort: {{ .Values.api.tls_port }}
           name: https
+        {{- end }}
         resources:
           requests:
             cpu: 20m

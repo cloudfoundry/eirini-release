@@ -6,8 +6,14 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
+    {{- if .Values.api.serve_plaintext }}
+    - port: {{ .Values.api.plaintext_port }}
+      protocol: TCP
+      name: http
+    {{- else }}
     - port: {{ .Values.api.tls_port }}
       protocol: TCP
       name: https
+    {{- end }}
   selector:
     name: eirini-api
