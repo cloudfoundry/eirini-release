@@ -3,7 +3,7 @@ api:
   unsafe_allow_automount_service_account_token: false
   tls_port: 8085
   plaintext_port: 8080
-  serve_plaintext: false
+  serve_plaintext: true
   tls_secret_name: eirini-internal-tls-certs
 
 tasks:
@@ -11,27 +11,27 @@ tasks:
   ttl_seconds: 5
 
 workloads:
-    default_namespace: eirini-workloads
+    default_namespace: cf-workloads
     namespaces: []
-    create_namespaces: true
+    create_namespaces: false
 
 cc_api:
-  host: "capi.eirini-core.svc.cluster.local"
+  host: "capi.cf-system.svc.cluster.local"
   port: 9023
-  scheme: https
+  scheme: http
   tls_disabled: false
   tls_secret_name: eirini-internal-tls-certs
 
 routing:
   nats:
-    host: "nats-client.eirini-core.svc.cluster.local"
+    host: "nats-client.cf-system.svc.cluster.local"
     port: 4222
     password_key: nats-password
     secret_name: nats-secret
 
 metrics:
   loggregator:
-    host: "doppler.eirini-core.svc.cluster.local"
+    host: "doppler.cf-system.svc.cluster.local"
     port: 8082
 
 images:

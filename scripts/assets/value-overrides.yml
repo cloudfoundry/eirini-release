@@ -1,7 +1,21 @@
 api:
+  serve_plaintext: false
   tls_secret_name: eirini-certs
+
+workloads:
+    default_namespace: eirini-workloads
+    create_namespaces: true
 
 cc_api:
   host: "cc-wiremock.eirini-core.svc.cluster.local"
+  scheme: https
   port: 443
   tls_secret_name: capi-tls
+
+routing:
+  nats:
+    host: "nats-client.eirini-core.svc.cluster.local"
+
+metrics:
+  loggregator:
+    host: "doppler.eirini-core.svc.cluster.local"
