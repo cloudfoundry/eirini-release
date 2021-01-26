@@ -4,6 +4,8 @@ kind: Job
 metadata:
   name: instance-index-env-injector
   namespace: {{ .Release.Namespace }}
+  annotations:
+    kapp.k14s.io/update-strategy: fallback-on-replace
 spec:
   template:
     metadata:
