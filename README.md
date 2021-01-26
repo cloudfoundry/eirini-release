@@ -11,6 +11,14 @@ The following CFAR (Cloud Foundry Application Runtime) distributions deploy CF o
 * [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s)
 * [KubeCF](https://github.com/cloudfoundry-incubator/kubecf)
 
+## Building the yaml release
+
+To build the pure yaml files included in our release please run:
+```shell
+./scripts/render-templates.sh <system-namespace> <output-directory>
+```
+This will produce the yamls for all [eirini components](https://github.com/cloudfoundry-incubator/eirini/tree/65789e8ccb3f80986a34d9679733c53156a8e394#components) in separate directories. The components needed for cf-for-k8s are `core`, `events` and `workloads`.
+
 ## Security
 
 ### Security Overview
