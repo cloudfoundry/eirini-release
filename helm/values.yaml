@@ -1,37 +1,106 @@
 api:
+  # registry_secret_name is the name of the secret containing the docker
+  # credentials to pull LRP images
   registry_secret_name: registry-credentials
+
+  # unsafe_allow_automount_service_account_token when set to true causes
+  # Kubernetes to mount the service account token in the LRP and task
+  # containers. This gives the code running there access to the Kubernetes
+  # API with the privileges of the application service account.
+  #
+  # This should generally be left as the default false unless there is a
+  # good reason and the implications are understood. It is required when
+  # running cf-for-k8s in a kind cluster, for example.
   unsafe_allow_automount_service_account_token: false
+
+  # tls_port is the port used by Eirini to serve its REST API over HTTPS
+  # Required when serve_plaintext is set to false or omitted.
   tls_port: 8085
+
+  # plaintext_port is the port used by Eirini to serve its REST API over
+  # plain HTTP.  Required when serve_plaintext is set to true.
   plaintext_port: 8080
+
+  # serve_plaintext specifies whether the Eirini REST API should be served
+  # over plain HTTP or not.
+  #
+  # When serve_plaintext is false, which is the default, a secret must be
+  # provided for the eirini-certs volume in core/api-deployment.yml. This
+  # must have entries tls.ca, tls.crt and tls.key, for the TLS certificate
+  # authority, certificate and key respectively, used to serve TLS.
   serve_plaintext: true
+
+  # The secret below is required when opi.cc_tls_disabled is false in
+  # the core/api-configmap.yml. It must have keys tls.ca, tls.crt and
+  # tls.key for the certificate authority, client certificate and
+  # private key respectively, used for mTLS with the Cloud Controller.
   tls_secret_name: eirini-internal-tls-certs
 
 tasks:
+  # completion_callback_retry_limit is the number of times Eirini will retry
+  # to call the Cloud Controller completion callback in case the Cloud
+  # Controller is unreachable.
   completion_callback_retry_limit: 10
+
+  # ttl_seconds is the number of seconds Eirini will wait before deleting the
+  # Job associated to a completed Task.
   ttl_seconds: 5
 
 workloads:
+    # default_namespace is the namespace used by Eirini to deploy LRPs that do
+    # not specify their own namespace in the request.
     default_namespace: cf-workloads
+
     namespaces: []
     create_namespaces: false
 
 cc_api:
+  # host is the host used by Eirini to call the Cloud Controller.
   host: "capi.cf-system.svc.cluster.local"
+
+  # port is the port used by Eirini to call the Cloud Controller.
   port: 9023
+
+  # scheme is the URL scheme used by Eirini to call the Cloud Controller.
   scheme: http
+
+  # tls_disabled specifies wether Eirini should communicate to the Cloud
+  # Controller via HTTPS or not. This should be set to false if TLS is handled
+  # transparently, e.g. by a service mesh.
+  #
+  # When tls_disabled is false, which is the default, a secret must be provided
+  # for the cc-certs volume via tls_secret_name. This must have entries tls.ca,
+  # tls.crt and tls.key, for the TLS certificate authority, client certificate
+  # and key respectively, used for mTLS with the Cloud Controller.
   tls_disabled: false
+
+  # The secret below is required when opi.cc_tls_disabled is false in
+  # the core/api-configmap.yml. It must have keys tls.ca, tls.crt and
+  # tls.key for the certificate authority, client certificate and
+  # private key respectively, used for mTLS with the Cloud Controller.
   tls_secret_name: eirini-internal-tls-certs
 
 routing:
   nats:
+    # host is the host used by Eirini to publish route updates via NATS.
     host: "nats-client.cf-system.svc.cluster.local"
+
+    # port is the port used by Eirini to publish route updates via NATS.
     port: 4222
-    password_key: nats-password
+
+    # secret_name is the name of the k8s secret holding the NATS password
     secret_name: nats-secret
+
+    # password_key is the name of the key containing the NATS password in the
+    # above secret
+    password_key: nats-password
 
 metrics:
   loggregator:
+    # host is the host used by Eirini to push metrics to loggregator
     host: "doppler.cf-system.svc.cluster.local"
+
+    # port is the port used by Eirini to push metrics to loggregator
     port: 8082
 
 images:

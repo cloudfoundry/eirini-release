@@ -6,4 +6,5 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   metrics.yml: |
+      # loggregator_address is the address used to send metrics to loggregator
       loggregator_address: "{{ .Values.metrics.loggregator.host }}:{{ .Values.metrics.loggregator.port }}"

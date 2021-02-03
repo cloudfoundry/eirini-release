@@ -6,6 +6,22 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   task-reporter.yml: |
+    # cc_tls_disabled specifies wether Eirini should communicate to the Cloud
+    # Controller via HTTPS or not. This should be set to false if TLS is
+    # handled transparently, e.g. by a service mesh.
+    #
+    # When cc_tls_disabled is false, which is the default, a secret must be
+    # provided for the cc-certs volume in core/api-deployment.yml. This must
+    # have entries tls.ca, tls.crt and tls.key, for the TLS certificate
+    # authority, client certificate and key respectively, used for mTLS with
+    # the Cloud Controller.
     cc_tls_disabled: {{ .Values.cc_api.tls_disabled }}
+
+    # completion_callback_retry_limit is the number of times Eirini will retry
+    # to call the Cloud Controller completion callback in case the Cloud
+    # Controller is unreachable.
     completion_callback_retry_limit: {{ .Values.tasks.completion_callback_retry_limit }}
+
+    # ttl_seconds is the number of seconds Eirini will wait before deleting the
+    # Job associated to a completed Task.
     ttl_seconds: {{ .Values.tasks.ttl_seconds }}
