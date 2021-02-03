@@ -35,12 +35,12 @@ metrics:
     port: 8082
 
 images:
-    api: eirini/opi@sha256:f129f818fe02b725aa79cf21a31882a5eb352a7fde7efd104ce9a59656967ba1
-    eirini_controller: eirini/eirini-controller@sha256:fbf339ae7aa131722b67b7153ee82c31656df7abc5801613088578d3302bdbaf
-    instance_index_env_injector: eirini/instance-index-env-injector@sha256:3ce9a7e8ddf70ec486019db8b02dd786466650de02b81a678767df086b52d1fe
-    task_reporter: eirini/task-reporter@sha256:5094ff40fe5dd6f93b6c485dc873120cd0ec6f7580aad9b66ff434c94439e17d
-    event_reporter: eirini/event-reporter@sha256:ab997be8b001918d569e7f541d4db4feb23fc2882165ded11b23ffd9b15149a8
-    route_collector: eirini/route-collector@sha256:2219a0a48beef60732621efbc39ea3f9ff3f9f79edbdaf03b562eca4cb404642
-    route_pod_informer: eirini/route-pod-informer@sha256:7eb4346697955275a142806f5413b326863357566cf66dd9682821bebebd4a7a
-    route_statefulset_informer: eirini/route-statefulset-informer@sha256:a969dafe7af00f4bbdc7c90e0943c45f30ba0597cc5ef8facebb9dc50dc00f49
-    metrics_collector: eirini/metrics-collector@sha256:4aea9ab2890c4493d721fe8c334d64c5746b0ea54c6bd2fad194b33de5796abc
+    api: eirini/opi@sha256:c27bf1ea468490f145fb7a2c52ea5b1cabbdaab0b52b4caed39a8e596393ec4e
+    eirini_controller: eirini/eirini-controller@sha256:452ec4ce51e5ed5add14b63b0150981b70658b2a01396565460c21bb14339a26
+    instance_index_env_injector: eirini/instance-index-env-injector@sha256:53288f5b6ade58a11cc33de3c265262c1303a17573f902d984639fb9314fd8ca
+    task_reporter: eirini/task-reporter@sha256:8f38169f1810df66d6c5361789d8923a78cae2c1fa8a38bd0b488b6184dd96bc
+    event_reporter: eirini/event-reporter@sha256:ba30284a18eb0dace13dee0e93221909d76f0ef4455e4848e0568f724505d4a0
+    route_collector: eirini/route-collector@sha256:c9a8ac02ea8ee2937cdc97c2fb1a50b3b43568a66064390789627b11bb43bc1f
+    route_pod_informer: eirini/route-pod-informer@sha256:4d2c1593469880d11d4863436779b3f09189e0eb9ad746f5c6e1a8992cce394d
+    route_statefulset_informer: eirini/route-statefulset-informer@sha256:6fd158d298b985545c5efcb934322233bfd5547c08a8e35e9b58c284aa3b880e
+    metrics_collector: eirini/metrics-collector@sha256:ef958ddc4d81f374c117ab1639edf9c63fcb6f1af53c6598b00b9d0fe458b1ed
