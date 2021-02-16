@@ -36,6 +36,10 @@ api:
   # private key respectively, used for mTLS with the Cloud Controller.
   tls_secret_name: eirini-internal-tls-certs
 
+  # prometheus_port is the port used to expose Prometheus metrics. When set
+  # to 0, the metrics endpoint is disabled.
+  prometheus_port: 8080
+
 tasks:
   # completion_callback_retry_limit is the number of times Eirini will retry
   # to call the Cloud Controller completion callback in case the Cloud
@@ -74,10 +78,10 @@ cc_api:
   # and key respectively, used for mTLS with the Cloud Controller.
   tls_disabled: false
 
-  # The secret below is required when opi.cc_tls_disabled is false in
-  # the core/api-configmap.yml. It must have keys tls.ca, tls.crt and
-  # tls.key for the certificate authority, client certificate and
-  # private key respectively, used for mTLS with the Cloud Controller.
+  # tls_secret_name is required when opi.cc_tls_disabled is false in the
+  # core/api-configmap.yml. It must have keys tls.ca, tls.crt and tls.key for
+  # the certificate authority, client certificate and private key respectively,
+  # used for mTLS with the Cloud Controller.
   tls_secret_name: eirini-internal-tls-certs
 
 routing:
