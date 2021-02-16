@@ -81,6 +81,12 @@ Eirini depends on the following secrets, which must be named and constructed as 
   - `tls.key`: key for server certificate
   - `tls.ca`: CA used to validate injector webhook's server certificate
 
+- `loggregator-certs` (mandatory when deploying metrics-collector)
+
+  - `tls.crt`: client certificate used for mTLS
+  - `tls.key`: key for client certificate
+  - `tls.ca`: CA used to validate loggregator's server certificate
+
 ## Deployment
 
 You can create the Eirini objects using `kubectl`.
