@@ -27,6 +27,7 @@ main() {
   print_disclaimer
   generate_secrets
   install_nats
+  install_prometheus
   install_eirini
 }
 
@@ -42,6 +43,15 @@ install_nats() {
     --namespace "$SYSTEM_NAMESPACE" \
     --set auth.user="nats" \
     --set auth.password="$NATS_PASSWORD" \
+    --wait
+}
+
+install_prometheus() {
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo update
+  helm upgrade prometheus \
+    --install prometheus-community/prometheus \
+    --namespace "$SYSTEM_NAMESPACE" \
     --wait
 }
 
