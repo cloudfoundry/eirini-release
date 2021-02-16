@@ -1,89 +1,95 @@
 # Deploy without Helm
 
-**Disclaimer** The tool agnostic deployment of Eirini is still work in progress.
-Please stay tuned.
-The deployment YAML is found in the [deploy](../deploy) directory of this release repo.
+The deployment YAML files are found in the `eirini.tgz` asset of the latest [eirini release](https://github.com/cloudfoundry-incubator/eirini-release/releases).
 
-## Core components
+If you require set of deployment YAML files from the latest passing eirini build, you can `git checkout` the master branch of [eirini-release](https://github.com/cloudfoundry-incubator/eirini-release) and generate the files using a script:
 
-The core eirini components include:
+```sh
+cd <eirini-release-directory>
+./scripts/render-templates.sh <system-namespace> <output-directory>
+```
+
+## Components
+
+Throughout these deployment YAML files, the eirini components are configured to run in the `cf-system` namespace and to deploy LRPs and Tasks to the `cf-workloads` namespace.
+These namespaces should be created prior to applying the deployment YAML.
+
+### Core Components
+
+The core eirini components consist of:
 
 - eirini-api (the REST interface that CloudController uses to communicate with Eirini)
-- eirini-controller (CRD k8s controller watching LRP and Task resources)
-- instance-env-injector (a mutating webhook that injects the `CF_INSTANCE_INDEX` env variable to app pods)
+- instance-env-injector (a mutating webhook that injects the `CF_INSTANCE_INDEX` env variable into LRP pods)
+- task-reporter (calls back to CloudController on the status of completed tasks)
+- event-reporter (notifies CloudController of LRP crashes).
+  This is found in the events directory.
 
-Throughout these deployment YAML files, the core components are configured to run in the `eirini-core` namespace and to deploy LRPs and Tasks to the `eirini-workloads` namespace.
-The core namespace is created in the [core/namespace.yml](../deploy/core/namespace.yml) file.
+### Optional Components
 
-### Configuration
+The eirini interface is currently moving from using a REST API to a more k8s native approach with CRDs.
+The new component replacing _eirini-api_ is _eirini-controller_, found in `core/controller-deployment.yml`.
+This is currently experimental.
 
-#### Config Maps
+We also ship a set of components which have been replaced in cf-for-k8s, but are still used in other CF on k8s packages:
 
-Eirini API and controller configuration mainly happens through the [api config map](../deploy/core/api-configmap.yml).
-Instance Injector configuration is [here](../deploy/core/instance-index-env-injector-configmap.yml).
+- metrics-collector (periodically emits application CPU, memory and disk usage metrics to loggregator)
+- route-collector (sends notifications of current, new and removed routes to the go-router via NATS)
 
-For API and controller, you can set the following:
+## Workloads
 
-- `app_namespace`: namespace in which to create workloads (LRPs and Tasks).
-  Can be left blank if deploying to multiple workload namespaces.
+The `workloads` directory contains minimal RBAC configuration required in the workloads namespace.
+It provides a Service Account and associated Pod Security Policy for running LRPs.
+It also gives appropriate role permissions to eirini components that need to interact with resources in the workloads namespace.
 
-- `tls_port`: local port for the REST API server when serving TLS.
+## Configuration
 
-- `plaintext_port`: local port for the REST API server when serving plain HTTP.
+### Config Maps
 
-- `cc_tls_disabled`: set to true when the CloudController does not use TLS (i.e. transport security handled by Istio)
+Components are configured using the various `*-configmap.yml` files provided:
 
-- `disk_limit_mb`: defaults to 2048 if not set, and provides a limit to the app container disk size when not passed by the Cloud Controller
+| Component         | Configmap YAML                            |
+| ----------------- | ----------------------------------------- |
+| Eirini API        | `core/api-configmap.yml`                  |
+| Task Reporter     | `core/task-reporter-configmap.yml`        |
+| Event Reporter    | `events/event-reporter-configmap.yml`     |
+| CRD Controller    | `core/api-configmap.yml`                  |
+| Metrics Collector | `metrics/metrics-collector-configmap.yml` |
+| Route Collector   | `routes/route-collector-configmap.yml`    |
 
-- `application_service_account`: name of service account used to run LRPs and Tasks.
-  See [here](#lrps-and-tasks) for required permissions
+Each configmap is documented describing the options.
+Where a certain configuration requires changes to other file, this is noted there.
 
-- `allow_run_image_as_root`: **_insecure_** allow docker images to run as the privileged user
-
-- `unsafe_allow_automount_service_account_token`: **_insecure_** mount the service account token for the kubenetes API in each LRP / Task pod.
-  Required for cf-for-k8s on Kind.
-
-- `serve_plaintext`: set to true to disable TLS for the REST API.
-  `plaintext_port` must be set.
-  Used when TLS provided by Istio.
-
-For the Instance Index Injector, you will probably only need to override the service namespace, if using a namespace other than eirini-core for the eirini components:
-
-- `service_namespace`: set the namespace for the injector k8s service
-
-#### Secrets
+### Secrets
 
 Eirini depends on the following secrets, which must be named and constructed as follows:
 
-- `capi-tls` (optional, when `cc_tls_disabled` is set to true)
+- `capi-tls` (optional when `cc_tls_disabled` is set to true in the component's configmap)
 
   - `tls.crt`: client certificate used for mTLS
   - `tls.key`: key for client certificate
-  - `ca.crt`: CA used to validate CAPI's server certificate
+  - `tls.ca`: CA used to validate CAPI's server certificate
 
-- `eirini-certs` (optional, when `serve_plaintext` is set to true)
+- `eirini-certs` (optional when `serve_plaintext` is set to true in the API configmap)
+
   - `tls.crt`: server certificate
   - `tls.key`: key for server certificate
-  - `ca.crt`: CA used to validate client certificates
+  - `tls.ca`: CA used to validate client certificates
 
-#### Service Accounts
+- `injector-certs` (mandatory - required by the mutating webhook configuration)
 
-##### LRPs and Tasks
+  - `tls.crt`: server certificate
+  - `tls.key`: key for server certificate
+  - `tls.ca`: CA used to validate injector webhook's server certificate
 
-A service account is required with permissions to run applications in the workloads namespace(s).
-A minimal example is given in the [workloads directory](../deploy/workloads/app-rbac.yml).
+## Deployment
 
-The name must match that given in the config map (see above).
-
-### Deployment
-
-Now you can create the Eirini objects by running the following command from the root directory of this repository:
+You can create the Eirini objects using `kubectl`.
+First extract the `eirini.tgz` tarball (or run the `render-templates.sh` script).
+Then run:
 
 ```bash
-kubectl apply --recursive=true -f deploy/core/
+kubectl apply --recursive=true -f <yaml-directory>
 ```
 
-Wait for all pods in the `eirini-core` namespace to be in the RUNNING state.
+Wait for all pods in the `cf-system` namespace to be in the RUNNING state.
 That's it!
-
-For a fuller example, see [deploy.sh](../deploy/scripts/deploy.sh) which also sets up some external access.

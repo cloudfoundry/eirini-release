@@ -40,7 +40,8 @@ data:
       cc_tls_disabled: {{ .Values.cc_api.tls_disabled }}
 
       # application_service_account is name of the service account used by
-      # running LRPs and tasks
+      # running LRPs and tasks. It must match the service account name in
+      # workloads/app-rbac.yml
       application_service_account: eirini
 
       # registry_secret_name is the name of the secret containing the docker
