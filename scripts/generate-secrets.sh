@@ -44,7 +44,7 @@ pushd keys
   if kubectl -n eirini-core get secret instance-index-env-injector-certs >/dev/null 2>&1; then
     kubectl delete secret -n eirini-core instance-index-env-injector-certs
   fi
-  kubectl create secret -n eirini-core generic injector-certs --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
+  kubectl create secret -n eirini-core generic instance-index-env-injector-certs --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
 
   if kubectl -n eirini-core get secret wiremock-keystore >/dev/null 2>&1; then
     kubectl delete secret -n eirini-core wiremock-keystore

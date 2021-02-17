@@ -75,7 +75,7 @@ Eirini depends on the following secrets, which must be named and constructed as 
   - `tls.key`: key for server certificate
   - `tls.ca`: CA used to validate client certificates
 
-- `injector-certs` (mandatory - required by the mutating webhook configuration)
+- `instance-index-env-injector-certs` (mandatory - required by the mutating webhook configuration)
 
   - `tls.crt`: server certificate
   - `tls.key`: key for server certificate
