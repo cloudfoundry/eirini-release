@@ -87,6 +87,10 @@ Eirini depends on the following secrets, which must be named and constructed as 
   - `tls.key`: key for client certificate
   - `tls.ca`: CA used to validate loggregator's server certificate
 
+- `nats-secret` (mandatory when deploying route-collector)
+
+  - `nats-password`: password to connect to NATS
+
 ## Deployment
 
 You can create the Eirini objects using `kubectl`.
