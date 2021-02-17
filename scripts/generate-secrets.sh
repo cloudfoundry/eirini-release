@@ -16,7 +16,7 @@ pushd keys
 {
   kubectl create namespace eirini-core || true
 
-  openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:$otherDNS" -days 365
+  openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:$otherDNS, DNS:$otherDNS.cluster.local" -days 365
 
   if kubectl -n eirini-core get secret eirini-certs >/dev/null 2>&1; then
     kubectl delete secret -n eirini-core eirini-certs
@@ -40,6 +40,11 @@ pushd keys
     kubectl delete secret -n eirini-core capi-tls
   fi
   kubectl create secret -n eirini-core generic capi-tls --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
+
+  if kubectl -n eirini-core get secret instance-index-env-injector-certs >/dev/null 2>&1; then
+    kubectl delete secret -n eirini-core instance-index-env-injector-certs
+  fi
+  kubectl create secret -n eirini-core generic injector-certs --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
 
   if kubectl -n eirini-core get secret wiremock-keystore >/dev/null 2>&1; then
     kubectl delete secret -n eirini-core wiremock-keystore

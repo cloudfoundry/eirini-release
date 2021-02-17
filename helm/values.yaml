@@ -107,6 +107,9 @@ metrics:
     # port is the port used by Eirini to push metrics to loggregator
     port: 8082
 
+instance_index_env_injector:
+  certs_secret_name: instance-index-env-injector-certs
+
 images:
     api: eirini/opi@sha256:212cc88f1e534d7e1e4ef3e4f2deebc5855ea38f01b293e16df356e01401afb2
     eirini_controller: eirini/eirini-controller@sha256:b060bc08db6045d80f9cba355b650f783c2ceb77b9d3acbdb7012a02bb52276a

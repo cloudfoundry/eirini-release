@@ -20,16 +20,20 @@ spec:
         - name: config-map-volume
           configMap:
             name: instance-index-env-injector
+        - name: certs
+          secret:
+            secretName: {{ .Values.instance_index_env_injector.certs_secret_name }}
       securityContext:
         runAsNonRoot: true
       containers:
       - name: instance-index-env-injector
         image: {{ .Values.images.instance_index_env_injector }}
         imagePullPolicy: IfNotPresent
-        args: ["--execute-only"]
         volumeMounts:
         - name: config-map-volume
           mountPath: /etc/eirini/config
+        - name: certs
+          mountPath: /etc/eirini/certs
         ports:
         - containerPort: 8443
           name: https

@@ -28,11 +28,11 @@ main() {
   generate_secrets
   install_nats
   install_prometheus
-  install_eirini
+  install_eirini "$@"
 }
 
 generate_secrets() {
-  "$SCRIPT_DIR/generate-secrets.sh" "*.${SYSTEM_NAMESPACE}.svc.cluster.local" "$WIREMOCK_KEYSTORE_PASSWORD"
+  "$SCRIPT_DIR/generate-secrets.sh" "*.${SYSTEM_NAMESPACE}.svc" "$WIREMOCK_KEYSTORE_PASSWORD"
 }
 
 install_nats() {
@@ -56,14 +56,17 @@ install_prometheus() {
 }
 
 install_eirini() {
+  ca_bundle="$(kubectl get secret -n $SYSTEM_NAMESPACE instance-index-env-injector-certs -o jsonpath="{.data['tls\.ca']}")"
   helm upgrade eirini \
     --install "$ROOT_DIR/helm" \
     --namespace "$SYSTEM_NAMESPACE" \
     --values "$SCRIPT_DIR/assets/value-overrides.yml" \
-    --wait
+    --set "webhook_ca_bundle=$ca_bundle" \
+    --wait \
+    "$@"
 
   # Install wiremock to mock the cloud controller
   kubectl apply -f "$SCRIPT_DIR/assets/wiremock.yml"
 }
 
-main
+main "$@"
