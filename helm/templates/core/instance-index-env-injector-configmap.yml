@@ -6,5 +6,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   instance-index-env-injector.yml: |
+    # service_port is the port exposed by the instance index env injector
+    # webhook Service.
     service_port: 8443
-    cert_dir: /etc/eirini/certs
