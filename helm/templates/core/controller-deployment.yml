@@ -40,7 +40,4 @@ spec:
       volumes:
         - name: config-map
           configMap:
-            name: eirini
-            items:
-            - key: opi.yml
-              path: eirini-controller.yml
+            name: controller
