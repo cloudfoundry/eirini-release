@@ -52,7 +52,7 @@ Components are configured using the various `*-configmap.yml` files provided:
 | Eirini API        | `core/api-configmap.yml`                  |
 | Task Reporter     | `core/task-reporter-configmap.yml`        |
 | Event Reporter    | `events/event-reporter-configmap.yml`     |
-| CRD Controller    | `core/api-configmap.yml`                  |
+| CRD Controller    | `core/controller-configmap.yml`           |
 | Metrics Collector | `metrics/metrics-collector-configmap.yml` |
 | Route Collector   | `routes/route-collector-configmap.yml`    |
 
