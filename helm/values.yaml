@@ -30,10 +30,10 @@ api:
   # authority, certificate and key respectively, used to serve TLS.
   serve_plaintext: true
 
-  # The secret below is required when opi.cc_tls_disabled is false in
-  # the core/api-configmap.yml. It must have keys tls.ca, tls.crt and
-  # tls.key for the certificate authority, client certificate and
-  # private key respectively, used for mTLS with the Cloud Controller.
+  # tls_secret_name is required when opi.cc_tls_disabled is false in the
+  # core/api-configmap.yml. It must have keys tls.ca, tls.crt and tls.key for
+  # the certificate authority, client certificate and private key respectively,
+  # used for mTLS with the Cloud Controller.
   tls_secret_name: eirini-internal-tls-certs
 
   # prometheus_port is the port used to expose Prometheus metrics. When set

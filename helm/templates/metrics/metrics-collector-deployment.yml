@@ -20,6 +20,9 @@ spec:
           configMap:
             name: eirini-metrics
         - name: loggregator-certs
+          # The secret below must have keys tls.ca, tls.crt and tls.key for,
+          # respectively, the certificate authority, client certificate and
+          # private key to use with loggregator.
           secret:
             secretName: loggregator-certs
             optional: true
