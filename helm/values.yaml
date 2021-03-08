@@ -111,12 +111,12 @@ instance_index_env_injector:
   certs_secret_name: instance-index-env-injector-certs
 
 images:
-    api: eirini/opi@sha256:666e38de881f90f04c1873269aea1981ed166ae94981b632b8a996a263844344
-    eirini_controller: eirini/eirini-controller@sha256:0ff1331e4a91936783bdb0a9ab0ffa8aa71cf4e50afbf07abb5e232ca81fbe42
-    instance_index_env_injector: eirini/instance-index-env-injector@sha256:312fe675215ae0918675cddde174593b8b8a443b07d248f51ad99d9f7694b840
-    task_reporter: eirini/task-reporter@sha256:aad0b64096a38e2ae48a3ec0aea95915ea0349bb50a0d70bca517a82d692a342
-    event_reporter: eirini/event-reporter@sha256:ae4c209ec81748e85c90c095505657804e6a168ed545765351e776a9b9cd4916
-    route_collector: eirini/route-collector@sha256:a75041e681b941c4858f2fd27ea74abec1d41801c42d4ec4b1971e0e64bc0804
-    route_pod_informer: eirini/route-pod-informer@sha256:ca1f36c7c224419ca645e2fb32587b5f441b32b7cc467567034bc16a5febccf2
-    route_statefulset_informer: eirini/route-statefulset-informer@sha256:9d9467b5f3277420478c882a874e5b0cb1de5da35522e9210caff29d6800d645
-    metrics_collector: eirini/metrics-collector@sha256:b1b7b248191bdc8b658bf857e3ab8a6e5cdb9caa99e3a07e66b116c53009b015
+    api: eirini/opi@sha256:4bc4bda104433c7612eadf62c6950f88bddd9f6f1a80e8481aa70db425b47445
+    eirini_controller: eirini/eirini-controller@sha256:9d452f7708e9e291931412f925cb321574e99bc8800d62875e6fc2809072d9b4
+    instance_index_env_injector: eirini/instance-index-env-injector@sha256:fe14f8b1383021c67e31f55ed960b45b4da3d492bd7226e8b051aeee132aa8d9
+    task_reporter: eirini/task-reporter@sha256:c5c10c884be2e4faa15703f2bf8f67b3aff00aef895a8d2e09558ad37b719545
+    event_reporter: eirini/event-reporter@sha256:7197d0bb6eb155abe41ef2fd5db8d7b46341477253b6f7727029e367368acef6
+    route_collector: eirini/route-collector@sha256:347419fa3572493574e68824bd29ec69cc39ff595dfa6e47d6898a7a2a5ccbc5
+    route_pod_informer: eirini/route-pod-informer@sha256:82f86c9534d567ab97ad54c66bbddda62fd38633cf79d6866f1f9f2c84428cec
+    route_statefulset_informer: eirini/route-statefulset-informer@sha256:c6ca8c2819c22d04c66acbaed43cb2d8b92924f6a692a7cdf150a2712f2a3bf0
+    metrics_collector: eirini/metrics-collector@sha256:6ba2126fa8c18f6564e5bd431fc90287aa9b9acce6534462967ce53b203c9a84
