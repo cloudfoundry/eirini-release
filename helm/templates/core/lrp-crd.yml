@@ -93,8 +93,6 @@ spec:
                 privateRegistry:
                   type: object
                   properties:
-                    server:
-                      type: string
                     username:
                       type: string
                     password:
