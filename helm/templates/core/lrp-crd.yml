@@ -74,8 +74,6 @@ spec:
                 cpuWeight:
                   type: integer
                   format: uint8
-                runsAsRoot:
-                  type: boolean
                 appRoutes:
                   type: array
                   items:
