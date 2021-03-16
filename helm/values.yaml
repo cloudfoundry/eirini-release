@@ -120,3 +120,4 @@ images:
     route_pod_informer: eirini/route-pod-informer@sha256:b67cbaa052f8601112206815c07dd24ffc5bc9710b1a949cab0b63de96042d5e
     route_statefulset_informer: eirini/route-statefulset-informer@sha256:49d2230cbf8d874593260f58da06fed7795dcf072bf3c6db12f4524fb2d86ab9
     metrics_collector: eirini/metrics-collector@sha256:53e8397c6dd28a3f54230d11497151f40e546c3b4c9a622dd0850e85dc9a8a41
+    migration: eirini/migration@sha256:25f2f3da8c7aa7b3bf02653b941fcd9466ef5021131863a5cc90fb684026de6a
