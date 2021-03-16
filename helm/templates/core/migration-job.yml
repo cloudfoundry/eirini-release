@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: migration
+  name: eirini-app-migration
   namespace: {{ .Release.Namespace }}
   annotations:
     kapp.k14s.io/update-strategy: fallback-on-replace
