@@ -28,6 +28,7 @@ spec:
       containers:
       - name: instance-index-env-injector
         image: {{ .Values.images.instance_index_env_injector }}
+        args: [ "--config", "/etc/eirini/config/instance-index-env-injector.yml" ]
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume

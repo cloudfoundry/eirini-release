@@ -31,6 +31,7 @@ spec:
       containers:
       - name: metrics-collector
         image: {{ .Values.images.metrics_collector }}
+        args: [ "--config", "/etc/eirini-metrics/config/metrics.yml" ]
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume

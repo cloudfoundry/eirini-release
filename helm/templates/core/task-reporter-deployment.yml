@@ -21,6 +21,7 @@ spec:
       containers:
       - name: task-reporter
         image: {{ .Values.images.task_reporter }}
+        args: [ "--config", "/etc/eirini/config/task-reporter.yml" ]
         imagePullPolicy: IfNotPresent
         resources:
           requests:

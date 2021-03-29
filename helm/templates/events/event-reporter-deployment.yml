@@ -28,6 +28,7 @@ spec:
       containers:
       - name: event-reporter
         image: {{ .Values.images.event_reporter }}
+        args: [ "--config", "/etc/eirini-event-reporter/config/events.yml" ]
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map-volume

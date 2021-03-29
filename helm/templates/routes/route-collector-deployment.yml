@@ -26,6 +26,7 @@ spec:
       containers:
       - name: route-collector
         image: {{ .Values.images.route_collector }}
+        args: [ "--config", "/etc/eirini/routing.yml" ]
         imagePullPolicy: IfNotPresent
         env:
         - name: NATS_PASSWORD
@@ -45,6 +46,7 @@ spec:
             memory: 300Mi
       - name: route-pod-informer
         image: {{ .Values.images.route_pod_informer }}
+        args: [ "--config", "/etc/eirini/routing.yml" ]
         imagePullPolicy: IfNotPresent
         env:
         - name: NATS_PASSWORD
@@ -64,6 +66,7 @@ spec:
             memory: 300Mi
       - name: route-statefulset-informer
         image: {{ .Values.images.route_statefulset_informer }}
+        args: [ "--config", "/etc/eirini/routing.yml" ]
         imagePullPolicy: IfNotPresent
         env:
         - name: NATS_PASSWORD

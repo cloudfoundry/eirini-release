@@ -26,6 +26,7 @@ spec:
       containers:
       - name: eirini-controller
         image: {{ .Values.images.eirini_controller }}
+        args: [ "--config", "/etc/eirini/config/controller.yml" ]
         imagePullPolicy: IfNotPresent
         resources:
           requests:
