@@ -11,6 +11,7 @@ cc_api:
   scheme: https
   port: 443
   tls_secret_name: capi-tls
+  tls_disabled: false
 
 routing:
   nats:

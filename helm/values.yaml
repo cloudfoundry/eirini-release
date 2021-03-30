@@ -69,14 +69,14 @@ cc_api:
   scheme: http
 
   # tls_disabled specifies wether Eirini should communicate to the Cloud
-  # Controller via HTTPS or not. This should be set to false if TLS is handled
+  # Controller via HTTPS or not. This should be set to true if TLS is handled
   # transparently, e.g. by a service mesh.
   #
-  # When tls_disabled is false, which is the default, a secret must be provided
-  # for the cc-certs volume via tls_secret_name. This must have entries tls.ca,
-  # tls.crt and tls.key, for the TLS certificate authority, client certificate
-  # and key respectively, used for mTLS with the Cloud Controller.
-  tls_disabled: false
+  # When tls_disabled is false, a secret must be provided for the cc-certs
+  # volume via tls_secret_name. This must have entries tls.ca, tls.crt and
+  # tls.key, for the TLS certificate authority, client certificate and key
+  # respectively, used for mTLS with the Cloud Controller.
+  tls_disabled: true
 
   # tls_secret_name is required when opi.cc_tls_disabled is false in the
   # core/api-configmap.yml. It must have keys tls.ca, tls.crt and tls.key for
