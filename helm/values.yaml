@@ -1,7 +1,7 @@
 api:
   # registry_secret_name is the name of the secret containing the docker
   # credentials to pull LRP images
-  registry_secret_name: registry-credentials
+  registry_secret_name: app-registry-credentials
 
   # unsafe_allow_automount_service_account_token when set to true causes
   # Kubernetes to mount the service account token in the LRP and task
