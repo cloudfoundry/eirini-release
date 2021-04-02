@@ -97,6 +97,13 @@ rules:
   verbs:
   - get
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - patch
 ---
 # Bind to the default service account
 apiVersion: rbac.authorization.k8s.io/v1

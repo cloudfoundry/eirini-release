@@ -42,6 +42,7 @@ rules:
   verbs:
   - create
   - delete
+  - patch
 
 ---
 # Bind to the default service account
