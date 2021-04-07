@@ -99,14 +99,6 @@ routing:
     # above secret
     password_key: nats-password
 
-metrics:
-  loggregator:
-    # host is the host used by Eirini to push metrics to loggregator
-    host: "doppler.cf-system.svc.cluster.local"
-
-    # port is the port used by Eirini to push metrics to loggregator
-    port: 8082
-
 instance_index_env_injector:
   certs_secret_name: instance-index-env-injector-certs
 
@@ -121,7 +113,6 @@ images:
     event_reporter: eirini/event-reporter@sha256:45d92897ace23184b27c6992e5d56f1cf2c0192b60c534ca3c0d9bfcb265d901
     route_collector: eirini/route-collector@sha256:325ebaf2dc16d26332ccbfb008aec036ba4468f5d3c2384e75123f496f6cc6bf
     route_pod_informer: eirini/route-pod-informer@sha256:04039b853e9b0fdc7bbe3fcf7709881d2bd8b612dfaf4ed2d4c88b45f4860b74
-    route_statefulset_informer: eirini/route-statefulset-informer@sha256:77dbabb67dc67ee57e067736c6e5fcde11a6d37876dd1516fd95542b6e064cb1
     metrics_collector: eirini/metrics-collector@sha256:0b75499d7cc6de07c152f525b8cec696401f31de841b46a740c9a1978131ce8a
     migration: eirini/migration@sha256:64977790a47d003c9b7322bcd2ae29cd65333c8e58efd8d27b675b97ad7d9e2d
     resource_validator: eirini/resource-validator@sha256:dbb38cb8b67675a4c1f62b6ab6f16ca15d84c5c539d3df6842ecb5d7b2ff390d

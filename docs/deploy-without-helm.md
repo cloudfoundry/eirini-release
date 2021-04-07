@@ -32,7 +32,6 @@ This is currently experimental.
 
 We also ship a set of components which have been replaced in cf-for-k8s, but are still used in other CF on k8s packages:
 
-- metrics-collector (periodically emits application CPU, memory and disk usage metrics to loggregator)
 - route-collector (sends notifications of current, new and removed routes to the go-router via NATS)
 
 ## Workloads
@@ -47,14 +46,13 @@ It also gives appropriate role permissions to eirini components that need to int
 
 Components are configured using the various `*-configmap.yml` files provided:
 
-| Component         | Configmap YAML                            |
-| ----------------- | ----------------------------------------- |
-| Eirini API        | `core/api-configmap.yml`                  |
-| Task Reporter     | `core/task-reporter-configmap.yml`        |
-| Event Reporter    | `events/event-reporter-configmap.yml`     |
-| CRD Controller    | `core/controller-configmap.yml`           |
-| Metrics Collector | `metrics/metrics-collector-configmap.yml` |
-| Route Collector   | `routes/route-collector-configmap.yml`    |
+| Component       | Configmap YAML                         |
+| --------------- | -------------------------------------- |
+| Eirini API      | `core/api-configmap.yml`               |
+| Task Reporter   | `core/task-reporter-configmap.yml`     |
+| Event Reporter  | `events/event-reporter-configmap.yml`  |
+| CRD Controller  | `core/controller-configmap.yml`        |
+| Route Collector | `routes/route-collector-configmap.yml` |
 
 Each configmap is documented describing the options.
 Where a certain configuration requires changes to other file, this is noted there.
@@ -80,12 +78,6 @@ Eirini depends on the following secrets, which must be named and constructed as 
   - `tls.crt`: server certificate
   - `tls.key`: key for server certificate
   - `tls.ca`: CA used to validate injector webhook's server certificate
-
-- `loggregator-certs` (mandatory when deploying metrics-collector)
-
-  - `tls.crt`: client certificate used for mTLS
-  - `tls.key`: key for client certificate
-  - `tls.ca`: CA used to validate loggregator's server certificate
 
 - `nats-secret` (mandatory when deploying route-collector)
 
