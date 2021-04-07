@@ -1,0 +1,23 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: eirini-resource-validator-hook
+webhooks:
+- name: resource-validator.eirini.cloudfoundry.org
+  rules:
+  - apiGroups: ["eirini.cloudfoundry.org"]
+    apiVersions: ["v1"]
+    operations: ["UPDATE"]
+    resources: ["lrps"]
+    scope: "Namespaced"
+  clientConfig:
+    service:
+      namespace: {{ .Release.Namespace }}
+      name: eirini-resource-validator
+      path: "/lrps"
+    caBundle: {{ .Values.resource_validator_ca_bundle }}
+  admissionReviewVersions: ["v1beta1"]
+  sideEffects: None
+  timeoutSeconds: 10
+

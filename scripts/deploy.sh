@@ -56,12 +56,15 @@ install_prometheus() {
 }
 
 install_eirini() {
-  ca_bundle="$(kubectl get secret -n $SYSTEM_NAMESPACE instance-index-env-injector-certs -o jsonpath="{.data['tls\.ca']}")"
+  local env_injector_ca_bundle resource_validator_ca_bundle
+  env_injector_ca_bundle="$(kubectl get secret -n $SYSTEM_NAMESPACE instance-index-env-injector-certs -o jsonpath="{.data['tls\.ca']}")"
+  resource_validator_ca_bundle="$(kubectl get secret -n $SYSTEM_NAMESPACE resource-validator-certs -o jsonpath="{.data['tls\.ca']}")"
   helm upgrade eirini \
     --install "$ROOT_DIR/helm" \
     --namespace "$SYSTEM_NAMESPACE" \
     --values "$SCRIPT_DIR/assets/value-overrides.yml" \
-    --set "webhook_ca_bundle=$ca_bundle" \
+    --set "webhook_ca_bundle=$env_injector_ca_bundle" \
+    --set "resource_validator_ca_bundle=$resource_validator_ca_bundle" \
     --wait \
     "$@"
 

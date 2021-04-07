@@ -16,35 +16,21 @@ pushd keys
 {
   kubectl create namespace eirini-core || true
 
-  openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:$otherDNS, DNS:$otherDNS.cluster.local" -days 365
-
-  if kubectl -n eirini-core get secret eirini-certs >/dev/null 2>&1; then
-    kubectl delete secret -n eirini-core eirini-certs
-  fi
-  echo "Creating the secret in your kubernetes cluster"
-  nats_password_b64="$(echo -n "$NATS_PASSWORD" | base64)"
-  kubectl create secret -n eirini-core generic eirini-certs --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
-
   if kubectl -n eirini-core get secret nats-secret >/dev/null 2>&1; then
     kubectl delete secret -n eirini-core nats-secret
   fi
-  echo "Creating the secret in your kubernetes cluster"
+  echo "Creating the nats secret in your kubernetes cluster"
   kubectl create secret -n eirini-core generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
 
-  if kubectl -n eirini-core get secret loggregator-certs >/dev/null 2>&1; then
-    kubectl delete secret -n eirini-core loggregator-certs
-  fi
-  kubectl create secret -n eirini-core generic loggregator-certs --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
+  openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:$otherDNS, DNS:$otherDNS.cluster.local" -days 365
 
-  if kubectl -n eirini-core get secret capi-tls >/dev/null 2>&1; then
-    kubectl delete secret -n eirini-core capi-tls
-  fi
-  kubectl create secret -n eirini-core generic capi-tls --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
-
-  if kubectl -n eirini-core get secret instance-index-env-injector-certs >/dev/null 2>&1; then
-    kubectl delete secret -n eirini-core instance-index-env-injector-certs
-  fi
-  kubectl create secret -n eirini-core generic instance-index-env-injector-certs --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
+  for secret_name in eirini-certs loggregator-certs capi-tls instance-index-env-injector-certs resource-validator-certs; do
+    if kubectl -n eirini-core get secret "$secret_name" >/dev/null 2>&1; then
+      kubectl delete secret -n eirini-core "$secret_name"
+    fi
+    echo "Creating the $secret_name secret in your kubernetes cluster"
+    kubectl create secret -n eirini-core generic "$secret_name" --from-file=tls.crt=./tls.crt --from-file=tls.ca=./tls.crt --from-file=tls.key=./tls.key
+  done
 
   if kubectl -n eirini-core get secret wiremock-keystore >/dev/null 2>&1; then
     kubectl delete secret -n eirini-core wiremock-keystore

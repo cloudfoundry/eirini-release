@@ -110,6 +110,9 @@ metrics:
 instance_index_env_injector:
   certs_secret_name: instance-index-env-injector-certs
 
+resource_validator:
+  certs_secret_name: resource-validator-certs
+
 images:
     api: eirini/opi@sha256:105bbdf095e1ac0f9075e197c75750319e9bc4821021c9a4259d902b22b7fd51
     eirini_controller: eirini/eirini-controller@sha256:13b8b4c1fd0534fbf463770b3beaffc1e7a6e14e506ae8b216bbdad4413a4bd5
@@ -121,3 +124,4 @@ images:
     route_statefulset_informer: eirini/route-statefulset-informer@sha256:a39cd2cc35ed800eb56e91df80a9e294e3a5b50f8090115fe1d2f60287ec3869
     metrics_collector: eirini/metrics-collector@sha256:3376bf1fddff7416cb451495ec38d8cd6b8aaed2ff25437c87fdbf4b771f69c3
     migration: eirini/migration@sha256:8694c39155f5dd74a0a56832e45ce191270dddfbcbae94e2b4db9ee562af3f41
+    resource_validator: eirini/resource-validator@sha256:97ffcb359ec1ecbcc815e7c71c80e6d1891fc85f594f4c6d05b88051768bb84e
