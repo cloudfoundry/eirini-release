@@ -91,6 +91,13 @@ rules:
   - list
   - patch
 - apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - list
+  - patch
+- apiGroups:
   - policy
   resources:
   - poddisruptionbudgets
