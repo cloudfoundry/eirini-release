@@ -2,8 +2,6 @@
 
 set -eu
 
-readonly NATS_PASSWORD="${NATS_PASSWORD:-dummy-nats-password}"
-
 echo "Will now generate tls.ca tls.crt and tls.key files"
 
 mkdir -p keys
@@ -15,12 +13,6 @@ keystore_password=$2
 pushd keys
 {
   kubectl create namespace eirini-core || true
-
-  if kubectl -n eirini-core get secret nats-secret >/dev/null 2>&1; then
-    kubectl delete secret -n eirini-core nats-secret
-  fi
-  echo "Creating the nats secret in your kubernetes cluster"
-  kubectl create secret -n eirini-core generic nats-secret --from-literal "nats-password=$NATS_PASSWORD"
 
   openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:$otherDNS, DNS:$otherDNS.cluster.local" -days 365
 
