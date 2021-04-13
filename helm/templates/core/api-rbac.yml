@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: opi
+  name: api
   namespace: {{ .Release.Namespace }}
 
 ---
@@ -33,7 +33,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: opi
+  name: api
   namespace: {{ .Release.Namespace }}
 
 ---
@@ -119,6 +119,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: opi
+  name: api
   namespace: {{ .Release.Namespace }}
 
