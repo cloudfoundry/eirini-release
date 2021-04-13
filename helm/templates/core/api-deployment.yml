@@ -40,7 +40,7 @@ spec:
       containers:
       - name: opi
         image: {{ .Values.images.api }}
-        args: [ "connect", "--config", "/etc/eirini/config/api.yml" ]
+        args: [ "--config", "/etc/eirini/config/api.yml" ]
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: config-map
