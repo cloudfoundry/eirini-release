@@ -114,11 +114,17 @@ rules:
 - apiGroups:
   - apps
   resources:
-  - statefulsets
+  - deployments
   verbs:
   - get
   - watch
   - list
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - get
 - apiGroups:
   - batch
   resources:

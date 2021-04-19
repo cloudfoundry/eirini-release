@@ -17,7 +17,7 @@ rules:
 - apiGroups:
   - apps
   resources:
-  - statefulsets
+  - deployments
   verbs:
   - create
   - update
