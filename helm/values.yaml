@@ -91,10 +91,10 @@ resource_validator:
   certs_secret_name: resource-validator-certs
 
 images:
-    api: eirini/api@sha256:a4672296ad864f959875af0b03a89a3e77e54e32fe0528a223429a6bb708ec97
-    eirini_controller: eirini/eirini-controller@sha256:b1c38f5d311f3ba0c18e2ee5afff6673d35b870d22b82c13843e9feb3b2b4e98
-    instance_index_env_injector: eirini/instance-index-env-injector@sha256:7fa4e1077a31c0067e2dace32119689c1b0d210b19442082f2f509eb2f98080f
-    task_reporter: eirini/task-reporter@sha256:5cbaf9b4ab9a8aeb6ef4850bba278d30abf7489147241c12e50c0775b94f3c83
-    event_reporter: eirini/event-reporter@sha256:ab0633bd5ee7eaa94c8b7b58c9e63779b162139f66ee60f80ba0aae57bee892a
-    migration: eirini/migration@sha256:ab58cb2030127215415d5c464c867f8676b30294f95fab82ec6dbd5bc732ad0f
-    resource_validator: eirini/resource-validator@sha256:bd4a9053f4fa39a4f7f378d9c0d516397685b7dea06a1dd6a176419096f426de
+    api: eirini/api@sha256:a5390ff298c536b296304b6837366b41d6e7d2afd9aa210bb41de11cdd639149
+    eirini_controller: eirini/eirini-controller@sha256:4083e7b5b6266edd0562412b9c8a26581d86070ea4a8a6034a16c8731eec0ec0
+    instance_index_env_injector: eirini/instance-index-env-injector@sha256:8399a2d37104ae1c1825a39ca7bfb9b9cba43a02569b3c4cb312cc572be8b29c
+    task_reporter: eirini/task-reporter@sha256:8eb31d5969841a3b6da6868557351e73bb01578458d7d292d3b99a7c64ddf530
+    event_reporter: eirini/event-reporter@sha256:70abbf505860cf200b36696d05f4b684e478799daf059b44c79fa80b986846e1
+    migration: eirini/migration@sha256:0d81900e01db0a552b524caac6f6ddb28663b396c24fdaa4610ad33f0b481a16
+    resource_validator: eirini/resource-validator@sha256:961261111803ad142545a1154661c920974d0454c9c85fde2d477d1aca75d720
