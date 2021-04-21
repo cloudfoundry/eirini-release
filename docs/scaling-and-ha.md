@@ -15,4 +15,3 @@ Scaling is configured using the replicas property of the deployment spec in both
 | Task Reporter               | HA only      | Leadership election in the controller runtime ensures only a single instance handles a given task completion event                                                       |
 | Instance Index Env Injector | Horizontal   | Request to the hook service are distributed round robin to the instances by default (this is based on the Kubernetes Service). The registration job should not be scaled |
 | Metrics Collector           | None         | Leadership election is required but not yet implemented, so do not scale this component                                                                                  |
-| Route Collector             | None         | Leadership election is required but not yet implemented, so do not scale this component                                                                                  |

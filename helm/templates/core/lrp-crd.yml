@@ -74,16 +74,6 @@ spec:
                 cpuWeight:
                   type: integer
                   format: uint8
-                appRoutes:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      hostname:
-                        type: string
-                      port:
-                        type: integer
-                        format: in32
                 userDefinedAnnotations:
                   type: object
                   additionalProperties:
