@@ -91,7 +91,7 @@ resource_validator:
   certs_secret_name: resource-validator-certs
 
 images:
-    api: eirini/api@sha256:4ccb5ab9811af84593009375bb5387d12d8a5b5496bdbdf16e2261df3818983d
+    api: eirini/api@sha256:2dd86d701fc88287f373ad758d568f30bd7f493b4748d9644baa35e6d88dcfb0
     eirini_controller: eirini/eirini-controller@sha256:e1b028d70122682387cffce46f2675587c53068b394307bb6fe33183572849d5
     instance_index_env_injector: eirini/instance-index-env-injector@sha256:02729671c499eadb86db7ef74d0f8a5386758c2c92d2f0beba5069fe74b1387d
     task_reporter: eirini/task-reporter@sha256:d44b0ae765e961eba7407a760a70b8c7f7b3646bae02b3c2820df898053e9176
