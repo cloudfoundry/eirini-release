@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: instance-index-env-injector
+  name: eirini-instance-index-env-injector
   namespace: {{ .Release.Namespace }}
 data:
   instance-index-env-injector.yml: |
