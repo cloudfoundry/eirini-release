@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: migration
+  name: eirini-migration
   namespace: {{ .Release.Namespace }}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: migration-role
+  name: eirini-migration-role
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
@@ -19,28 +19,28 @@ rules:
   verbs:
   - use
   resourceNames:
-  - migration
+  - eirini-migration
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: migration-rolebinding
+  name: eirini-migration-rolebinding
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: migration-role
+  name: eirini-migration-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: migration
+  name: eirini-migration
   namespace: {{ .Release.Namespace }}
 
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: migration
+  name: eirini-migration
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'runtime/default'
     seccomp.security.alpha.kubernetes.io/defaultProfileName:  'runtime/default'
@@ -81,7 +81,7 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: migration-cluster-role
+  name: eirini-migration-cluster-role
 rules:
 - apiGroups:
   - apps
@@ -116,13 +116,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: migration-cluster-rolebinding
+  name: eirini-migration-cluster-rolebinding
 roleRef:
   kind: ClusterRole
-  name: migration-cluster-role
+  name: eirini-migration-cluster-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: migration
+  name: eirini-migration
   namespace: {{ .Release.Namespace }}
 
