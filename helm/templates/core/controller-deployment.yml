@@ -41,4 +41,4 @@ spec:
       volumes:
         - name: config-map
           configMap:
-            name: controller
+            name: eirini-controller

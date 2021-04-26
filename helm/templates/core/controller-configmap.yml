@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: controller
+  name: eirini-controller
   namespace: {{ .Release.Namespace }}
 data:
   controller.yml: |
