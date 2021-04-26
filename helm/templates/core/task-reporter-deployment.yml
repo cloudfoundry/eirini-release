@@ -38,7 +38,7 @@ spec:
       volumes:
         - name: config-map-volume
           configMap:
-            name: task-reporter
+            name: eirini-task-reporter
             items:
             - key: task-reporter.yml
               path: task-reporter.yml

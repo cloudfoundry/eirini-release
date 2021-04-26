@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: task-reporter
+  name: eirini-task-reporter
   namespace: {{ .Release.Namespace }}
 data:
   task-reporter.yml: |
