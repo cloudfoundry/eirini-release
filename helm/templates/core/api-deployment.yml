@@ -14,11 +14,11 @@ spec:
         name: eirini-api
     spec:
       dnsPolicy: ClusterFirst
-      serviceAccountName: api
+      serviceAccountName: eirini-api
       volumes:
         - name: config-map
           configMap:
-            name: api
+            name: eirini-api
         - name: cc-certs
           # The secret below is required when api.cc_tls_disabled is false in
           # the core/api-configmap.yml. It must have keys tls.ca, tls.crt and

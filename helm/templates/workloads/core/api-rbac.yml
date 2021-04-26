@@ -57,6 +57,6 @@ roleRef:
   name: eirini-namespaced-role
 subjects:
 - kind: ServiceAccount
-  name: api
+  name: eirini-api
   namespace: {{ $releaseNamespace }}
 {{- end }}
