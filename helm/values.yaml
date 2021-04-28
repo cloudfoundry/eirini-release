@@ -85,10 +85,10 @@ cc_api:
   tls_secret_name: eirini-internal-tls-certs
 
 instance_index_env_injector:
-  certs_secret_name: instance-index-env-injector-certs
+  certs_secret_name: eirini-instance-index-env-injector-certs
 
 resource_validator:
-  certs_secret_name: resource-validator-certs
+  certs_secret_name: eirini-resource-validator-certs
 
 images:
     api: eirini/api@sha256:e1fc7b592bd9e990b8913ae9cd696249a7c80f7368102ebfd59902663c939620
