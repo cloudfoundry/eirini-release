@@ -66,6 +66,23 @@ spec:
                 cpuWeight:
                   type: integer
                   format: uint8
+            status:
+              type: object
+              properties:
+                start_time:
+                  type: string
+                  format: date-time
+                end_time:
+                  type: string
+                  format: date-time
+                execution_status:
+                  type: string
+                  enum:
+                    - starting
+                    - running
+                    - succeeded
+                    - failed
+                  default: starting
       subresources:
         status: {}
   scope: Namespaced
