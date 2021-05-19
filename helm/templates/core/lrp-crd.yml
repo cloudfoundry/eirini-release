@@ -17,6 +17,7 @@ spec:
               type: object
               required:
                 - diskMB
+                - GUID
               properties:
                 GUID:
                   type: string
