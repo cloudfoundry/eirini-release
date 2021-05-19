@@ -26,8 +26,6 @@ spec:
                   type: string
                 image:
                   type: string
-                completionCallback:
-                  type: string
                 privateRegistry:
                   type: object
                   properties:
