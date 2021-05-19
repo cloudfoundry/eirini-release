@@ -12,7 +12,7 @@ rules:
   resources:
   - lrps/status
   verbs:
-  - update
+  - patch
 - apiGroups:
   - eirini.cloudfoundry.org
   resources:
