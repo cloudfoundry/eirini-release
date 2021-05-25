@@ -34,3 +34,7 @@ data:
     # prometheus_port is the port used to expose Prometheus metrics. When set
     # to 0, the metrics endpoint is disabled.
     prometheus_port: {{ .Values.api.prometheus_port }}
+
+    # task_ttl_seconds is the number of seconds Eirini will wait before
+    # deleting the Job associated to a completed Task.
+    task_ttl_seconds: {{ .Values.tasks.ttl_seconds }}
