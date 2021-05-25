@@ -73,4 +73,4 @@ kubectl exec -n <cf-system-namespace> blobstore-0 -c blobstore -- \
 
 ## Resources
 
-- [Eirini Continuous Integration Pipeline](https://ci.eirini.cf-app.com/teams/main/pipelines/eirini-release)
+- [Eirini Continuous Integration Pipeline](https://jetson.eirini.cf-app.com/)
