@@ -85,8 +85,6 @@ spec:
               instances:
                 default: 1
                 type: integer
-              lastUpdated:
-                type: string
               memoryMB:
                 format: int64
                 type: integer
