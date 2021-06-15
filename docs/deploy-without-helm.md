@@ -24,12 +24,6 @@ The core eirini components consist of:
 - event-reporter (notifies CloudController of LRP crashes).
   This is found in the events directory.
 
-### Optional Components
-
-The eirini interface is currently moving from using a REST API to a more k8s native approach with CRDs.
-The new component replacing _eirini-api_ is _eirini-controller_, found in `core/controller-deployment.yml`.
-This is currently experimental.
-
 ## Workloads
 
 The `workloads` directory contains minimal RBAC configuration required in the workloads namespace.
@@ -47,7 +41,6 @@ Components are configured using the various `*-configmap.yml` files provided:
 | Eirini API     | `core/api-configmap.yml`              |
 | Task Reporter  | `core/task-reporter-configmap.yml`    |
 | Event Reporter | `events/event-reporter-configmap.yml` |
-| CRD Controller | `core/controller-configmap.yml`       |
 
 Each configmap is documented describing the options.
 Where a certain configuration requires changes to other file, this is noted there.
@@ -69,12 +62,6 @@ Eirini depends on the following secrets, which must be named and constructed as 
   - `tls.ca`: CA used to validate client certificates
 
 - `eirini-instance-index-env-injector-certs` (mandatory - required by the mutating webhook configuration)
-
-  - `tls.crt`: server certificate
-  - `tls.key`: key for server certificate
-  - `tls.ca`: CA used to validate injector webhook's server certificate
-
-- `eirini-resource-validator-certs` (optional - required when using the eirini-controller and its resource validator hook)
 
   - `tls.crt`: server certificate
   - `tls.key`: key for server certificate
