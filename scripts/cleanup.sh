@@ -12,6 +12,7 @@ delete_eirini() {
   helm --namespace "$SYSTEM_NAMESPACE" delete nats || true
   helm --namespace "$SYSTEM_NAMESPACE" delete prometheus || true
   kubectl delete -f "$SCRIPT_DIR/assets/wiremock.yml" || true
+  kubectl delete namespace "$SYSTEM_NAMESPACE" --wait || true
 }
 
 main() {
