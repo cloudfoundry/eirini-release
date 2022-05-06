@@ -88,8 +88,8 @@ instance_index_env_injector:
   certs_secret_name: eirini-instance-index-env-injector-certs
 
 images:
-    api: eirini/api@sha256:a017d0f46970ec46ae27edd6b518f2472ffa0aab27a11bea5b8b441256c4edd7
-    instance_index_env_injector: eirini/instance-index-env-injector@sha256:3072b96cde3a882e55b20e6a5d874ba3d40e34b5ab93699da3ec0743a5f13195
-    task_reporter: eirini/task-reporter@sha256:352e71d278db2569e4532789344dc672131b32ef51284c8d1e33569bf6324671
-    event_reporter: eirini/event-reporter@sha256:482c45e122fdf9a03b1aa419a2bd2db265639bd539531b55e71151ce2b12e7dc
-    migration: eirini/migration@sha256:806754ce2d6da78b3acabaaf070da4359b4e841895970b2e8ffe4baaa4c5a90c
+    api: eirini/api@sha256:436dce036160288cd3007d2bc884fa239f89cce8ec601d3dd31740bc4c101fed
+    instance_index_env_injector: eirini/instance-index-env-injector@sha256:3302962f43f09797c1518798813c70d4e0d452a7aa6b780e63aab2f5af56617e
+    task_reporter: eirini/task-reporter@sha256:e4137e9215ae66cbcdfd3ae425ff295ee8a6cac6febcd619b86b27aee26e0bd8
+    event_reporter: eirini/event-reporter@sha256:262ca75baddc7b0511c2d0b626d73c4b2c06971879840ce7f3f456d2c3797d51
+    migration: eirini/migration@sha256:9a92bd82ccecb56fc292db17c718318a2419bf6d64cb4316c9c211b47d31e0ea
